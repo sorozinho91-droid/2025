@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Macro | Risk-On x Risk-Off</title>
+<title>GPS do Mercado | Risk x Segurança</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -12,22 +12,17 @@ body{
   font-family:Arial, sans-serif;
   color:#d1d5db;
 }
-.header{
-  padding:6px;
-}
-.section{
-  margin-bottom:8px;
-}
 .panel{
   background:#0e141b;
   border-radius:6px;
   padding:6px;
+  margin:6px;
 }
 h2{
   font-size:12px;
-  margin:4px 0;
   text-align:center;
   font-weight:normal;
+  margin:4px 0;
 }
 </style>
 </head>
@@ -35,7 +30,7 @@ h2{
 <body>
 
 <!-- 🔢 COTAÇÕES EM TEMPO REAL -->
-<div class="header panel section">
+<div class="panel">
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
 {
   "symbols": [
@@ -58,9 +53,9 @@ h2{
 </script>
 </div>
 
-<!-- 📉📈 RISK-ON x RISK-OFF -->
-<div class="panel section">
-<h2>📉📈 Risk-On x Risk-Off (Tempo Real)</h2>
+<!-- 🧭 GPS DO MERCADO -->
+<div class="panel">
+<h2>🧭 GPS do Mercado — Risk-On x Risk-Off</h2>
 
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-compare.js">
 {
@@ -75,7 +70,8 @@ h2{
     {"proName":"BMFBOVESPA:IBOV","title":"Ibovespa"},
     {"proName":"NYMEX:CL1!","title":"WTI"},
     {"proName":"COMEX:GC1!","title":"Gold"},
-    {"proName":"TVC:DXY","title":"DXY"}
+    {"proName":"TVC:DXY","title":"DXY"},
+    {"proName":"TVC:US10Y","title":"Treasury 10Y"}
   ],
   "showLegend":true,
   "lineWidth":2
