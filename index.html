@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Variação Global</title>
+<title>Painel Global | Variação + Gráfico</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -21,14 +21,23 @@ h1{
   margin:6px 0 10px;
   font-weight:normal;
 }
+.panel{
+  background:#0e141b;
+  border-radius:6px;
+  padding:6px;
+  margin-bottom:8px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
+
 <h1>🌍 Variação (%) — Bolsas Globais & Macro</h1>
 
+<!-- 🔢 VARIAÇÃO (%) -->
+<div class="panel">
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
 {
   "symbols": [
@@ -40,6 +49,7 @@ h1{
     {"proName":"HSI:HSI","title":"Hang Seng"},
     {"proName":"SSE:000001","title":"Shanghai"},
     {"proName":"NYMEX:CL1!","title":"WTI"},
+    {"proName":"ICEEUR:BRN1!","title":"Brent"},
     {"proName":"DCE:IO2309","title":"Minério Ferro"},
     {"proName":"TVC:DXY","title":"DXY"}
   ],
@@ -49,6 +59,31 @@ h1{
   "locale":"br"
 }
 </script>
+</div>
+
+<!-- 📈 GRÁFICO EM TEMPO REAL -->
+<div class="panel">
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-compare.js">
+{
+  "colorTheme":"dark",
+  "isTransparent":true,
+  "width":"100%",
+  "height":"420",
+  "locale":"br",
+  "symbols":[
+    {"proName":"SP:SPX","title":"S&P 500"},
+    {"proName":"TVC:NI225","title":"Nikkei"},
+    {"proName":"HSI:HSI","title":"Hang Seng"},
+    {"proName":"NYMEX:CL1!","title":"WTI"},
+    {"proName":"ICEEUR:BRN1!","title":"Brent"},
+    {"proName":"DCE:IO2309","title":"Minério"},
+    {"proName":"TVC:DXY","title":"DXY"}
+  ],
+  "showLegend":true,
+  "lineWidth":2
+}
+</script>
+</div>
 
 </div>
 
