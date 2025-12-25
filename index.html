@@ -2,13 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Global - Variação</title>
+<title>Painel Macro Global</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
   margin:0;
-  padding:10px;
   background:#0b0f14;
   font-family:Arial, sans-serif;
 }
@@ -25,25 +23,41 @@ body{
   "showChart": true,
   "locale": "br",
   "width": "100%",
-  "height": "700",
+  "height": "650",
   "tabs": [
+
     {
-      "title": "GLOBAL",
+      "title": "🌍 GLOBAL",
       "symbols": [
         {"s": "SP:SPX", "d": "S&P 500"},
         {"s": "NASDAQ:NDX", "d": "Nasdaq"},
         {"s": "DJ:DJI", "d": "Dow Jones"},
         {"s": "TVC:SX5E", "d": "Euro Stoxx 50"},
+        {"s": "BMFBOVESPA:IBOV", "d": "Ibovespa"},
+        {"s": "TVC:DXY", "d": "DXY"}
+      ]
+    },
+
+    {
+      "title": "🌏 ÁSIA",
+      "symbols": [
         {"s": "TVC:NI225", "d": "Nikkei 225"},
         {"s": "HSI:HSI", "d": "Hang Seng"},
         {"s": "SSE:000001", "d": "Shanghai"},
-        {"s": "BMFBOVESPA:IBOV", "d": "Ibovespa"},
-        {"s": "TVC:DXY", "d": "DXY"},
+        {"s": "SZSE:399001", "d": "Shenzhen"}
+      ]
+    },
+
+    {
+      "title": "🛢️ COMMODITIES",
+      "symbols": [
         {"s": "NYMEX:CL1!", "d": "Petróleo WTI"},
         {"s": "ICEEUR:BRN1!", "d": "Petróleo Brent"},
+        {"s": "COMEX:GC1!", "d": "Ouro"},
         {"s": "DCE:IO2309", "d": "Minério de Ferro"}
       ]
     }
+
   ]
 }
 </script>
