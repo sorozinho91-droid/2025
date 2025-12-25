@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Macro Compacto</title>
+<title>Painel Macro Ultra-Compacto</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -17,6 +17,14 @@ body{
   display:flex;
   flex-direction:column;
 }
+.asset{
+  display:flex;
+  justify-content:space-between;
+  padding:2px 4px;
+  font-size:11px;
+}
+.pos { color:#00ff00; } /* positivo */
+.neg { color:#ff3b3b; } /* negativo */
 .panel{
   background:#05070a;
   padding:2px;
@@ -30,40 +38,30 @@ body{
 
 <div class="wrapper">
 
-<!-- VARIAÇÃO (%) -->
+<!-- VARIAÇÃO (%) COM CORES -->
 <div class="panel">
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
-{
-  "symbols": [
-    {"proName":"SP:SPX","title":"SPX"},
-    {"proName":"NASDAQ:NDX","title":"NDX"},
-    {"proName":"DJ:DJI","title":"DJI"},
-    {"proName":"BMFBOVESPA:IBOV","title":"IBOV"},
-    {"proName":"TVC:STOXX50E","title":"SX5E"},
-    {"proName":"TVC:NI225","title":"NKY"},
-    {"proName":"HSI:HSI","title":"HSI"},
-    {"proName":"SSE:000001","title":"SHCOMP"},
-    {"proName":"NYMEX:CL1!","title":"WTI"},
-    {"proName":"ICEEUR:BRN1!","title":"BRENT"},
-    {"proName":"DCE:IO2309","title":"IRON"},
-    {"proName":"TVC:DXY","title":"DXY"}
-  ],
-  "colorTheme":"dark",
-  "isTransparent":true,
-  "showSymbolLogo":false,
-  "locale":"en"
-}
-</script>
+<div class="asset">SPX <span id="spx" class="pos">+0.00%</span></div>
+<div class="asset">NDX <span id="ndx" class="pos">+0.00%</span></div>
+<div class="asset">DJI <span id="dji" class="pos">+0.00%</span></div>
+<div class="asset">IBOV <span id="ibov" class="pos">+0.00%</span></div>
+<div class="asset">SX5E <span id="sx5e" class="pos">+0.00%</span></div>
+<div class="asset">NKY <span id="nky" class="pos">+0.00%</span></div>
+<div class="asset">HSI <span id="hsi" class="pos">+0.00%</span></div>
+<div class="asset">SHCOMP <span id="shcomp" class="pos">+0.00%</span></div>
+<div class="asset">WTI <span id="wti" class="pos">+0.00%</span></div>
+<div class="asset">BRENT <span id="brent" class="pos">+0.00%</span></div>
+<div class="asset">IRON <span id="iron" class="pos">+0.00%</span></div>
+<div class="asset">DXY <span id="dxy" class="pos">+0.00%</span></div>
 </div>
 
-<!-- GRÁFICO MACRO -->
+<!-- GRÁFICO MINIATURA -->
 <div class="panel">
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-compare.js">
 {
   "colorTheme":"dark",
   "isTransparent":true,
   "width":"100%",
-  "height":"240",
+  "height":"180",
   "locale":"en",
   "symbols":[
     {"proName":"SP:SPX","title":"SPX"},
