@@ -1,83 +1,40 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>GPS do Mercado | Risk x Segurança</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+//@version=5
+indicator("📈 Risk-On x Risk-Off (Linhas)", overlay=false)
 
-<style>
-body{
-  margin:0;
-  background:#080b10;
-  font-family:Arial, sans-serif;
-  color:#d1d5db;
-}
-.panel{
-  background:#0e141b;
-  border-radius:6px;
-  padding:6px;
-  margin:6px;
-}
-h2{
-  font-size:12px;
-  text-align:center;
-  font-weight:normal;
-  margin:4px 0;
-}
-</style>
-</head>
+// ===== INPUT =====
+len = input.int(50, "Período de Normalização", minval=10)
 
-<body>
+// ===== FUNÇÃO NORMALIZAÇÃO =====
+norm(x) =>
+    x / ta.sma(x, len)
 
-<!-- 🔢 COTAÇÕES EM TEMPO REAL -->
-<div class="panel">
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
-{
-  "symbols": [
-    {"proName":"SP:SPX","title":"S&P 500"},
-    {"proName":"NASDAQ:NDX","title":"Nasdaq"},
-    {"proName":"DJ:DJI","title":"Dow"},
-    {"proName":"BMFBOVESPA:IBOV","title":"Ibovespa"},
-    {"proName":"TVC:NI225","title":"Nikkei"},
-    {"proName":"HSI:HSI","title":"Hang Seng"},
-    {"proName":"TVC:DXY","title":"DXY"},
-    {"proName":"NYMEX:CL1!","title":"WTI"},
-    {"proName":"DCE:IO2309","title":"Iron Ore"},
-    {"proName":"COMEX:GC1!","title":"Gold"}
-  ],
-  "colorTheme":"dark",
-  "isTransparent":true,
-  "showSymbolLogo":false,
-  "locale":"br"
-}
-</script>
-</div>
+// ===== RISK-ON =====
+spx  = request.security("SP:SPX", timeframe.period, close)
+ndx  = request.security("NASDAQ:NDX", timeframe.period, close)
+ibov = request.security("BMFBOVESPA:IBOV", timeframe.period, close)
+wti  = request.security("NYMEX:CL1!", timeframe.period, close)
 
-<!-- 🧭 GPS DO MERCADO -->
-<div class="panel">
-<h2>🧭 GPS do Mercado — Risk-On x Risk-Off</h2>
+risk_on = (
+     norm(spx)
+   + norm(ndx)
+   + norm(ibov)
+   + norm(wti)
+) / 4
 
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-compare.js">
-{
-  "colorTheme":"dark",
-  "isTransparent":true,
-  "width":"100%",
-  "height":"420",
-  "locale":"br",
-  "symbols":[
-    {"proName":"SP:SPX","title":"S&P 500"},
-    {"proName":"NASDAQ:NDX","title":"Nasdaq"},
-    {"proName":"BMFBOVESPA:IBOV","title":"Ibovespa"},
-    {"proName":"NYMEX:CL1!","title":"WTI"},
-    {"proName":"COMEX:GC1!","title":"Gold"},
-    {"proName":"TVC:DXY","title":"DXY"},
-    {"proName":"TVC:US10Y","title":"Treasury 10Y"}
-  ],
-  "showLegend":true,
-  "lineWidth":2
-}
-</script>
-</div>
+// ===== RISK-OFF =====
+gold = request.security("COMEX:GC1!", timeframe.period, close)
+dxy  = request.security("TVC:DXY", timeframe.period, close)
+us10 = request.security("TVC:US10Y", timeframe.period, close)
 
-</body>
-</html>
+risk_off = (
+     norm(gold)
+   + norm(dxy)
+   + norm(us10)
+) / 3
+
+// ===== PLOTS =====
+plot(risk_on,  title="Risk-On",  color=color.red,  linewidth=2)
+plot(risk_off, title="Risk-Off", color=color.lime, linewidth=2)
+
+// ===== REFERÊNCIA =====
+hline(1, "Base Normalizada", color=color.gray, linestyle=hline.style_dotted)
