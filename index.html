@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Ásia & Commodities — Tempo Real</title>
+<title>Risk-On x Risk-Off — Global</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -17,14 +17,31 @@ h1{
   font-size:18px;
   margin:10px 0;
 }
-#widget{
+.container{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
   padding:10px;
+}
+@media (max-width:900px){
+  .container{ grid-template-columns:1fr; }
+}
+.box{
+  background:#111827;
+  border-radius:10px;
+  padding:6px;
+}
+.box h2{
+  text-align:center;
+  font-size:14px;
+  margin:6px 0;
 }
 </style>
 
 <script>
-function reloadWidget(){
-  document.getElementById("widget").innerHTML = `
+function reloadWidgets(){
+
+  document.getElementById("riskon").innerHTML = `
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js">
 {
   "colorTheme": "dark",
@@ -33,38 +50,67 @@ function reloadWidget(){
   "showSymbolLogo": false,
   "locale": "br",
   "width": "100%",
-  "height": "600",
-  "tabs": [
-    {
-      "title": "ÁSIA",
-      "symbols": [
-        {"s": "TVC:NI225", "d": "Nikkei 225"},
-        {"s": "HSI:HSI", "d": "Hang Seng"},
-        {"s": "SSE:000001", "d": "Shanghai"}
-      ]
-    },
-    {
-      "title": "COMMODITIES",
-      "symbols": [
-        {"s": "NYMEX:CL1!", "d": "Petróleo WTI"},
-        {"s": "ICEEUR:BRN1!", "d": "Petróleo Brent"},
-        {"s": "DCE:IO2309", "d": "Minério de Ferro"}
-      ]
-    }
-  ]
+  "height": "420",
+  "tabs": [{
+    "title": "RISK-ON (Bolsas Globais)",
+    "symbols": [
+      {"s": "SP:SPX", "d": "S&P 500"},
+      {"s": "NASDAQ:NDX", "d": "Nasdaq"},
+      {"s": "DJ:DJI", "d": "Dow Jones"},
+      {"s": "TVC:STOXX50E", "d": "Euro Stoxx 50"},
+      {"s": "TVC:NI225", "d": "Nikkei 225"},
+      {"s": "HSI:HSI", "d": "Hang Seng"},
+      {"s": "NYMEX:CL1!", "d": "Petróleo WTI"}
+    ]
+  }]
 }
-<\/script>
-`;
+<\/script>`;
+
+  document.getElementById("riskoff").innerHTML = `
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js">
+{
+  "colorTheme": "dark",
+  "dateRange": "1D",
+  "showChart": true,
+  "showSymbolLogo": false,
+  "locale": "br",
+  "width": "100%",
+  "height": "420",
+  "tabs": [{
+    "title": "RISK-OFF (Proteção)",
+    "symbols": [
+      {"s": "COMEX:GC1!", "d": "Ouro"},
+      {"s": "TVC:DXY", "d": "DXY"},
+      {"s": "TVC:US10Y", "d": "Treasury 10Y"},
+      {"s": "DCE:IO2309", "d": "Minério de Ferro"}
+    ]
+  }]
 }
-setInterval(reloadWidget, 5000);
-window.onload = reloadWidget;
+<\/script>`;
+}
+
+window.onload = () => {
+  reloadWidgets();
+  setInterval(reloadWidgets, 5000);
+};
 </script>
 </head>
 
 <body>
 
-<h1>🌏 Ásia & Commodities — Tempo Real</h1>
-<div id="widget"></div>
+<h1>🌍 Risk-On x Risk-Off — Bolsas Globais</h1>
+
+<div class="container">
+  <div class="box">
+    <h2>🔴 Ativos de Risco</h2>
+    <div id="riskon"></div>
+  </div>
+
+  <div class="box">
+    <h2>🟢 Ativos de Segurança</h2>
+    <div id="riskoff"></div>
+  </div>
+</div>
 
 </body>
 </html>
