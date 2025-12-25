@@ -25,27 +25,27 @@ h1{
 @media (max-width:900px){
   .container{grid-template-columns:1fr;}
 }
-.card{
+.box{
   background:#111827;
   border-radius:10px;
-  padding:8px;
+  padding:6px;
 }
-.card h2{
+.box h2{
   text-align:center;
   font-size:14px;
-  margin-bottom:6px;
+  margin:6px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h1>📊 Risk On x Risk Off</h1>
+<h1>📈 Risk On x Risk Off</h1>
 
 <div class="container">
 
 <!-- RISK ON -->
-<div class="card">
+<div class="box">
 <h2>🔴 Ativos de Risco</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js">
 {
@@ -55,15 +55,14 @@ h1{
   "showSymbolLogo": false,
   "locale": "br",
   "width": "100%",
-  "height": "420",
+  "height": "380",
   "tabs": [
     {
       "title": "Risco",
       "symbols": [
         {"s": "SP:SPX", "d": "S&P 500"},
         {"s": "NASDAQ:NDX", "d": "Nasdaq"},
-        {"s": "BMFBOVESPA:IBOV", "d": "Ibovespa"},
-        {"s": "NYMEX:CL1!", "d": "Petróleo WTI"}
+        {"s": "BMFBOVESPA:IBOV", "d": "Ibovespa"}
       ]
     }
   ]
@@ -72,7 +71,7 @@ h1{
 </div>
 
 <!-- RISK OFF -->
-<div class="card">
+<div class="box">
 <h2>🟢 Ativos de Segurança</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js">
 {
@@ -82,15 +81,14 @@ h1{
   "showSymbolLogo": false,
   "locale": "br",
   "width": "100%",
-  "height": "420",
+  "height": "380",
   "tabs": [
     {
       "title": "Segurança",
       "symbols": [
         {"s": "TVC:DXY", "d": "DXY"},
         {"s": "COMEX:GC1!", "d": "Ouro"},
-        {"s": "TVC:US10Y", "d": "Treasury 10Y"},
-        {"s": "FX:USDJPY", "d": "USD/JPY"}
+        {"s": "TVC:US10Y", "d": "Treasury 10Y"}
       ]
     }
   ]
