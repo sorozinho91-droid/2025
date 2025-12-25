@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GLOBAL MACRO TERMINAL</title>
+<title>Painel Macro Vertical</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -13,12 +13,15 @@ body{
   color:#cfd3dc;
 }
 .wrapper{
-  padding:3px;
+  padding:4px;
+  display:flex;
+  flex-direction:column;
 }
 .panel{
   background:#05070a;
-  padding:3px;
-  margin-bottom:3px;
+  padding:4px;
+  margin-bottom:4px;
+  border-radius:4px;
 }
 </style>
 </head>
@@ -35,6 +38,7 @@ body{
     {"proName":"SP:SPX","title":"SPX"},
     {"proName":"NASDAQ:NDX","title":"NDX"},
     {"proName":"DJ:DJI","title":"DJI"},
+    {"proName":"BMFBOVESPA:IBOV","title":"IBOV"},
     {"proName":"TVC:STOXX50E","title":"SX5E"},
     {"proName":"TVC:NI225","title":"NKY"},
     {"proName":"HSI:HSI","title":"HSI"},
@@ -59,10 +63,12 @@ body{
   "colorTheme":"dark",
   "isTransparent":true,
   "width":"100%",
-  "height":"240",
+  "height":"320",
   "locale":"en",
   "symbols":[
     {"proName":"SP:SPX","title":"SPX"},
+    {"proName":"NASDAQ:NDX","title":"NDX"},
+    {"proName":"BMFBOVESPA:IBOV","title":"IBOV"},
     {"proName":"TVC:NI225","title":"NKY"},
     {"proName":"HSI:HSI","title":"HSI"},
     {"proName":"NYMEX:CL1!","title":"WTI"},
