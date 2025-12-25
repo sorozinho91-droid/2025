@@ -2,30 +2,30 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Global | Variação + Gráfico</title>
+<title>Painel Global Compacto</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  background:#0b0f14;
+  background:#0a0d12;
   font-family:Arial, sans-serif;
-  color:#e5e7eb;
+  color:#d1d5db;
 }
 .container{
-  padding:8px;
+  padding:4px;
 }
 h1{
-  font-size:14px;
+  font-size:12px;
   text-align:center;
-  margin:6px 0 10px;
+  margin:2px 0 4px;
   font-weight:normal;
 }
 .panel{
   background:#0e141b;
-  border-radius:6px;
-  padding:6px;
-  margin-bottom:8px;
+  border-radius:4px;
+  padding:4px;
+  margin-bottom:4px;
 }
 </style>
 </head>
@@ -34,23 +34,23 @@ h1{
 
 <div class="container">
 
-<h1>🌍 Variação (%) — Bolsas Globais & Macro</h1>
+<h1>🌍 Global — Variação (%)</h1>
 
-<!-- 🔢 VARIAÇÃO (%) -->
+<!-- 🔢 VARIAÇÃO -->
 <div class="panel">
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
 {
   "symbols": [
-    {"proName":"SP:SPX","title":"S&P 500"},
+    {"proName":"SP:SPX","title":"S&P"},
     {"proName":"NASDAQ:NDX","title":"Nasdaq"},
-    {"proName":"DJ:DJI","title":"Dow Jones"},
-    {"proName":"TVC:STOXX50E","title":"Euro Stoxx 50"},
-    {"proName":"TVC:NI225","title":"Nikkei 225"},
-    {"proName":"HSI:HSI","title":"Hang Seng"},
-    {"proName":"SSE:000001","title":"Shanghai"},
+    {"proName":"DJ:DJI","title":"Dow"},
+    {"proName":"TVC:STOXX50E","title":"Stoxx"},
+    {"proName":"TVC:NI225","title":"Nikkei"},
+    {"proName":"HSI:HSI","title":"HS"},
+    {"proName":"SSE:000001","title":"SH"},
     {"proName":"NYMEX:CL1!","title":"WTI"},
     {"proName":"ICEEUR:BRN1!","title":"Brent"},
-    {"proName":"DCE:IO2309","title":"Minério Ferro"},
+    {"proName":"DCE:IO2309","title":"Ferro"},
     {"proName":"TVC:DXY","title":"DXY"}
   ],
   "colorTheme":"dark",
@@ -61,25 +61,25 @@ h1{
 </script>
 </div>
 
-<!-- 📈 GRÁFICO EM TEMPO REAL -->
+<!-- 📈 GRÁFICO -->
 <div class="panel">
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-compare.js">
 {
   "colorTheme":"dark",
   "isTransparent":true,
   "width":"100%",
-  "height":"420",
+  "height":"280",
   "locale":"br",
   "symbols":[
-    {"proName":"SP:SPX","title":"S&P 500"},
+    {"proName":"SP:SPX","title":"S&P"},
     {"proName":"TVC:NI225","title":"Nikkei"},
     {"proName":"HSI:HSI","title":"Hang Seng"},
     {"proName":"NYMEX:CL1!","title":"WTI"},
     {"proName":"ICEEUR:BRN1!","title":"Brent"},
-    {"proName":"DCE:IO2309","title":"Minério"},
+    {"proName":"DCE:IO2309","title":"Ferro"},
     {"proName":"TVC:DXY","title":"DXY"}
   ],
-  "showLegend":true,
+  "showLegend":false,
   "lineWidth":2
 }
 </script>
