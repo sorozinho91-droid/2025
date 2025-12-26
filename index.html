@@ -1,130 +1,116 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Dashboard – Histórico de 2 Dias em Tempo Real</title>
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<style>
-body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
-header { background: #1f2937; color: white; padding: 15px; text-align: center; }
-#controls { text-align: center; padding: 10px; }
-button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
-button.active { background: #2563eb; color: white; }
-#grafico { width: 100%; height: 600px; }
-</style>
+    <title>Ativos Risco x Segurança</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
+    <h2>Ativos Risco x Segurança (Atualização Automática)</h2>
+    
+    <label>Selecionar Time Frame: </label>
+    <select id="timeframe" onchange="updateInterval()">
+        <option value="30000">30 segundos</option>
+        <option value="60000">1 minuto</option>
+    </select>
+    
+    <div id="grafico" style="width:100%;height:600px;"></div>
+    
+    <script>
+        // Ativos de risco e valores iniciais
+        const ativos_risco = [
+            {nome:"Ouro Futuros", valor:4502.80},
+            {nome:"Cobre Futuros", valor:5.5750},
+            {nome:"Petróleo WTI Futuros", valor:58.35},
+            {nome:"Oslo All Share", valor:1907.07},
+            {nome:"Soja Chicago Futuros", valor:1052.00},
+            {nome:"Dow Jones Futuros", valor:49029.00},
+            {nome:"The Global Dow USD", valor:6198.91},
+            {nome:"Vale SA ADR", valor:13.15},
+            {nome:"Petrobras SA ADR", valor:11.83},
+            {nome:"iShares MSCI Brazil ETF", valor:31.55},
+            {nome:"XLF", valor:55.73},
+            {nome:"XLP", valor:78.12},
+            {nome:"XLE", valor:44.37},
+            {nome:"XME", valor:107.87},
+            {nome:"EEM", valor:54.42},
+            {nome:"SOXX.O", valor:306.14},
+            {nome:"BSE Sensex 30", valor:85408.70},
+            {nome:"Hang Seng Futuros", valor:25834.5},
+            {nome:"China A50 Futuros", valor:15353.0},
+            {nome:"Dow Jones Shanghai", valor:549.17},
+            {nome:"SZSE Component", valor:13531.41},
+            {nome:"Shanghai Composite", valor:3959.62}
+        ];
 
-<header>
-<h2>Ativos de Risco x Seguros – Histórico de 2 Dias em Tempo Real</h2>
-</header>
+        // Ativos de segurança e valores iniciais
+        const ativos_seguranca = [
+            {nome:"Índice Dólar Futuros", valor:97.681},
+            {nome:"S&P 500 VIX Futuros", valor:16.85},
+            {nome:"USD/MXN", valor:17.8950},
+            {nome:"USD/NOK", valor:9.9745},
+            {nome:"USD/NZD", valor:1.7094},
+            {nome:"USD/AUD", valor:1.4913},
+            {nome:"USD/KRW", valor:1441.90},
+            {nome:"USD/CNY", valor:7.0063},
+            {nome:"EUR/BRL", valor:6.5062}
+        ];
 
-<div id="controls">
-<button onclick="setTimeframe(0.5, this)">30s</button>
-<button onclick="setTimeframe(1, this)" class="active">1m</button>
-<button onclick="setTimeframe(5, this)">5m</button>
-<button onclick="setTimeframe(15, this)">15m</button>
-<button onclick="setTimeframe(60, this)">1h</button>
-</div>
+        // Criar séries iniciais
+        let data = [];
+        const now = new Date();
+        ativos_risco.forEach(a => {
+            data.push({
+                x: [new Date(now.getTime() - 60000), now],
+                y: [a.valor, a.valor],
+                name: a.nome,
+                mode: 'lines',
+                line: {color:'red', dash:'dash'}
+            });
+        });
+        ativos_seguranca.forEach(a => {
+            data.push({
+                x: [new Date(now.getTime() - 60000), now],
+                y: [a.valor, a.valor],
+                name: a.nome,
+                mode: 'lines',
+                line: {color:'blue'}
+            });
+        });
 
-<div id="grafico"></div>
+        // Layout do gráfico
+        const layout = {
+            title: 'Ativos Risco x Segurança',
+            xaxis: {title: 'Data/Hora'},
+            yaxis: {title: 'Valor'},
+            legend: {orientation: "h"}
+        };
 
-<script>
-let timeframe = 1; // minutos
-let timer = null;
+        Plotly.newPlot('grafico', data, layout);
 
-let datas = [], risco = [], seguro = [];
-let valorRisco = 100, valorSeguro = 100;
+        // Intervalo de atualização
+        let intervalTime = 30000; // padrão 30s
+        let intervalID = setInterval(updateData, intervalTime);
 
-// Função para gerar valores aleatórios
-function atualizarValores(valor, vol){
-    return Math.max(0, valor + (Math.random()-0.5)*vol);
-}
+        function updateData() {
+            const now = new Date();
+            data.forEach(trace => {
+                // Simulação: acrescenta variação aleatória +-0.5%
+                const lastValue = trace.y[trace.y.length-1];
+                const newValue = lastValue * (1 + (Math.random()-0.5)/100);
+                trace.x.push(now);
+                trace.y.push(newValue);
 
-// Gera histórico inicial de 2 dias (1 ponto a cada 30 minutos)
-function gerarHistorico2Dias(){
-    const agora = new Date();
-    const start = new Date(agora.getTime() - 2*24*60*60*1000); // 2 dias atrás
-    let valR = 100, valS = 100;
-    datas = []; risco = []; seguro = [];
-    for(let d = new Date(start); d <= agora; d.setMinutes(d.getMinutes()+30)){
-        valR = atualizarValores(valR,2);
-        valS = atualizarValores(valS,0.5);
-        datas.push(new Date(d));
-        risco.push(valR);
-        seguro.push(valS);
-    }
-    valorRisco = valR;
-    valorSeguro = valS;
-}
+                if(trace.x.length > 20){ trace.x.shift(); trace.y.shift(); } // mantém últimos 20 pontos
+            });
+            Plotly.update('grafico', data);
+        }
 
-// Atualização em tempo real
-function atualizarGrafico(){
-    const agora = new Date();
-    valorRisco = atualizarValores(valorRisco,2);
-    valorSeguro = atualizarValores(valorSeguro,0.5);
-    datas.push(agora);
-    risco.push(valorRisco);
-    seguro.push(valorSeguro);
-    Plotly.extendTraces('grafico', {x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1]);
-}
+        function updateInterval() {
+            clearInterval(intervalID);
+            intervalTime = parseInt(document.getElementById("timeframe").value);
+            intervalID = setInterval(updateData, intervalTime);
+        }
 
-// Mudar timeframe
-function setTimeframe(minutos, botao){
-    timeframe = minutos;
-    document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
-    botao.classList.add('active');
-    if(timer) clearInterval(timer);
-    timer = setInterval(atualizarGrafico, timeframe*60000);
-}
-
-/* Inicialização */
-gerarHistorico2Dias();
-
-const layout = {
-    title:'Ativos em Tempo Real',
-    xaxis:{title:'Data', type:'date'},
-    yaxis:{title:'Valor'},
-    margin:{t:50},
-    legend: {
-        title: { text: '<b>Ativos</b>' },
-        x: 1,
-        xanchor: 'right',
-        y: 1,
-        font: {size:14},
-        bgcolor: '#f4f6f8',
-        bordercolor: '#888',
-        borderwidth: 1
-    }
-};
-
-const traceRisco = {
-    x: datas,
-    y: risco,
-    mode: 'lines+markers',
-    name: 'Ativos de Risco',
-    line:{color:'red', width:2},
-    marker:{size:6, symbol:'circle'},
-    hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
-};
-
-const traceSeguro = {
-    x: datas,
-    y: seguro,
-    mode: 'lines+markers',
-    name: 'Ativos Seguros',
-    line:{color:'green', width:2},
-    marker:{size:6, symbol:'square'},
-    hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
-};
-
-Plotly.newPlot('grafico',[traceRisco, traceSeguro], layout, {responsive:true});
-
-// Atualização em tempo real
-timer = setInterval(atualizarGrafico, timeframe*60000);
-
-window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
-</script>
-
+    </script>
 </body>
 </html>
