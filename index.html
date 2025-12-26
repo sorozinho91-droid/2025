@@ -9,7 +9,6 @@
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
-            padding: 0;
         }
         #grafico {
             width: 100%;
@@ -23,57 +22,28 @@
 <div id="grafico"></div>
 
 <script>
-    // Arrays iniciais
-    var datas = [];
-    var risco = [];
-    var seguro = [];
-
     // Valores iniciais
     var valor_risco = 100;
     var valor_seguro = 100;
 
-    // Função para gerar novos valores simulados
+    // Função de simulação
     function atualizarValores(valor) {
         return Math.max(0, valor + (Math.random() - 0.5) * 2);
     }
 
-    // Primeiro ponto
-    function adicionarPonto() {
-        var agora = new Date().toLocaleTimeString();
-        datas.push(agora);
-
-        valor_risco = atualizarValores(valor_risco);
-        valor_seguro = atualizarValores(valor_seguro);
-
-        risco.push(valor_risco);
-        seguro.push(valor_seguro);
-
-        // Limitar a 60 pontos (1 hora se for 1 ponto/minuto)
-        if (datas.length > 60) {
-            datas.shift();
-            risco.shift();
-            seguro.shift();
-        }
-
-        Plotly.update('grafico', {
-            x: [datas, datas],
-            y: [risco, seguro]
-        });
-    }
-
-    // Criar gráfico
+    // Criar gráfico com ponto inicial
     var data = [
         {
-            x: datas,
-            y: risco,
+            x: [new Date().toLocaleTimeString()],
+            y: [valor_risco],
             type: 'scatter',
             mode: 'lines+markers',
             name: 'Ativos de Risco',
             line: { color: 'red' }
         },
         {
-            x: datas,
-            y: seguro,
+            x: [new Date().toLocaleTimeString()],
+            y: [valor_seguro],
             type: 'scatter',
             mode: 'lines+markers',
             name: 'Ativos Seguros',
@@ -91,11 +61,20 @@
 
     Plotly.newPlot('grafico', data, layout, { responsive: true });
 
-    // Atualizar a cada 60 segundos
-    adicionarPonto(); // ponto inicial
-    setInterval(adicionarPonto, 60000);
+    // Atualização a cada 1 minuto
+    setInterval(function () {
+        var hora = new Date().toLocaleTimeString();
 
-    // Ajustar gráfico ao redimensionar / minimizar
+        valor_risco = atualizarValores(valor_risco);
+        valor_seguro = atualizarValores(valor_seguro);
+
+        Plotly.extendTraces('grafico', {
+            x: [[hora], [hora]],
+            y: [[valor_risco], [valor_seguro]]
+        }, [0, 1], 60); // mantém últimos 60 pontos
+    }, 60000);
+
+    // Ajustar ao minimizar / redimensionar
     window.addEventListener('resize', function () {
         Plotly.Plots.resize('grafico');
     });
