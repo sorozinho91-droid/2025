@@ -2,47 +2,46 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Índice de Sentimento vs Ibovespa</title>
+    <title>Ativos de Risco x Segurança</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Índice de Sentimento vs Ibovespa</h1>
+    <h1>Ativos de Risco x Segurança - Linha do Tempo</h1>
     <div id="grafico" style="width:100%;height:600px;"></div>
     <script>
-        // Dados simulados (exemplo)
+        // Linha do tempo
         var datas = [
             '2025-12-01','2025-12-02','2025-12-03','2025-12-04','2025-12-05',
             '2025-12-06','2025-12-07','2025-12-08','2025-12-09','2025-12-10'
         ];
 
-        var ibov = [125000, 126000, 124500, 125500, 126500, 127000, 126000, 127500, 128000, 127800];
-        var sentimento = [0.2, 0.3, -0.1, 0.0, 0.4, 0.5, 0.1, 0.3, 0.6, 0.2];
+        // Valores acumulados simulados
+        var risco = [100, 102, 101, 105, 104, 107, 106, 110, 108, 112]; // ações/ativos de risco
+        var seguro = [100, 100.5, 101, 101.5, 102, 102.2, 102.5, 103, 103.1, 103.5]; // títulos/ativos seguros
 
-        // Normalizar sentimento para a escala do Ibovespa
-        var sentimento_normalizado = sentimento.map(function(s) { return s * Math.max(...ibov); });
-
-        var trace1 = {
+        var trace_risco = {
             x: datas,
-            y: ibov,
+            y: risco,
             type: 'scatter',
-            name: 'Ibovespa',
-            line: {color: 'blue'}
+            name: 'Ativos de Risco',
+            line: {color: 'red'}
         };
 
-        var trace2 = {
+        var trace_seguro = {
             x: datas,
-            y: sentimento_normalizado,
+            y: seguro,
             type: 'scatter',
-            name: 'Sentimento',
-            line: {color: 'red', dash: 'dash'}
+            name: 'Ativos Seguros',
+            line: {color: 'green'}
         };
 
-        var data = [trace1, trace2];
+        var data = [trace_risco, trace_seguro];
 
         var layout = {
-            title: 'Índice de Sentimento vs Ibovespa',
+            title: 'Evolução Acumulada: Risco vs Segurança',
             xaxis: {title: 'Data'},
-            yaxis: {title: 'Preço Ibovespa'},
+            yaxis: {title: 'Valor Acumulado'},
+            legend: {x:0.1, y:1.1},
         };
 
         Plotly.newPlot('grafico', data, layout);
