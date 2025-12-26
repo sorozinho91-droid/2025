@@ -5,9 +5,9 @@
     <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin:0; padding:0; }
-        #grafico { width: 90%; height: 500px; margin: auto; }
-        h2 { margin-top: 10px; }
+        body { font-family: Arial, sans-serif; text-align:center; margin:0; padding:0; }
+        #grafico { width: 90%; height: 500px; margin:auto; }
+        h2 { margin-top:10px; }
     </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
             return Math.max(0, valor + (Math.random() - 0.5) * 2);
         }
 
-        // Inicializar gráfico com 2 pontos para linhas aparecerem
+        // Inicializa gráfico com dois pontos
         var agora = new Date();
         datas.push(new Date(agora.getTime() - intervalo));
         datas.push(agora);
@@ -59,9 +59,10 @@
             margin: { t:50, r:30, l:50, b:50 }
         };
 
+        // Cria gráfico sem responsive:true
         Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout);
 
-        // Atualizar dados em tempo real
+        // Atualiza os dados em tempo real
         setInterval(function(){
             var agora = new Date();
             datas.push(agora);
@@ -76,7 +77,7 @@
             });
         }, intervalo);
 
-        // Ajustar gráfico apenas quando a tela for redimensionada ou minimizada
+        // Ajusta o gráfico apenas quando a janela for redimensionada ou minimizada
         window.addEventListener('resize', function() {
             Plotly.Plots.resize('grafico');
         });
