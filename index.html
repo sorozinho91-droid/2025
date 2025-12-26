@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Histórico Diário Completo</title>
+    <title>Risco x Segurança - Histórico Diário com Backend</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -19,13 +19,13 @@
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Histórico Diário Completo</h2>
+    <h2>Risco x Segurança - Histórico Diário com Backend Simulado</h2>
     <canvas id="dailyChart"></canvas>
 
     <script>
         const ctx = document.getElementById('dailyChart').getContext('2d');
 
-        // Simulação de histórico real carregado do backend (JSON)
+        // Simulação do histórico vindo do backend (JSON)
         const historicalData = [
             {"time":"09:00","risco":20,"seguranca":80},
             {"time":"10:00","risco":35,"seguranca":65},
@@ -81,25 +81,32 @@
 
         const dailyChart = new Chart(ctx, config);
 
-        // Função para adicionar novo ponto em tempo real
-        function addDataPoint(risco, seguranca) {
-            const now = new Date();
-            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' + 
-                              now.getMinutes().toString().padStart(2,'0');
-
+        // Função para adicionar novo ponto (recebido do backend)
+        function addDataPoint(timeLabel, risco, seguranca) {
             data.labels.push(timeLabel);
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
-
             dailyChart.update();
         }
 
-        // Simulação de atualização em tempo real
+        // Simulação do WebSocket do backend enviando novos dados a cada 5 segundos
         setInterval(() => {
+            const now = new Date();
+            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' + 
+                              now.getMinutes().toString().padStart(2,'0');
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
-            addDataPoint(risco, seguranca);
-        }, 5000); // a cada 5 segundos
+
+            // Aqui é onde, em um sistema real, você receberia os dados via WebSocket
+            addDataPoint(timeLabel, risco, seguranca);
+        }, 5000);
+
+        // Caso queira carregar histórico real de um arquivo JSON:
+        // fetch('historico.json')
+        //     .then(response => response.json())
+        //     .then(jsonData => {
+        //         jsonData.forEach(d => addDataPoint(d.time, d.risco, d.seguranca));
+        //     });
     </script>
 </body>
 </html>
