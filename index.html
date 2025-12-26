@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real</title>
+    <title>Ativos de Risco x Segurança - Últimos 5 Minutos</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; }
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
+    <h2>Ativos de Risco x Seguros - Últimos 5 Minutos</h2>
     <div id="grafico"></div>
 
     <script>
@@ -23,6 +23,7 @@
         var valor_seguro = 100;
 
         var intervalo = 2000; // 2 segundos
+        var duracaoJanela = 5 * 60 * 1000; // 5 minutos
 
         function atualizarValores(valor) {
             return Math.max(0, valor + (Math.random() - 0.5) * 2);
@@ -30,11 +31,8 @@
 
         function inicializarGrafico() {
             var agora = new Date();
-
-            // Adiciona DOIS pontos iniciais para que as linhas apareçam
             datas.push(new Date(agora.getTime() - intervalo));
             datas.push(agora);
-
             risco.push(valor_risco, valor_risco);
             seguro.push(valor_seguro, valor_seguro);
 
@@ -57,12 +55,13 @@
             };
 
             var layout = {
-                title: 'Ativos de Risco vs Seguros - Tempo Real',
+                title: 'Ativos de Risco vs Seguros - Últimos 5 Minutos',
                 xaxis: {
                     title: 'Hora',
                     type: 'date',
+                    showgrid: true,
                     rangeslider: { visible: true },
-                    showgrid: true
+                    autorange: true
                 },
                 yaxis: { title: 'Valor', showgrid: true },
                 autosize: true,
@@ -82,10 +81,17 @@
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
-            // Mantém todo histórico
+            // Remover pontos fora da janela de 5 minutos
+            var limite = new Date(agora.getTime() - duracaoJanela);
+            while (datas.length > 0 && datas[0] < limite) {
+                datas.shift();
+                risco.shift();
+                seguro.shift();
+            }
+
             var layoutAtualizado = {
                 xaxis: {
-                    range: [datas[0], agora],
+                    range: [limite, agora],
                     type: 'date',
                     rangeslider: { visible: true }
                 }
