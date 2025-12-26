@@ -1,47 +1,26 @@
-import express from 'express';
-import { WebSocketServer } from 'ws';
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
+import yfinance as yf
+import pandas as pd
+import plotly.graph_objects as go
+from datetime import datetime
 
-dotenv.config();
-const app = express();
-app.use(express.json());
-const PORT = process.env.PORT || 3000;
+# Baixar dados do Ibovespa
+ibov = yf.download("^BVSP", period="1mo", interval="1d")
 
-// Endpoint simples para o frontend carregar HTML
-app.use(express.static('public'));
+# Simulação de índice de sentimento (-1 a +1)
+import numpy as np
+np.random.seed(42)
+ibov['Sentimento'] = np.random.uniform(-1, 1, len(ibov))
 
-// Criar WebSocket server
-const wss = new WebSocketServer({ port: 8080 });
+# Criar gráfico interativo
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=ibov.index, y=ibov['Close'], mode='lines', name='Ibovespa', line=dict(color='blue')))
+fig.add_trace(go.Scatter(x=ibov.index, y=ibov['Sentimento']*ibov['Close'].max(), mode='lines', name='Sentimento', line=dict(color='red', dash='dash')))
 
-let latestData = {
-  dxy: 0,
-  wti: 0,
-  brent: 0,
-  iron: 0
-};
+fig.update_layout(
+    title='Índice de Sentimento vs Ibovespa',
+    xaxis_title='Data',
+    yaxis_title='Preço Ibovespa',
+    yaxis2=dict(title='Sentimento', overlaying='y', side='right')
+)
 
-// Função simulada para WebSocket real
-async function updateData() {
-  try {
-    // Substitua abaixo com chamadas reais para WebSocket/API de streaming
-    latestData.dxy = (Math.random() * 2 - 1).toFixed(2);
-    latestData.wti = (Math.random() * 2 - 1).toFixed(2);
-    latestData.brent = (Math.random() * 2 - 1).toFixed(2);
-    latestData.iron = (Math.random() * 2 - 1).toFixed(2);
-
-    // Envia atualização para todos clientes conectados
-    wss.clients.forEach(client => {
-      if (client.readyState === 1) { // WebSocket OPEN
-        client.send(JSON.stringify(latestData));
-      }
-    });
-  } catch (err) {
-    console.error("Erro atualizando dados:", err);
-  }
-}
-
-// Atualiza dados a cada 1 segundo (simulação)
-setInterval(updateData, 1000);
-
-app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
+fig.show()
