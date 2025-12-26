@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Intraday</title>
+    <title>Risco x Segurança - Acumulado Intraday</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -19,14 +19,17 @@
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Histórico Intraday</h2>
+    <h2>Risco x Segurança - Acumulado Intraday</h2>
     <canvas id="intradayChart"></canvas>
 
     <script>
         const ctx = document.getElementById('intradayChart').getContext('2d');
 
+        // Marca o início do gráfico (hora de abertura)
+        const startTime = new Date();
+
         const data = {
-            labels: [], // timestamps HH:MM:SS
+            labels: [], // tempo desde a abertura em minutos
             datasets: [
                 {
                     label: 'Risco',
@@ -57,7 +60,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Tempo (HH:MM:SS)'
+                            text: 'Tempo desde abertura (mm:ss)'
                         },
                         ticks: {
                             maxTicksLimit: 20
@@ -77,12 +80,12 @@
 
         const intradayChart = new Chart(ctx, config);
 
-        // Função para adicionar novo ponto
         function addIntradayData(risco, seguranca) {
             const now = new Date();
-            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' +
-                              now.getMinutes().toString().padStart(2,'0') + ':' +
-                              now.getSeconds().toString().padStart(2,'0');
+            const elapsedMs = now - startTime;
+            const minutes = Math.floor(elapsedMs / 60000);
+            const seconds = Math.floor((elapsedMs % 60000) / 1000);
+            const timeLabel = minutes.toString().padStart(2,'0') + ':' + seconds.toString().padStart(2,'0');
 
             data.labels.push(timeLabel);
             data.datasets[0].data.push(risco);
@@ -91,7 +94,7 @@
             intradayChart.update();
         }
 
-        // Simulação de dados em tempo real (substitua por API/WebSocket real)
+        // Simulação de dados em tempo real
         setInterval(() => {
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
