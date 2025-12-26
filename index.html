@@ -1,69 +1,47 @@
 import express from 'express';
+import { WebSocketServer } from 'ws';
 import fetch from 'node-fetch';
-import cors from 'cors';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = express();
-app.use(cors());
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-// Insira suas keys em .env
-const TWELVE_API_KEY = process.env.TWELVE_API_KEY;
-const COMMODITIES_API_KEY = process.env.COMMODITIES_API_KEY;
+// Endpoint simples para o frontend carregar HTML
+app.use(express.static('public'));
 
-// Retorna variação percentual de um ativo
-function percentChange(current, previous) {
-    if (previous == 0) return 0;
-    return ((current - previous) / previous * 100).toFixed(2);
+// Criar WebSocket server
+const wss = new WebSocketServer({ port: 8080 });
+
+let latestData = {
+  dxy: 0,
+  wti: 0,
+  brent: 0,
+  iron: 0
+};
+
+// Função simulada para WebSocket real
+async function updateData() {
+  try {
+    // Substitua abaixo com chamadas reais para WebSocket/API de streaming
+    latestData.dxy = (Math.random() * 2 - 1).toFixed(2);
+    latestData.wti = (Math.random() * 2 - 1).toFixed(2);
+    latestData.brent = (Math.random() * 2 - 1).toFixed(2);
+    latestData.iron = (Math.random() * 2 - 1).toFixed(2);
+
+    // Envia atualização para todos clientes conectados
+    wss.clients.forEach(client => {
+      if (client.readyState === 1) { // WebSocket OPEN
+        client.send(JSON.stringify(latestData));
+      }
+    });
+  } catch (err) {
+    console.error("Erro atualizando dados:", err);
+  }
 }
 
-// DXY (câmbio USD index)
-app.get('/api/dxy', async (req, res) => {
-    try {
-        const r = await fetch(`https://api.twelvedata.com/quote?symbol=DXY&apikey=${TWELVE_API_KEY}`);
-        const j = await r.json();
-        res.json({ change_pct: parseFloat(j.percent_change).toFixed(2) });
-    } catch (e) {
-        res.json({ change_pct: 0 });
-    }
-});
-
-// Petróleo WTI
-app.get('/api/oil/wti', async (req, res) => {
-    try {
-        const r = await fetch(`https://commodities-api.com/api/latest?access_key=${COMMODITIES_API_KEY}&symbols=WTI%20CRUDE%20OIL`);
-        const j = await r.json();
-        const price = j.rates['WTI CRUDE OIL'];
-        const yesterday = price * (1 - Math.random() * 0.02); // Observação: substitua este cálculo pela sua base histórica real
-        res.json({ change_pct: percentChange(price, yesterday) });
-    } catch (e) {
-        res.json({ change_pct: 0 });
-    }
-});
-
-// Petróleo Brent
-app.get('/api/oil/brent', async (req, res) => {
-    try {
-        const r = await fetch(`https://commodities-api.com/api/latest?access_key=${COMMODITIES_API_KEY}&symbols=BRENT%20CRUDE%20OIL`);
-        const j = await r.json();
-        const price = j.rates['BRENT CRUDE OIL'];
-        const yesterday = price * (1 - Math.random() * 0.02);
-        res.json({ change_pct: percentChange(price, yesterday) });
-    } catch (e) {
-        res.json({ change_pct: 0 });
-    }
-});
-
-// Minério de Ferro
-app.get('/api/iron', async (req, res) => {
-    try {
-        const r = await fetch(`https://commodities-api.com/api/latest?access_key=${COMMODITIES_API_KEY}&symbols=IRON%20ORE`);
-        const j = await r.json();
-        const price = j.rates['IRON ORE'];
-        const yesterday = price * (1 - Math.random() * 0.02);
-        res.json({ change_pct: percentChange(price, yesterday) });
-    } catch (e) {
-        res.json({ change_pct: 0 });
-    }
-});
+// Atualiza dados a cada 1 segundo (simulação)
+setInterval(updateData, 1000);
 
 app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
