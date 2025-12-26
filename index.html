@@ -2,104 +2,83 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Risco x Segurança - Intraday Real</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<title>Painel de Cotações - Atualização Automática</title>
 <style>
   body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 20px;
     background-color: #f0f2f5;
+  }
+  .panel {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
   }
-  #intradayChart {
-    width: 100%;
-    max-width: 1200px;
-    height: 500px;
-    background-color: #fff;
+  .panel div {
+    flex: 1 1 200px;
+    padding: 16px;
     border-radius: 12px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-align: center;
   }
+  .panel h3 { margin: 0 0 8px; font-size: 16px; }
+  .change { font-size: 24px; font-weight: bold; }
+  .positive { color: green; }
+  .negative { color: red; }
 </style>
 </head>
 <body>
 
-<h2>Risco x Segurança - Intraday Real</h2>
-<canvas id="intradayChart"></canvas>
+<h2>Painel de Variação Percentual</h2>
+<div class="panel">
+  <div id="dxyPanel">
+    <h3>DXY</h3>
+    <div class="change" id="dxyChange">--%</div>
+  </div>
+  <div id="oilWTIPanel">
+    <h3>Petróleo WTI</h3>
+    <div class="change" id="oilWTIChange">--%</div>
+  </div>
+  <div id="oilBrentPanel">
+    <h3>Petróleo Brent</h3>
+    <div class="change" id="oilBrentChange">--%</div>
+  </div>
+  <div id="ironPanel">
+    <h3>Minério de Ferro</h3>
+    <div class="change" id="ironChange">--%</div>
+  </div>
+</div>
 
 <script>
-const ctx = document.getElementById('intradayChart').getContext('2d');
-
-const data = {
-    labels: [],
-    datasets: [
-        { label: 'Risco', borderColor: 'rgba(255,99,132,1)', backgroundColor:'rgba(255,99,132,0.2)', data: [], fill:true, tension:0.2 },
-        { label: 'Segurança', borderColor: 'rgba(54,162,235,1)', backgroundColor:'rgba(54,162,235,0.2)', data: [], fill:true, tension:0.2 }
-    ]
-};
-
-const config = {
-    type:'line',
-    data:data,
-    options:{
-        responsive:true,
-        plugins:{
-            legend:{labels:{font:{size:14}}},
-            tooltip:{mode:'index',intersect:false},
-            zoom:{
-                pan:{enabled:true,mode:'x',modifierKey:'ctrl'},
-                zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}
-            }
-        },
-        scales:{
-            x:{ title:{display:true,text:'Tempo (HH:MM:SS)'}, ticks:{maxTicksLimit:20}, grid:{color:'rgba(0,0,0,0.05)'} },
-            y:{ beginAtZero:true, max:100, title:{display:true,text:'Valor'}, grid:{color:'rgba(0,0,0,0.05)'} }
-        }
-    },
-    plugins:[Chart.registry.getPlugin('zoom')]
-};
-
-const intradayChart = new Chart(ctx, config);
-
-// Função para adicionar ponto no gráfico
-function addIntradayData(risco, seguranca){
-    const now = new Date();
-    const label = now.toLocaleTimeString('pt-BR',{hour12:false});
-    data.labels.push(label);
-    data.datasets[0].data.push(risco);
-    data.datasets[1].data.push(seguranca);
-
-    if(data.labels.length > 5000){
-        data.labels.shift();
-        data.datasets.forEach(ds=>ds.data.shift());
-    }
-
-    intradayChart.update();
-}
-
-// Função para buscar dados reais de risco/segurança
-async function fetchIntradayData(){
+async function fetchQuote(endpoint) {
     try {
-        // Substitua o endpoint abaixo pelo seu backend/API real
-        const res = await fetch('/api/intraday'); 
-        const json = await res.json(); 
-        // json deve ter: { risco: <valor>, seguranca: <valor> }
-        addIntradayData(json.risco,json.seguranca);
+        const res = await fetch(endpoint); // Substitua pelo endpoint real da API
+        const json = await res.json();
+        // json deve ter: { change_pct: <valor> }
+        return parseFloat(json.change_pct).toFixed(2);
     } catch(err){
-        console.error('Erro ao buscar dados intraday',err);
-        // Fallback simulado em caso de erro
-        const risco = Math.floor(Math.random()*100);
-        const seguranca = Math.floor(Math.random()*100);
-        addIntradayData(risco,seguranca);
+        console.error('Erro ao buscar', endpoint, err);
+        // fallback simulado caso não tenha API
+        return (Math.random()*2-1).toFixed(2); // entre -1% e 1%
     }
 }
 
-// Atualiza a cada 60 segundos
-fetchIntradayData();
-setInterval(fetchIntradayData,60000);
-</script>
+async function refreshQuotes() {
+    // Substitua os endpoints abaixo pelos seus endpoints reais de backend/API
+    const [dxy, wti, brent, iron] = await Promise.all([
+        fetchQuote('/api/dxy'),
+        fetchQuote('/api/oil/wti'),
+        fetchQuote('/api/oil/brent'),
+        fetchQuote('/api/iron')
+    ]);
 
-</body>
-</html>
+    function setChange(id, value){
+        const el = document.getElementById(id);
+        el.innerText = `${value}%`;
+        el.className = value >=0 ? 'change positive' : 'change negative';
+    }
+
+    setChange('dxyChange', dxy);
+    setChange('oilWTIChange', wti)
