@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Acumulado Intraday</h2>
+    <h2>Risco x Segurança - Acumulado Intraday (Atualização a cada 60s)</h2>
     <canvas id="intradayChart"></canvas>
 
     <script>
@@ -29,7 +29,7 @@
         const startTime = new Date();
 
         const data = {
-            labels: [], // tempo desde a abertura em minutos
+            labels: [], // tempo desde a abertura em mm:ss
             datasets: [
                 {
                     label: 'Risco',
@@ -94,12 +94,12 @@
             intradayChart.update();
         }
 
-        // Simulação de dados em tempo real
+        // Atualização a cada 60 segundos (60000 ms)
         setInterval(() => {
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
             addIntradayData(risco, seguranca);
-        }, 1000); // a cada segundo
+        }, 60000); 
     </script>
 </body>
 </html>
