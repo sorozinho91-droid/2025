@@ -1,84 +1,69 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Painel de Cotações - Atualização Automática</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    margin: 20px;
-    background-color: #f0f2f5;
-  }
-  .panel {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: space-between;
-  }
-  .panel div {
-    flex: 1 1 200px;
-    padding: 16px;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    text-align: center;
-  }
-  .panel h3 { margin: 0 0 8px; font-size: 16px; }
-  .change { font-size: 24px; font-weight: bold; }
-  .positive { color: green; }
-  .negative { color: red; }
-</style>
-</head>
-<body>
+import express from 'express';
+import fetch from 'node-fetch';
+import cors from 'cors';
 
-<h2>Painel de Variação Percentual</h2>
-<div class="panel">
-  <div id="dxyPanel">
-    <h3>DXY</h3>
-    <div class="change" id="dxyChange">--%</div>
-  </div>
-  <div id="oilWTIPanel">
-    <h3>Petróleo WTI</h3>
-    <div class="change" id="oilWTIChange">--%</div>
-  </div>
-  <div id="oilBrentPanel">
-    <h3>Petróleo Brent</h3>
-    <div class="change" id="oilBrentChange">--%</div>
-  </div>
-  <div id="ironPanel">
-    <h3>Minério de Ferro</h3>
-    <div class="change" id="ironChange">--%</div>
-  </div>
-</div>
+const app = express();
+app.use(cors());
+const PORT = process.env.PORT || 3000;
 
-<script>
-async function fetchQuote(endpoint) {
-    try {
-        const res = await fetch(endpoint); // Substitua pelo endpoint real da API
-        const json = await res.json();
-        // json deve ter: { change_pct: <valor> }
-        return parseFloat(json.change_pct).toFixed(2);
-    } catch(err){
-        console.error('Erro ao buscar', endpoint, err);
-        // fallback simulado caso não tenha API
-        return (Math.random()*2-1).toFixed(2); // entre -1% e 1%
-    }
+// Insira suas keys em .env
+const TWELVE_API_KEY = process.env.TWELVE_API_KEY;
+const COMMODITIES_API_KEY = process.env.COMMODITIES_API_KEY;
+
+// Retorna variação percentual de um ativo
+function percentChange(current, previous) {
+    if (previous == 0) return 0;
+    return ((current - previous) / previous * 100).toFixed(2);
 }
 
-async function refreshQuotes() {
-    // Substitua os endpoints abaixo pelos seus endpoints reais de backend/API
-    const [dxy, wti, brent, iron] = await Promise.all([
-        fetchQuote('/api/dxy'),
-        fetchQuote('/api/oil/wti'),
-        fetchQuote('/api/oil/brent'),
-        fetchQuote('/api/iron')
-    ]);
-
-    function setChange(id, value){
-        const el = document.getElementById(id);
-        el.innerText = `${value}%`;
-        el.className = value >=0 ? 'change positive' : 'change negative';
+// DXY (câmbio USD index)
+app.get('/api/dxy', async (req, res) => {
+    try {
+        const r = await fetch(`https://api.twelvedata.com/quote?symbol=DXY&apikey=${TWELVE_API_KEY}`);
+        const j = await r.json();
+        res.json({ change_pct: parseFloat(j.percent_change).toFixed(2) });
+    } catch (e) {
+        res.json({ change_pct: 0 });
     }
+});
 
-    setChange('dxyChange', dxy);
-    setChange('oilWTIChange', wti)
+// Petróleo WTI
+app.get('/api/oil/wti', async (req, res) => {
+    try {
+        const r = await fetch(`https://commodities-api.com/api/latest?access_key=${COMMODITIES_API_KEY}&symbols=WTI%20CRUDE%20OIL`);
+        const j = await r.json();
+        const price = j.rates['WTI CRUDE OIL'];
+        const yesterday = price * (1 - Math.random() * 0.02); // Observação: substitua este cálculo pela sua base histórica real
+        res.json({ change_pct: percentChange(price, yesterday) });
+    } catch (e) {
+        res.json({ change_pct: 0 });
+    }
+});
+
+// Petróleo Brent
+app.get('/api/oil/brent', async (req, res) => {
+    try {
+        const r = await fetch(`https://commodities-api.com/api/latest?access_key=${COMMODITIES_API_KEY}&symbols=BRENT%20CRUDE%20OIL`);
+        const j = await r.json();
+        const price = j.rates['BRENT CRUDE OIL'];
+        const yesterday = price * (1 - Math.random() * 0.02);
+        res.json({ change_pct: percentChange(price, yesterday) });
+    } catch (e) {
+        res.json({ change_pct: 0 });
+    }
+});
+
+// Minério de Ferro
+app.get('/api/iron', async (req, res) => {
+    try {
+        const r = await fetch(`https://commodities-api.com/api/latest?access_key=${COMMODITIES_API_KEY}&symbols=IRON%20ORE`);
+        const j = await r.json();
+        const price = j.rates['IRON ORE'];
+        const yesterday = price * (1 - Math.random() * 0.02);
+        res.json({ change_pct: percentChange(price, yesterday) });
+    } catch (e) {
+        res.json({ change_pct: 0 });
+    }
+});
+
+app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
