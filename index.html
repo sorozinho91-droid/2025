@@ -7,7 +7,7 @@
 <style>
 body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
 header { background: #1f2937; color: white; padding: 15px; text-align: center; }
-#controls { text-align: center; padding: 10px; }
+#controls, #filtro { text-align: center; padding: 10px; }
 button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
 button.active { background: #2563eb; color: white; }
 #grafico { width: 100%; height: 600px; }
@@ -16,7 +16,7 @@ button.active { background: #2563eb; color: white; }
 <body>
 
 <header>
-<h2>Ativos de Risco x Segurança – Histórico em Tempo Real</h2>
+<h2>Ativos de Risco x Segurança – Tempo Real</h2>
 </header>
 
 <div id="controls">
@@ -27,6 +27,12 @@ button.active { background: #2563eb; color: white; }
 <button onclick="setTimeframe(60, this)">1h</button>
 </div>
 
+<div id="filtro">
+<button onclick="filtrar('todos', this)" class="active">Todos</button>
+<button onclick="filtrar('seguranca', this)">Segurança</button>
+<button onclick="filtrar('risco', this)">Risco</button>
+</div>
+
 <div id="grafico"></div>
 
 <script>
@@ -34,24 +40,24 @@ button.active { background: #2563eb; color: white; }
 let timeframe = 1; // minutos
 let timer = null;
 
-// Histórico
 let datas = [];
 let ativos = {
     "DXY": [], "VIX": [], "Ouro": [],
     "S&P 500": [], "NASDAQ": [], "Nikkei": [], "DAX": []
 };
 
-// Últimos valores
 let valores = {
     "DXY": 100, "VIX": 20, "Ouro": 1800,
     "S&P 500": 4000, "NASDAQ": 12000, "Nikkei": 30000, "DAX": 15000
 };
 
-// Volatilidade (maior = risco, menor = seguro)
 let vol = {
     "DXY": 0.2, "VIX": 0.3, "Ouro": 0.5,
     "S&P 500": 2, "NASDAQ": 3, "Nikkei": 2.5, "DAX": 2
 };
+
+let ativosSeguranca = ["DXY","VIX","Ouro"];
+let ativosRisco = ["S&P 500","NASDAQ","Nikkei","DAX"];
 
 // Função para gerar valores aleatórios
 function atualizarValor(valor, volatilidade){
@@ -61,7 +67,7 @@ function atualizarValor(valor, volatilidade){
 // Gerar histórico de 2 dias (1 ponto/minuto)
 function gerarHistorico2Dias(){
     const agora = new Date();
-    const start = new Date(agora.getTime() - 2*24*60*60*1000); // 2 dias atrás
+    const start = new Date(agora.getTime() - 2*24*60*60*1000);
     datas = [];
     for(let d = new Date(start); d <= agora; d.setMinutes(d.getMinutes()+1)){
         datas.push(new Date(d));
@@ -95,7 +101,21 @@ function setTimeframe(minutos, botao){
     timer = setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Inicialização
+// Filtrar ativos
+function filtrar(tipo, botao){
+    document.querySelectorAll('#filtro button').forEach(b=>b.classList.remove('active'));
+    botao.classList.add('active');
+
+    let tracesVisiveis = [];
+    if(tipo==="todos") tracesVisiveis = Object.keys(ativos);
+    if(tipo==="seguranca") tracesVisiveis = ativosSeguranca;
+    if(tipo==="risco") tracesVisiveis = ativosRisco;
+
+    const update = { visible: Object.keys(ativos).map(a => tracesVisiveis.includes(a)) };
+    Plotly.restyle('grafico', update);
+}
+
+/* Inicialização */
 gerarHistorico2Dias();
 
 // Criar traces
@@ -129,7 +149,6 @@ Plotly.newPlot('grafico', traces, layout, {responsive:true});
 
 // Atualização em tempo real
 timer = setInterval(atualizarGrafico, timeframe*60000);
-
 window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
 </script>
 
