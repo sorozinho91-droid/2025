@@ -29,7 +29,7 @@
         const startTime = new Date();
 
         const data = {
-            labels: [], // tempo desde a abertura em mm:ss
+            labels: [], // tempo desde abertura (mm:ss)
             datasets: [
                 {
                     label: 'Risco',
@@ -80,6 +80,7 @@
 
         const intradayChart = new Chart(ctx, config);
 
+        // Função para adicionar novo ponto ao gráfico
         function addIntradayData(risco, seguranca) {
             const now = new Date();
             const elapsedMs = now - startTime;
@@ -94,12 +95,13 @@
             intradayChart.update();
         }
 
-        // Atualização a cada 60 segundos (60000 ms)
+        // Atualização automática a cada 60 segundos
         setInterval(() => {
+            // Aqui você pode substituir por dados reais de API/WebSocket
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
             addIntradayData(risco, seguranca);
-        }, 60000); 
+        }, 60000); // 60000 ms = 60 segundos
     </script>
 </body>
 </html>
