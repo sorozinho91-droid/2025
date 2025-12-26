@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Intraday Completo</title>
+    <title>Risco x Segurança - Intraday Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Histórico Intraday Completo</h2>
+    <h2>Risco x Segurança - Histórico Intraday Profissional</h2>
     <canvas id="intradayChart"></canvas>
 
     <script>
@@ -28,7 +28,7 @@
         // Marca o início do gráfico (hora de abertura)
         const startTime = new Date();
 
-        // Simulação do histórico do dia vindo do backend
+        // Simulação de histórico do dia vindo do backend
         const historicalData = [
             {"time":"09:00","risco":20,"seguranca":80},
             {"time":"10:00","risco":35,"seguranca":65},
@@ -69,21 +69,13 @@
                 animation: false,
                 scales: {
                     x: {
-                        title: {
-                            display: true,
-                            text: 'Hora'
-                        },
-                        ticks: {
-                            maxTicksLimit: 20
-                        }
+                        title: { display: true, text: 'Hora' },
+                        ticks: { maxTicksLimit: 20 }
                     },
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        title: {
-                            display: true,
-                            text: 'Valor'
-                        }
+                        title: { display: true, text: 'Valor' }
                     }
                 }
             }
@@ -91,28 +83,36 @@
 
         const intradayChart = new Chart(ctx, config);
 
-        // Função para adicionar ponto novo em tempo real
-        function addIntradayData(risco, seguranca) {
-            const now = new Date();
-            const elapsedMs = now - startTime;
-            const minutes = Math.floor(elapsedMs / 60000);
-            const seconds = Math.floor((elapsedMs % 60000) / 1000);
-            const timeLabel = minutes.toString().padStart(2,'0') + ':' + seconds.toString().padStart(2,'0');
-
+        // Função para adicionar novos pontos recebidos do backend
+        function addIntradayData(timeLabel, risco, seguranca) {
             data.labels.push(timeLabel);
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
-
             intradayChart.update();
         }
 
-        // Atualização a cada 60 segundos
+        // SIMULAÇÃO WebSocket: Recebe novos dados a cada 60 segundos
         setInterval(() => {
-            // Simulação de dados novos (substitua por API/WebSocket real)
+            const now = new Date();
+            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' +
+                              now.getMinutes().toString().padStart(2,'0');
+            
+            // Substitua por dados reais do backend
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
-            addIntradayData(risco, seguranca);
+
+            addIntradayData(timeLabel, risco, seguranca);
         }, 60000);
+
+        // EXEMPLO REAL: Conexão WebSocket (substitua URL pelo seu servidor)
+        /*
+        const ws = new WebSocket('wss://seu-backend.com/dados-intraday');
+        ws.onmessage = (event) => {
+            const point = JSON.parse(event.data);
+            // point deve ter {time: "HH:MM", risco: number, seguranca: number}
+            addIntradayData(point.time, point.risco, point.seguranca);
+        };
+        */
     </script>
 </body>
 </html>
