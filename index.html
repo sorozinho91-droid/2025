@@ -23,10 +23,10 @@
     <canvas id="realtimeChart"></canvas>
 
     <script>
-        // Configuração inicial do gráfico
         const ctx = document.getElementById('realtimeChart').getContext('2d');
+
         const data = {
-            labels: [], // timestamps
+            labels: [], // horário
             datasets: [
                 {
                     label: 'Risco',
@@ -50,26 +50,7 @@
             data: data,
             options: {
                 responsive: true,
-                animation: false,
                 scales: {
-                    x: {
-                        type: 'realtime', // vai atualizar automaticamente
-                        realtime: {
-                            delay: 2000,
-                            onRefresh: chart => {
-                                const now = new Date();
-                                chart.data.labels.push(now.toLocaleTimeString());
-                                chart.data.datasets[0].data.push(Math.random() * 100); // Risco (simulado)
-                                chart.data.datasets[1].data.push(Math.random() * 100); // Segurança (simulado)
-
-                                // Manter apenas os últimos 20 pontos
-                                if(chart.data.labels.length > 20) {
-                                    chart.data.labels.shift();
-                                    chart.data.datasets.forEach(dataset => dataset.data.shift());
-                                }
-                            }
-                        }
-                    },
                     y: {
                         beginAtZero: true,
                         max: 100
@@ -80,10 +61,25 @@
 
         const myChart = new Chart(ctx, config);
 
-        // Atualização automática
-        setInterval(() => {
-            myChart.update('quiet'); // atualizar sem animação
-        }, 1000);
+        function addData() {
+            const now = new Date().toLocaleTimeString();
+            const risco = Math.random() * 100;
+            const seguranca = Math.random() * 100;
+
+            data.labels.push(now);
+            data.datasets[0].data.push(risco);
+            data.datasets[1].data.push(seguranca);
+
+            // manter só os últimos 20 pontos
+            if (data.labels.length > 20) {
+                data.labels.shift();
+                data.datasets.forEach(dataset => dataset.data.shift());
+            }
+
+            myChart.update();
+        }
+
+        setInterval(addData, 1000); // atualiza a cada 1 segundo
     </script>
 </body>
 </html>
