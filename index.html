@@ -2,84 +2,108 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Tempo Real</title>
+    <title>Risco x Segurança - Atualização 60s</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align:center; margin:0; padding:0; }
-        #grafico { width: 90%; height: 500px; margin:auto; }
-        h2 { margin-top:10px; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #grafico {
+            width: 90%;
+            height: 500px;
+            margin: auto;
+        }
+        h2 {
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Segurança - Tempo Real</h2>
-    <div id="grafico"></div>
 
-    <script>
-        var datas = [];
-        var risco = [];
-        var seguro = [];
+<h2>Ativos de Risco x Segurança (Atualização a cada 60s)</h2>
+<div id="grafico"></div>
 
-        var valor_risco = 100;
-        var valor_seguro = 100;
-        var intervalo = 2000; // 2 segundos
+<script>
+    const datas = [];
+    const risco = [];
+    const seguro = [];
 
-        function atualizarValores(valor) {
-            return Math.max(0, valor + (Math.random() - 0.5) * 2);
+    let valorRisco = 100;
+    let valorSeguro = 100;
+
+    const intervalo = 60000; // 60 segundos
+    const limitePontos = 60; // mantém últimos 60 minutos
+
+    function atualizarValor(valor, volatilidade) {
+        return Math.max(0, valor + (Math.random() - 0.5) * volatilidade);
+    }
+
+    // Inicialização
+    const agora = new Date();
+    datas.push(agora);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+
+    const traceRisco = {
+        x: datas,
+        y: risco,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Risco',
+        line: { color: 'red', width: 3 }
+    };
+
+    const traceSeguro = {
+        x: datas,
+        y: seguro,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Segurança',
+        line: { color: 'green', width: 3 }
+    };
+
+    const layout = {
+        title: 'Risco x Segurança',
+        xaxis: { title: 'Horário', type: 'date' },
+        yaxis: { title: 'Valor' },
+        margin: { t: 50, r: 30, l: 50, b: 50 }
+    };
+
+    Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout);
+
+    // Atualização a cada 60 segundos
+    setInterval(() => {
+        const agora = new Date();
+
+        valorRisco = atualizarValor(valorRisco, 4);   // mais volátil
+        valorSeguro = atualizarValor(valorSeguro, 1); // mais estável
+
+        datas.push(agora);
+        risco.push(valorRisco);
+        seguro.push(valorSeguro);
+
+        // Limita o histórico
+        if (datas.length > limitePontos) {
+            datas.shift();
+            risco.shift();
+            seguro.shift();
         }
 
-        // Inicializa com dois pontos para as linhas aparecerem
-        var agora = new Date();
-        datas.push(new Date(agora.getTime() - intervalo));
-        datas.push(agora);
-        risco.push(valor_risco, valor_risco);
-        seguro.push(valor_seguro, valor_seguro);
-
-        var traceRisco = {
-            x: datas,
-            y: risco,
-            type: 'scatter',
-            mode: 'lines',
-            name: 'Risco',
-            line: {color: 'red', width: 3}
-        };
-
-        var traceSeguro = {
-            x: datas,
-            y: seguro,
-            type: 'scatter',
-            mode: 'lines',
-            name: 'Segurança',
-            line: {color: 'green', width: 3}
-        };
-
-        var layout = {
-            title: 'Risco x Segurança - Tempo Real',
-            xaxis: { title: 'Hora', type: 'date' },
-            yaxis: { title: 'Valor' },
-            margin: { t:50, r:30, l:50, b:50 }
-        };
-
-        Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout);
-
-        // Atualiza os dados em tempo real
-        setInterval(function() {
-            var agora = new Date();
-            datas.push(agora);
-            valor_risco = atualizarValores(valor_risco);
-            valor_seguro = atualizarValores(valor_seguro);
-            risco.push(valor_risco);
-            seguro.push(valor_seguro);
-
-            Plotly.update('grafico', {
-                x: [datas, datas],
-                y: [risco, seguro]
-            });
-        }, intervalo);
-
-        // Ajusta o gráfico apenas quando a tela for redimensionada
-        window.addEventListener('resize', function() {
-            Plotly.Plots.resize('grafico');
+        Plotly.update('grafico', {
+            x: [datas, datas],
+            y: [risco, seguro]
         });
-    </script>
+
+    }, intervalo);
+
+    // Responsivo
+    window.addEventListener('resize', () => {
+        Plotly.Plots.resize('grafico');
+    });
+</script>
+
 </body>
 </html>
