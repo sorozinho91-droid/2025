@@ -113,7 +113,7 @@ function setTimeframe(minutos, botao) {
     timer = setInterval(atualizarGrafico, timeframe * 60000);
 }
 
-// Filtrar gráfico entre duas datas e mostrar somente este intervalo
+// Filtrar gráfico entre duas datas e mostrar todo o período
 function filtrarDatas() {
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
@@ -125,16 +125,27 @@ function filtrarDatas() {
 
     emTempoReal = false;
 
+    // Preparar arrays para o período completo do filtro
     const filteredX = [];
     const filteredRisco = [];
     const filteredSeguro = [];
 
-    for (let i = 0; i < datas.length; i++) {
-        if (datas[i] >= start && datas[i] <= end) {
-            filteredX.push(datas[i]);
-            filteredRisco.push(risco[i]);
-            filteredSeguro.push(seguro[i]);
+    // Gerar datas no intervalo de start a end com base em timeframe
+    let current = new Date(start);
+    while (current <= end) {
+        filteredX.push(new Date(current));
+
+        // Procurar se existe valor real para essa data
+        const index = datas.findIndex(d => Math.abs(d - current) < 1000); // tolerância 1s
+        if (index >= 0) {
+            filteredRisco.push(risco[index]);
+            filteredSeguro.push(seguro[index]);
+        } else {
+            filteredRisco.push(null);
+            filteredSeguro.push(null);
         }
+
+        current = new Date(current.getTime() + timeframe*60000); // próximo ponto
     }
 
     Plotly.update('grafico', {
@@ -146,7 +157,7 @@ function filtrarDatas() {
         `Intervalo selecionado: ${start.toLocaleString()} até ${end.toLocaleString()}`;
 }
 
-// Volta ao gráfico completo e atualização em tempo real
+// Voltar ao gráfico completo com atualização em tempo real
 function removerFiltro() {
     emTempoReal = true;
     document.getElementById('intervaloSelecionado').innerText = '';
