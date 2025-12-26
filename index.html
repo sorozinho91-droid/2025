@@ -2,103 +2,84 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard com Controle de Velocidade</title>
-
-    <!-- IMPORTANTE: Plotly -->
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #grafico { width: 90%; height: 500px; margin: auto; }
+    </style>
 </head>
 <body>
+    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
+    <div id="grafico"></div>
 
-<div style="margin-bottom:10px;">
-    <label>
-        Velocidade do gráfico:
-        <input
-            type="range"
-            id="velocidade"
-            min="1000"
-            max="6000"
-            step="500"
-            value="2000"
-        >
-        <span id="velocidadeValor">2.0s</span>
-    </label>
-</div>
+    <script>
+        // Arrays iniciais
+        var datas = [];
+        var risco = [];
+        var seguro = [];
 
-<!-- DIV DO GRÁFICO (OBRIGATÓRIO) -->
-<div id="grafico" style="width:100%;height:400px;"></div>
+        // Valores iniciais
+        var valor_risco = 100;
+        var valor_seguro = 100;
 
-<script>
-let valorRisco = 100;
-let valorSeguro = 100;
-let intervalo = 2000;
-let timer;
+        // Função para gerar novos valores simulados
+        function atualizarValores(valor) {
+            return Math.max(0, valor + (Math.random() - 0.5) * 2);
+        }
 
-function atualizar(valor) {
-    return Math.max(0, valor + (Math.random() - 0.5) * 2);
-}
+        // Adicionar primeiro ponto
+        var agora = new Date().toLocaleTimeString();
+        datas.push(agora);
+        risco.push(valor_risco);
+        seguro.push(valor_seguro);
 
-const traceRisco = {
-    x: [],
-    y: [],
-    type: 'scatter',
-    mode: 'lines',
-    name: '🔴 Risco',
-    line: { color: 'red', width: 2 }
-};
+        // Criar gráfico inicial
+        var traceRisco = {
+            x: datas,
+            y: risco,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Ativos de Risco',
+            line: {color: 'red'}
+        };
 
-const traceSeguro = {
-    x: [],
-    y: [],
-    type: 'scatter',
-    mode: 'lines',
-    name: '🟢 Segurança',
-    line: { color: 'green', width: 2 }
-};
+        var traceSeguro = {
+            x: datas,
+            y: seguro,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Ativos Seguros',
+            line: {color: 'green'}
+        };
 
-const layout = {
-    xaxis: { title: 'Tempo' },
-    yaxis: { title: 'Valor' },
-    transition: {
-        duration: 800,
-        easing: 'linear'
-    }
-};
+        var data = [traceRisco, traceSeguro];
 
-Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout);
+        var layout = {
+            title: 'Ativos de Risco vs Seguros - Tempo Real',
+            xaxis: {title: 'Hora'},
+            yaxis: {title: 'Valor'},
+            margin: {t:50, r:30, l:50, b:50}
+        };
 
-function iniciarGrafico() {
-    clearInterval(timer);
+        Plotly.newPlot('grafico', data, layout);
 
-    timer = setInterval(() => {
-        const agora = new Date().toLocaleTimeString();
+        // Atualizar a cada 2 segundos
+        setInterval(function(){
+            var agora = new Date().toLocaleTimeString();
+            datas.push(agora);
+            valor_risco = atualizarValores(valor_risco);
+            valor_seguro = atualizarValores(valor_seguro);
+            risco.push(valor_risco);
+            seguro.push(valor_seguro);
 
-        valorRisco = atualizar(valorRisco);
-        valorSeguro = atualizar(valorSeguro);
+            Plotly.update('grafico', {
+                x: [datas, datas],
+                y: [risco, seguro]
+            }, layout);
 
-        Plotly.extendTraces(
-            'grafico',
-            {
-                x: [[agora], [agora]],
-                y: [[valorRisco], [valorSeguro]]
-            },
-            [0, 1],
-            30
-        );
-    }, intervalo);
-}
-
-// Slider
-const slider = document.getElementById('velocidade');
-const texto = document.getElementById('velocidadeValor');
-
-slider.addEventListener('input', () => {
-    intervalo = Number(slider.value);
-    texto.textContent = (intervalo / 1000).toFixed(1) + 's';
-    iniciarGrafico();
-});
-
-iniciarGrafico();
-</script>
-
+        }, 2000);
+    </script>
 </body>
 </html>
+
