@@ -15,7 +15,6 @@
     <div id="grafico"></div>
 
     <script>
-        // Arrays para armazenar os dados
         var datas = [];
         var risco = [];
         var seguro = [];
@@ -31,9 +30,11 @@
 
         function inicializarGrafico() {
             var agora = new Date();
-            // Dois pontos iniciais para linha aparecer
+
+            // Adiciona DOIS pontos iniciais para que as linhas apareçam
             datas.push(new Date(agora.getTime() - intervalo));
             datas.push(agora);
+
             risco.push(valor_risco, valor_risco);
             seguro.push(valor_seguro, valor_seguro);
 
@@ -60,8 +61,8 @@
                 xaxis: {
                     title: 'Hora',
                     type: 'date',
-                    showgrid: true,
-                    rangeslider: { visible: true } // permite scroll horizontal
+                    rangeslider: { visible: true },
+                    showgrid: true
                 },
                 yaxis: { title: 'Valor', showgrid: true },
                 autosize: true,
@@ -73,7 +74,6 @@
 
         inicializarGrafico();
 
-        // Atualizar linhas em tempo real
         setInterval(function() {
             var agora = new Date();
             datas.push(agora);
@@ -82,7 +82,7 @@
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
-            // Mantém todo histórico para histórico completo
+            // Mantém todo histórico
             var layoutAtualizado = {
                 xaxis: {
                     range: [datas[0], agora],
@@ -98,11 +98,9 @@
 
         }, intervalo);
 
-        // Redimensionamento automático
         window.addEventListener('resize', function() {
             Plotly.Plots.resize('grafico');
         });
-
     </script>
 </body>
 </html>
