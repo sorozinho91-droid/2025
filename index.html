@@ -52,9 +52,9 @@ let valorRisco = 100;
 let valorSeguro = 100;
 const pontosHistorico = 200;
 
-// Gera valores aleatórios
+// Função para gerar valores aleatórios
 function atualizarValores(valor, vol) {
-    return Math.max(0, valor + (Math.random()-0.5)*vol);
+    return Math.max(0, valor + (Math.random() - 0.5) * vol);
 }
 
 // Gera histórico inicial
@@ -62,10 +62,10 @@ function gerarHistorico(pontos){
     let datasH=[], riscoH=[], seguroH=[];
     let valR=100, valS=100;
     const agora=new Date();
-    for(let i=pontos-1;i>=0;i--){
+    for(let i=pontos-1; i>=0; i--){
         const hora = new Date(agora - i*timeframe*60000);
-        valR = atualizarValores(valR,2);
-        valS = atualizarValores(valS,0.5);
+        valR = atualizarValores(valR, 2);
+        valS = atualizarValores(valS, 0.5);
         datasH.push(hora);
         riscoH.push(valR);
         seguroH.push(valS);
@@ -77,15 +77,15 @@ function gerarHistorico(pontos){
 function atualizarGrafico(){
     if(!emTempoReal) return;
     const agora = new Date();
-    valorRisco = atualizarValores(valorRisco,2);
-    valorSeguro = atualizarValores(valorSeguro,0.5);
+    valorRisco = atualizarValores(valorRisco, 2);
+    valorSeguro = atualizarValores(valorSeguro, 0.5);
     datas.push(agora);
     risco.push(valorRisco);
     seguro.push(valorSeguro);
     if(datas.length>pontosHistorico){
         datas.shift(); risco.shift(); seguro.shift();
     }
-    Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]},[0,1],pontosHistorico);
+    Plotly.extendTraces('grafico', {x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1], pontosHistorico);
 }
 
 function setTimeframe(minutos, botao){
@@ -93,10 +93,10 @@ function setTimeframe(minutos, botao){
     document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
     botao.classList.add('active');
     if(timer) clearInterval(timer);
-    timer=setInterval(atualizarGrafico,timeframe*60000);
+    timer=setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Filtrar período usando dados reais
+// Filtrar período mostrando mês a mês
 function filtrarDatas(){
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
@@ -107,17 +107,33 @@ function filtrarDatas(){
 
     emTempoReal = false;
 
-    // Filtra dados reais dentro do período
     const filteredX = [], filteredR = [], filteredS = [];
-    for(let i=0;i<datas.length;i++){
-        if(datas[i]>=start && datas[i]<=end){
-            filteredX.push(datas[i]);
-            filteredR.push(risco[i]);
-            filteredS.push(seguro[i]);
+    let current = new Date(start.getFullYear(), start.getMonth(), 1);
+    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+
+    while(current <= endMonth){
+        filteredX.push(new Date(current));
+        // Busca o ponto mais próximo do mês
+        let idx = null;
+        let minDiff = Infinity;
+        for(let i=0; i<datas.length; i++){
+            let diff = Math.abs(datas[i] - current);
+            if(diff < minDiff){
+                minDiff = diff;
+                idx = i;
+            }
         }
+        if(idx !== null){
+            filteredR.push(risco[idx]);
+            filteredS.push(seguro[idx]);
+        } else {
+            filteredR.push(null);
+            filteredS.push(null);
+        }
+        current.setMonth(current.getMonth()+1);
     }
 
-    Plotly.update('grafico',{x:[filteredX,filteredX], y:[filteredR,filteredS]});
+    Plotly.update('grafico',{x:[filteredX, filteredX], y:[filteredR, filteredS]});
     Plotly.relayout('grafico',{
         'xaxis.range':[start,end],
         'xaxis.tickformat':'%b/%Y'
@@ -127,7 +143,7 @@ function filtrarDatas(){
         `Intervalo selecionado: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
 }
 
-// Remover filtro
+// Remover filtro e voltar para tempo real
 function removerFiltro(){
     emTempoReal = true;
     document.getElementById('intervaloSelecionado').innerText='';
