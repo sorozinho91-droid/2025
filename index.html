@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
+    <h2>Ativos de Risco x Seguros - Tempo Real com Scroll</h2>
     <div id="grafico"></div>
 
     <script>
@@ -54,8 +54,13 @@
 
         var layout = {
             title: 'Ativos de Risco vs Seguros - Tempo Real',
-            xaxis: { title: 'Hora' },
-            yaxis: { title: 'Valor' },
+            xaxis: { 
+                title: 'Hora', 
+                showgrid: true, 
+                rangeslider: { visible: true }, // Scroll horizontal
+                type: 'category'
+            },
+            yaxis: { title: 'Valor', showgrid: true },
             autosize: true,
             margin: { t:50, r:30, l:50, b:50 }
         };
@@ -73,12 +78,18 @@
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
+            // Atualiza mantendo histórico completo
             Plotly.react('grafico', [
                 { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red', shape: 'spline'} },
                 { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green', shape: 'spline'} }
             ], layout, config);
 
         }, 2000);
+
+        // Redimensionamento automático para manter o foco
+        window.addEventListener('resize', function(){
+            Plotly.Plots.resize('grafico');
+        });
     </script>
 </body>
 </html>
