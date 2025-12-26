@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard – Ativos de Risco x Seguros (5 Anos)</title>
+<title>Dashboard – Ativos de Risco x Seguros (Tempo Real)</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
@@ -18,7 +18,7 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <body>
 
 <header>
-<h2>Ativos de Risco x Seguros – Dashboard (5 Anos)</h2>
+<h2>Ativos de Risco x Seguros – Dashboard (Tempo Real)</h2>
 </header>
 
 <div id="controls">
@@ -40,10 +40,11 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <div id="grafico"></div>
 
 <script>
-let timeframe = 1;
+let timeframe = 1; // minutos
 let timer = null;
 let emTempoReal = true;
 
+// Arrays para histórico
 let datas = [], risco = [], seguro = [];
 let valorRisco = 100, valorSeguro = 100;
 
@@ -52,13 +53,13 @@ function atualizarValores(valor, vol){
     return Math.max(0, valor + (Math.random()-0.5)*vol);
 }
 
-// Histórico real de até 5 anos (1 ponto/dia)
+// Gera histórico real de 5 anos (1 ponto/dia)
 function gerarHistoricoAnual(anos=5){
-    const dataHoje = new Date();
-    const start = new Date(dataHoje.getFullYear()-anos, dataHoje.getMonth(), dataHoje.getDate());
+    const hoje = new Date();
+    const start = new Date(hoje.getFullYear()-anos, hoje.getMonth(), hoje.getDate());
     let valR = 100, valS = 100;
     datas = []; risco = []; seguro = [];
-    for(let d = new Date(start); d <= dataHoje; d.setDate(d.getDate()+1)){
+    for(let d = new Date(start); d <= hoje; d.setDate(d.getDate()+1)){
         valR = atualizarValores(valR,2);
         valS = atualizarValores(valS,0.5);
         datas.push(new Date(d));
@@ -77,19 +78,20 @@ function atualizarGrafico(){
     datas.push(agora);
     risco.push(valorRisco);
     seguro.push(valorSeguro);
-    Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1]);
+
+    Plotly.extendTraces('grafico', {x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1]);
 }
 
-// Muda timeframe
+// Mudar timeframe
 function setTimeframe(minutos, botao){
     timeframe = minutos;
     document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
     botao.classList.add('active');
     if(timer) clearInterval(timer);
-    timer=setInterval(atualizarGrafico, timeframe*60000);
+    timer = setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Filtrar período com histórico real
+// Filtrar período
 function filtrarDatas(){
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
@@ -109,8 +111,8 @@ function filtrarDatas(){
         }
     }
 
-    Plotly.update('grafico',{x:[filteredX,filteredX], y:[filteredR,filteredS]});
-    Plotly.relayout('grafico',{
+    Plotly.update('grafico', {x:[filteredX, filteredX], y:[filteredR, filteredS]});
+    Plotly.relayout('grafico', {
         'xaxis.range':[start,end],
         'xaxis.tickformat':'%b/%Y'
     });
@@ -147,7 +149,7 @@ const layout = {
     }
 };
 
-// Configuração do hover para mostrar hora completa e valor
+// Hover mostrando hora completa
 const traceRisco = {
     x: datas,
     y: risco,
@@ -170,7 +172,9 @@ const traceSeguro = {
 
 Plotly.newPlot('grafico',[traceRisco, traceSeguro], layout, {responsive:true});
 
+// Atualização em tempo real
 timer = setInterval(atualizarGrafico, timeframe*60000);
+
 window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
 </script>
 
