@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança</title>
+    <title>Risco x Segurança — Dados Reais</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -12,73 +13,70 @@
         }
         #grafico {
             width: 100%;
-            height: 80vh; /* ajusta automaticamente ao tamanho da tela */
+            height: 85vh; /* adapta ao tamanho da tela */
         }
     </style>
 </head>
 <body>
 
-<h2>Ativos de Risco x Ativos de Segurança</h2>
+<h2>Ativos de Risco x Segurança (Dados Reais)</h2>
 <div id="grafico"></div>
 
 <script>
-    // Dados simulados
-    var tempo = [];
-    var risco = [];
-    var seguro = [];
+    const simboloRisco = "%5EGSPC"; // S&P 500
+    const simboloSeguro = "TLT";   // Treasury ETF
 
-    var valorRisco = 100;
-    var valorSeguro = 100;
+    async function buscarDados(simbolo) {
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${simbolo}?interval=1m&range=1d`;
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
 
-    function atualizar(valor) {
-        return Math.max(0, valor + (Math.random() - 0.5) * 3);
+        const timestamps = dados.chart.result[0].timestamp;
+        const precos = dados.chart.result[0].indicators.quote[0].close;
+
+        return {
+            x: timestamps.map(t => new Date(t * 1000).toLocaleTimeString()),
+            y: precos
+        };
     }
 
-    var traceRisco = {
-        x: tempo,
-        y: risco,
-        type: 'scatter',
-        mode: 'lines',
-        name: 'Ativos de Risco',
-        line: { color: 'red' }
-    };
+    async function carregarGrafico() {
+        const risco = await buscarDados(simboloRisco);
+        const seguro = await buscarDados(simboloSeguro);
 
-    var traceSeguro = {
-        x: tempo,
-        y: seguro,
-        type: 'scatter',
-        mode: 'lines',
-        name: 'Ativos de Segurança',
-        line: { color: 'green' }
-    };
+        const traceRisco = {
+            x: risco.x,
+            y: risco.y,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Ativo de Risco (S&P 500)',
+            line: { color: 'red' }
+        };
 
-    var layout = {
-        title: 'Comparação: Risco x Segurança',
-        xaxis: { title: 'Tempo' },
-        yaxis: { title: 'Valor' },
-        margin: { t: 50, l: 50, r: 30, b: 50 }
-    };
+        const traceSeguro = {
+            x: seguro.x,
+            y: seguro.y,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Ativo Seguro (Treasuries)',
+            line: { color: 'green' }
+        };
 
-    Plotly.newPlot(
-        'grafico',
-        [traceRisco, traceSeguro],
-        layout,
-        { responsive: true }
-    );
+        const layout = {
+            title: 'Risco x Segurança — Tempo Real',
+            xaxis: { title: 'Hora', automargin: true },
+            yaxis: { title: 'Preço', automargin: true },
+            margin: { t: 50, l: 50, r: 30, b: 50 }
+        };
 
-    // Atualização em tempo real
-    setInterval(function () {
-        var agora = new Date().toLocaleTimeString();
+        Plotly.newPlot(
+            'grafico',
+            [traceRisco, traceSeguro],
+            layout,
+            { responsive: true }
+        );
+    }
 
-        valorRisco = atualizar(valorRisco);
-        valorSeguro = atualizar(valorSeguro);
+    carregarGrafico();
 
-        Plotly.extendTraces('grafico', {
-            x: [[agora], [agora]],
-            y: [[valorRisco], [valorSeguro]]
-        }, [0, 1], 50); // mantém últimos 50 pontos
-    }, 2000);
-</script>
-
-</body>
-</html>
+    // Atualiza dados a cada 6
