@@ -11,30 +11,29 @@ from datetime import datetime, timedelta
 ibov = yf.download("^BVSP", period="1mo", interval="1d")
 
 # ----------------------------
-# 2. Pegar notícias reais (GNews API gratuita)
+# 2. Capturar notícias reais (GNews API)
 # ----------------------------
-# Substitua 'SUA_CHAVE_API' pela sua chave do GNews
-API_KEY = 'SUA_CHAVE_API'
-hoje = datetime.today().strftime('%Y-%m-%d')
-ontem = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')  # Últimos 7 dias
+API_KEY = "SUA_CHAVE_API"  # Substitua pela sua chave do GNews
 
-url = f"https://gnews.io/api/v4/search?q=Ibovespa&lang=pt&from={ontem}&to={hoje}&max=10&token={API_KEY}"
-res = requests.get(url).json()
+sentimentos_diarios = []
 
-noticias = [item['title'] for item in res.get('articles', [])]
+for data in ibov.index:
+    data_str = data.strftime('%Y-%m-%d')
+    url = f"https://gnews.io/api/v4/search?q=Ibovespa&lang=pt&from={data_str}&to={data_str}&max=5&token={API_KEY}"
+    res = requests.get(url).json()
+    noticias = [item['title'] for item in res.get('articles', [])]
 
-if len(noticias) == 0:
-    noticias = ["Ibovespa está estável hoje"]  # fallback
+    if len(noticias) == 0:
+        noticias = ["Sem notícias relevantes"]  # fallback
+
+    # Sentimento médio diário
+    daily_sentiment = sum(TextBlob(n).sentiment.polarity for n in noticias) / len(noticias)
+    sentimentos_diarios.append(daily_sentiment)
+
+ibov['Sentimento'] = sentimentos_diarios
 
 # ----------------------------
-# 3. Calcular sentimento diário
-# ----------------------------
-sentimentos = [TextBlob(n).sentiment.polarity for n in noticias]
-media_sentimento = sum(sentimentos) / len(sentimentos)
-ibov['Sentimento'] = [media_sentimento]*len(ibov)
-
-# ----------------------------
-# 4. Criar gráfico interativo com Plotly
+# 3. Criar gráfico interativo Plotly
 # ----------------------------
 fig = go.Figure()
 
@@ -51,14 +50,15 @@ fig.add_trace(go.Scatter(
 ))
 
 fig.update_layout(
-    title='Índice de Sentimento vs Ibovespa',
+    title='Índice de Sentimento Diário vs Ibovespa',
     xaxis_title='Data',
     yaxis_title='Preço Ibovespa',
     yaxis2=dict(title='Sentimento', overlaying='y', side='right')
 )
 
 # ----------------------------
-# 5. Salvar gráfico em HTML
+# 4. Salvar gráfico em HTML
 # ----------------------------
-fig.write_html("sentimento_ibov_avancado.html")
-print("Arquivo HTML avançado gerado com sucesso: sentimento_ibov_avancado.html")
+html_file = "sentimento_ibov_diario.html"
+fig.write_html(html_file)
+print(f"Arquivo HTML gerado com sucesso: {html_file}")
