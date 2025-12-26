@@ -1,116 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ativos Risco x Segurança</title>
+    <title>Ativos Risco x Segurança (Real)</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h2>Ativos Risco x Segurança (Atualização Automática)</h2>
-    
-    <label>Selecionar Time Frame: </label>
-    <select id="timeframe" onchange="updateInterval()">
-        <option value="30000">30 segundos</option>
-        <option value="60000">1 minuto</option>
-    </select>
-    
-    <div id="grafico" style="width:100%;height:600px;"></div>
-    
-    <script>
-        // Ativos de risco e valores iniciais
-        const ativos_risco = [
-            {nome:"Ouro Futuros", valor:4502.80},
-            {nome:"Cobre Futuros", valor:5.5750},
-            {nome:"Petróleo WTI Futuros", valor:58.35},
-            {nome:"Oslo All Share", valor:1907.07},
-            {nome:"Soja Chicago Futuros", valor:1052.00},
-            {nome:"Dow Jones Futuros", valor:49029.00},
-            {nome:"The Global Dow USD", valor:6198.91},
-            {nome:"Vale SA ADR", valor:13.15},
-            {nome:"Petrobras SA ADR", valor:11.83},
-            {nome:"iShares MSCI Brazil ETF", valor:31.55},
-            {nome:"XLF", valor:55.73},
-            {nome:"XLP", valor:78.12},
-            {nome:"XLE", valor:44.37},
-            {nome:"XME", valor:107.87},
-            {nome:"EEM", valor:54.42},
-            {nome:"SOXX.O", valor:306.14},
-            {nome:"BSE Sensex 30", valor:85408.70},
-            {nome:"Hang Seng Futuros", valor:25834.5},
-            {nome:"China A50 Futuros", valor:15353.0},
-            {nome:"Dow Jones Shanghai", valor:549.17},
-            {nome:"SZSE Component", valor:13531.41},
-            {nome:"Shanghai Composite", valor:3959.62}
-        ];
+<h2>Ativos Risco x Segurança (Atualização Automática com dados reais)</h2>
 
-        // Ativos de segurança e valores iniciais
-        const ativos_seguranca = [
-            {nome:"Índice Dólar Futuros", valor:97.681},
-            {nome:"S&P 500 VIX Futuros", valor:16.85},
-            {nome:"USD/MXN", valor:17.8950},
-            {nome:"USD/NOK", valor:9.9745},
-            {nome:"USD/NZD", valor:1.7094},
-            {nome:"USD/AUD", valor:1.4913},
-            {nome:"USD/KRW", valor:1441.90},
-            {nome:"USD/CNY", valor:7.0063},
-            {nome:"EUR/BRL", valor:6.5062}
-        ];
+<label>Selecionar Time Frame: </label>
+<select id="timeframe" onchange="updateInterval()">
+    <option value="30000">30 segundos</option>
+    <option value="60000">1 minuto</option>
+</select>
 
-        // Criar séries iniciais
-        let data = [];
-        const now = new Date();
+<div id="grafico" style="width:100%;height:600px;"></div>
+
+<script>
+    // Ativos e códigos Yahoo Finance
+    const ativos_risco = [
+        {nome:"Ouro Futuros", codigo:"GC=F"},
+        {nome:"Cobre Futuros", codigo:"HG=F"},
+        {nome:"Petróleo WTI", codigo:"CL=F"},
+        {nome:"Dow Jones Futuros", codigo:"YM=F"},
+        {nome:"Vale SA ADR", codigo:"VALE.K"},
+        {nome:"Petrobras SA ADR", codigo:"PBR"}
+    ];
+
+    const ativos_seguranca = [
+        {nome:"Índice Dólar", codigo:"DX-Y.NYB"},
+        {nome:"VIX", codigo:"^VIX"},
+        {nome:"USD/MXN", codigo:"MXN=X"},
+        {nome:"EUR/BRL", codigo:"EURBRL=X"}
+    ];
+
+    let data = [];
+
+    // Inicializa o gráfico com valores fictícios
+    const now = new Date();
+    function initData() {
         ativos_risco.forEach(a => {
-            data.push({
-                x: [new Date(now.getTime() - 60000), now],
-                y: [a.valor, a.valor],
-                name: a.nome,
-                mode: 'lines',
-                line: {color:'red', dash:'dash'}
-            });
+            data.push({x:[now], y:[0], name:a.nome, mode:'lines', line:{color:'red', dash:'dash'}});
         });
         ativos_seguranca.forEach(a => {
-            data.push({
-                x: [new Date(now.getTime() - 60000), now],
-                y: [a.valor, a.valor],
-                name: a.nome,
-                mode: 'lines',
-                line: {color:'blue'}
-            });
+            data.push({x:[now], y:[0], name:a.nome, mode:'lines', line:{color:'blue'}});
         });
+    }
 
-        // Layout do gráfico
-        const layout = {
-            title: 'Ativos Risco x Segurança',
-            xaxis: {title: 'Data/Hora'},
-            yaxis: {title: 'Valor'},
-            legend: {orientation: "h"}
-        };
+    initData();
 
-        Plotly.newPlot('grafico', data, layout);
+    const layout = {title:'Ativos Risco x Segurança', xaxis:{title:'Data/Hora'}, yaxis:{title:'Valor'}, legend:{orientation:"h"}};
+    Plotly.newPlot('grafico', data, layout);
 
-        // Intervalo de atualização
-        let intervalTime = 30000; // padrão 30s
-        let intervalID = setInterval(updateData, intervalTime);
+    // Atualização automática
+    let intervalTime = 30000; // 30s padrão
+    let intervalID = setInterval(updateData, intervalTime);
 
-        function updateData() {
-            const now = new Date();
-            data.forEach(trace => {
-                // Simulação: acrescenta variação aleatória +-0.5%
-                const lastValue = trace.y[trace.y.length-1];
-                const newValue = lastValue * (1 + (Math.random()-0.5)/100);
-                trace.x.push(now);
-                trace.y.push(newValue);
+    function fetchPrecoYahoo(codigo) {
+        // Endpoint Yahoo Finance JSON não oficial
+        const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${codigo}`;
+        return fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                const price = json.quoteResponse.result[0].regularMarketPrice;
+                return price;
+            })
+            .catch(err => { console.log("Erro ao buscar", codigo, err); return null; });
+    }
 
-                if(trace.x.length > 20){ trace.x.shift(); trace.y.shift(); } // mantém últimos 20 pontos
-            });
-            Plotly.update('grafico', data);
+    async function updateData() {
+        const now = new Date();
+        // Atualiza ativos de risco
+        for(let i=0; i<ativos_risco.length; i++){
+            const preco = await fetchPrecoYahoo(ativos_risco[i].codigo);
+            if(preco!==null){
+                data[i].x.push(now);
+                data[i].y.push(preco);
+                if(data[i].x.length>20){ data[i].x.shift(); data[i].y.shift(); }
+            }
         }
-
-        function updateInterval() {
-            clearInterval(intervalID);
-            intervalTime = parseInt(document.getElementById("timeframe").value);
-            intervalID = setInterval(updateData, intervalTime);
+        // Atualiza ativos de segurança
+        for(let i=0; i<ativos_seguranca.length; i++){
+            const preco = await fetchPrecoYahoo(ativos_seguranca[i].codigo);
+            if(preco!==null){
+                const idx = i + ativos_risco.length;
+                data[idx].x.push(now);
+                data[idx].y.push(preco);
+                if(data[idx].x.length>20){ data[idx].x.shift(); data[idx].y.shift(); }
+            }
         }
+        Plotly.update('grafico', data);
+    }
 
-    </script>
+    function updateInterval() {
+        clearInterval(intervalID);
+        intervalTime = parseInt(document.getElementById("timeframe").value);
+        intervalID = setInterval(updateData, intervalTime);
+    }
+</script>
 </body>
 </html>
