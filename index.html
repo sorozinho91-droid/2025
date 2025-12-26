@@ -1,6 +1,8 @@
 <script>
 let valorRisco = 100;
 let valorSeguro = 100;
+let intervalo = 2000;
+let timer;
 
 function atualizar(valor) {
     return Math.max(0, valor + (Math.random() - 0.5) * 2);
@@ -33,32 +35,51 @@ const layout = {
         x: 0.5,
         xanchor: 'center',
         y: -0.2
+    },
+    transition: {
+        duration: 800,
+        easing: 'linear'
     }
 };
 
-Plotly.newPlot(
-    'grafico',
-    [traceRisco, traceSeguro],
-    layout,
-    { responsive: true }
-);
+Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout, {
+    responsive: true,
+    displayModeBar: false
+});
 
-setInterval(() => {
-    const agora = new Date().toLocaleTimeString();
+function iniciarGrafico() {
+    clearInterval(timer);
 
-    valorRisco = atualizar(valorRisco);
-    valorSeguro = atualizar(valorSeguro);
+    timer = setInterval(() => {
+        const agora = new Date().toLocaleTimeString();
 
-    Plotly.extendTraces(
-        'grafico',
-        {
-            x: [[agora], [agora]],
-            y: [[valorRisco], [valorSeguro]]
-        },
-        [0, 1],
-        60
-    );
-}, 2000);
+        valorRisco = atualizar(valorRisco);
+        valorSeguro = atualizar(valorSeguro);
+
+        Plotly.extendTraces(
+            'grafico',
+            {
+                x: [[agora], [agora]],
+                y: [[valorRisco], [valorSeguro]]
+            },
+            [0, 1],
+            30
+        );
+    }, intervalo);
+}
+
+// Slider de velocidade
+const slider = document.getElementById('velocidade');
+const texto = document.getElementById('velocidadeValor');
+
+slider.addEventListener('input', () => {
+    intervalo = Number(slider.value);
+    texto.textContent = (intervalo / 1000).toFixed(1) + 's';
+    iniciarGrafico();
+});
+
+// Inicia pela primeira vez
+iniciarGrafico();
 
 window.addEventListener('resize', () => {
     Plotly.Plots.resize('grafico');
