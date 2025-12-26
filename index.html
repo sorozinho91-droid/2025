@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Plotly Responsivo</title>
+<title>Dashboard Tempo Real</title>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -26,23 +26,97 @@ html, body {
 <div id="grafico"></div>
 
 <script>
-const trace = {
-    x: [1,2,3,4,5],
-    y: [2,1,3,5,4],
-    type: 'scatter'
+/* =========================
+   HORÁRIO INICIAL FIXO
+========================= */
+const inicio = new Date();
+
+/* =========================
+   VALORES
+========================= */
+let valorRisco = 100;
+let valorSeguro = 100;
+
+/* =========================
+   FUNÇÃO DE ATUALIZAÇÃO
+========================= */
+function atualizar(valor) {
+    return Math.max(0, valor + (Math.random() - 0.5) * 2);
+}
+
+/* =========================
+   TRACES
+========================= */
+const traceRisco = {
+    x: [],
+    y: [],
+    type: 'scatter',
+    mode: 'lines',
+    name: 'Risco',
+    line: { color: 'red' }
 };
 
+const traceSeguro = {
+    x: [],
+    y: [],
+    type: 'scatter',
+    mode: 'lines',
+    name: 'Seguro',
+    line: { color: 'green' }
+};
+
+/* =========================
+   LAYOUT (X FIXO NO INÍCIO)
+========================= */
 const layout = {
     autosize: true,
-    margin: { t: 20, l: 40, r: 20, b: 40 }
+    xaxis: {
+        type: 'date',
+        title: 'Horário',
+        range: [inicio, inicio],
+        tickformat: '%H:%M:%S'
+    },
+    yaxis: {
+        title: 'Valor'
+    },
+    margin: { t: 30, l: 50, r: 20, b: 50 }
 };
 
+/* =========================
+   CRIA O GRÁFICO
+========================= */
 Plotly.newPlot(
     'grafico',
-    [trace],
+    [traceRisco, traceSeguro],
     layout,
     { responsive: true }
 );
+
+/* =========================
+   LOOP EM TEMPO REAL
+========================= */
+setInterval(() => {
+    const agora = new Date();
+
+    valorRisco = atualizar(valorRisco);
+    valorSeguro = atualizar(valorSeguro);
+
+    Plotly.extendTraces(
+        'grafico',
+        {
+            x: [[agora], [agora]],
+            y: [[valorRisco], [valorSeguro]]
+        },
+        [0, 1],
+        60
+    );
+
+    /* início FIXO, final avança */
+    Plotly.relayout('grafico', {
+        'xaxis.range': [inicio, agora]
+    });
+
+}, 3000);
 </script>
 
 </body>
