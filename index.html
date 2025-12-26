@@ -50,9 +50,9 @@ let seguro = [];
 
 let valorRisco = 100;
 let valorSeguro = 100;
-const pontosHistorico = 120;
+const pontosHistorico = 200;
 
-// Geração de dados
+// Função para gerar dados históricos
 function atualizarValores(valor, vol) {
     return Math.max(0, valor + (Math.random()-0.5)*vol);
 }
@@ -72,6 +72,7 @@ function gerarHistorico(pontos){
     return {datasH, riscoH, seguroH, valR, valS};
 }
 
+// Atualização em tempo real
 function atualizarGrafico(){
     if(!emTempoReal) return;
     const agora=new Date();
@@ -83,7 +84,7 @@ function atualizarGrafico(){
     if(datas.length>pontosHistorico){
         datas.shift(); risco.shift(); seguro.shift();
     }
-    Plotly.extendTraces('grafico',{x:[[agora],[agora]],y:[[valorRisco],[valorSeguro]]},[0,1],pontosHistorico);
+    Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1], pontosHistorico);
 }
 
 function setTimeframe(minutos, botao){
@@ -94,7 +95,7 @@ function setTimeframe(minutos, botao){
     timer=setInterval(atualizarGrafico,timeframe*60000);
 }
 
-// FILTRAR PERÍODO usando dados reais
+// Filtrar datas mantendo histórico
 function filtrarDatas(){
     const startInput=document.getElementById('startDate').value;
     const endInput=document.getElementById('endDate').value;
@@ -105,23 +106,34 @@ function filtrarDatas(){
 
     emTempoReal=false;
 
-    // Filtra os dados reais dentro do período
+    // Criar eixo X diário no intervalo
     const filteredX=[], filteredR=[], filteredS=[];
-    for(let i=0;i<datas.length;i++){
-        if(datas[i]>=start && datas[i]<=end){
-            filteredX.push(datas[i]);
-            filteredR.push(risco[i]);
-            filteredS.push(seguro[i]);
+    let current=new Date(start);
+    while(current<=end){
+        filteredX.push(new Date(current));
+        // Procurar ponto real mais próximo
+        let idx=null, minDiff=Infinity;
+        for(let i=0;i<datas.length;i++){
+            let diff=Math.abs(datas[i]-current);
+            if(diff<timeframe*60000 && diff<minDiff){ minDiff=diff; idx=i; }
         }
+        if(idx!==null){
+            filteredR.push(risco[idx]);
+            filteredS.push(seguro[idx]);
+        }else{
+            filteredR.push(null);
+            filteredS.push(null);
+        }
+        current.setDate(current.getDate()+1);
     }
 
-    Plotly.update('grafico',{x:[filteredX,filteredX], y:[filteredR,filteredS]});
+    Plotly.update('grafico',{x:[filteredX,filteredX],y:[filteredR,filteredS]});
     Plotly.relayout('grafico',{'xaxis.range':[start,end],'xaxis.tickformat':'%b/%Y'});
-
     document.getElementById('intervaloSelecionado').innerText=
         `Intervalo selecionado: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
 }
 
+// Remover filtro
 function removerFiltro(){
     emTempoReal=true;
     document.getElementById('intervaloSelecionado').innerText='';
