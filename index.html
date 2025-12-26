@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Histórico em tempo real</title>
+    <title>Risco x Segurança - Histórico Diário</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -10,7 +10,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 50px;
+            margin-top: 30px;
         }
         canvas {
             width: 1000px;
@@ -19,14 +19,15 @@
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Histórico em tempo real</h2>
-    <canvas id="historicalChart"></canvas>
+    <h2>Risco x Segurança - Histórico Diário</h2>
+    <canvas id="dailyChart"></canvas>
 
     <script>
-        const ctx = document.getElementById('historicalChart').getContext('2d');
+        const ctx = document.getElementById('dailyChart').getContext('2d');
 
+        // Dados iniciais simulando histórico do dia
         const data = {
-            labels: [], // horários
+            labels: [], // horários do dia
             datasets: [
                 {
                     label: 'Risco',
@@ -61,36 +62,46 @@
                     x: {
                         ticks: {
                             autoSkip: true,
-                            maxTicksLimit: 20 // mostra só 20 labels visíveis, mas mantém todo histórico
+                            maxTicksLimit: 20
                         }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true
                     }
                 }
             }
         };
 
-        const myChart = new Chart(ctx, config);
+        const dailyChart = new Chart(ctx, config);
 
+        // Função para adicionar novo ponto
         function addData(risco, seguranca) {
-            const now = new Date().toLocaleTimeString();
+            const now = new Date();
+            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' + 
+                              now.getMinutes().toString().padStart(2,'0');
 
-            data.labels.push(now);
+            data.labels.push(timeLabel);
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
 
-            myChart.update();
+            dailyChart.update();
         }
 
-        // Simulação de dados em tempo real
+        // Simulação de dados históricos ao carregar a página
+        for(let i=0; i<10; i++){
+            const hour = 9 + i; // exemplo de horas do dia
+            const minute = Math.floor(Math.random()*60);
+            const timeLabel = hour.toString().padStart(2,'0') + ':' + minute.toString().padStart(2,'0');
+            data.labels.push(timeLabel);
+            data.datasets[0].data.push(Math.random()*100); // Risco
+            data.datasets[1].data.push(Math.random()*100); // Segurança
+        }
+
+        dailyChart.update();
+
+        // Atualização em tempo real
         setInterval(() => {
-            const risco = Math.random() * 100;
-            const seguranca = Math.random() * 100;
+            const risco = Math.random()*100;
+            const seguranca = Math.random()*100;
             addData(risco, seguranca);
-        }, 1000);
+        }, 5000); // a cada 5 segundos
     </script>
 </body>
 </html>
