@@ -40,7 +40,7 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <div id="grafico"></div>
 
 <script>
-let timeframe = 1;
+let timeframe = 1; // minutos
 let timer = null;
 let emTempoReal = true;
 
@@ -50,7 +50,7 @@ const pontosHistorico = 200;
 
 // Função para gerar valores aleatórios
 function atualizarValores(valor, vol){
-    return Math.max(0, valor + (Math.random()-0.5)*vol);
+    return Math.max(0, valor + (Math.random() - 0.5) * vol);
 }
 
 // Gera histórico inicial
@@ -59,7 +59,7 @@ function gerarHistorico(pontos){
     let valR=100, valS=100;
     const agora=new Date();
     for(let i=pontos-1;i>=0;i--){
-        const hora=new Date(agora - i*timeframe*60000);
+        const hora = new Date(agora - i*timeframe*60000);
         valR = atualizarValores(valR,2);
         valS = atualizarValores(valS,0.5);
         datasH.push(hora);
@@ -91,7 +91,7 @@ function setTimeframe(minutos, botao){
     timer=setInterval(atualizarGrafico,timeframe*60000);
 }
 
-// Filtrar período com interpolação mês a mês
+// Filtrar período mostrando apenas os dados reais
 function filtrarDatas(){
     const startInput=document.getElementById('startDate').value;
     const endInput=document.getElementById('endDate').value;
@@ -102,35 +102,16 @@ function filtrarDatas(){
 
     emTempoReal = false;
 
-    const filteredX=[], filteredR=[], filteredS=[];
-    let current = new Date(start.getFullYear(), start.getMonth(), 1);
-    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
-
-    let lastR=risco[0]||valorRisco;
-    let lastS=seguro[0]||valorSeguro;
-
-    while(current <= endMonth){
-        filteredX.push(new Date(current));
-        // Busca o ponto mais próximo no mês
-        let closestIdx = null;
-        let minDiff = Infinity;
-        for(let i=0;i<datas.length;i++){
-            if(datas[i].getFullYear()===current.getFullYear() && datas[i].getMonth()===current.getMonth()){
-                let diff=Math.abs(datas[i]-current);
-                if(diff<minDiff){ minDiff=diff; closestIdx=i; }
-            }
+    const filteredX = [], filteredR = [], filteredS = [];
+    for(let i=0;i<datas.length;i++){
+        if(datas[i]>=start && datas[i]<=end){
+            filteredX.push(datas[i]);
+            filteredR.push(risco[i]);
+            filteredS.push(seguro[i]);
         }
-        if(closestIdx!==null){
-            lastR = risco[closestIdx];
-            lastS = seguro[closestIdx];
-        }
-        // Usa o último valor conhecido (interpolação)
-        filteredR.push(lastR);
-        filteredS.push(lastS);
-        current.setMonth(current.getMonth()+1);
     }
 
-    Plotly.update('grafico',{x:[filteredX,filteredX], y:[filteredR,filteredS]});
+    Plotly.update('grafico',{x:[filteredX, filteredX], y:[filteredR, filteredS]});
     Plotly.relayout('grafico',{
         'xaxis.range':[start,end],
         'xaxis.tickformat':'%b/%Y'
@@ -140,7 +121,7 @@ function filtrarDatas(){
         `Intervalo selecionado: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
 }
 
-// Remover filtro
+// Remover filtro e voltar para tempo real
 function removerFiltro(){
     emTempoReal = true;
     document.getElementById('intervaloSelecionado').innerText='';
@@ -161,8 +142,8 @@ const layout = {
 };
 
 Plotly.newPlot('grafico',[
-    {x:datas,y:risco,mode:'lines',name:'Ativos de Risco', line:{color:'red'}},
-    {x:datas,y:seguro,mode:'lines',name:'Ativos Seguros', line:{color:'green'}}
+    {x:datas, y:risco, mode:'lines', name:'Ativos de Risco', line:{color:'red'}},
+    {x:datas, y:seguro, mode:'lines', name:'Ativos Seguros', line:{color:'green'}}
 ], layout, {responsive:true});
 
 timer = setInterval(atualizarGrafico, timeframe*60000);
