@@ -42,20 +42,15 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <script>
 let timeframe = 1; // minutos
 let timer = null;
+let emTempoReal = true;
 
-let datas = [];       // array de objetos Date
+let datas = [];       
 let risco = [];
 let seguro = [];
 
 let valorRisco = 100;
 let valorSeguro = 100;
 const pontosHistorico = 120;
-
-// Arrays do filtro para destaque
-let filtroX = [];
-let filtroRisco = [];
-let filtroSeguro = [];
-let filtroAtivo = false;
 
 function atualizarValores(valor, volatilidade) {
     return Math.max(0, valor + (Math.random() - 0.5) * volatilidade);
@@ -85,6 +80,8 @@ function gerarHistorico(pontos) {
 }
 
 function atualizarGrafico() {
+    if (!emTempoReal) return; // não atualiza se estiver filtrado
+
     const agora = new Date();
 
     valorRisco = atualizarValores(valorRisco, 2);
@@ -101,11 +98,9 @@ function atualizarGrafico() {
     }
 
     Plotly.extendTraces('grafico', {
-        x: [[agora], [agora], filtroAtivo ? [agora] : []],
-        y: [[valorRisco], [valorSeguro], filtroAtivo ? [null] : []]
-    }, [0,1,2], pontosHistorico);
-
-    if (filtroAtivo) atualizarFiltro(); // mantém destaque atualizado
+        x: [[agora], [agora]],
+        y: [[valorRisco], [valorSeguro]]
+    }, [0,1], pontosHistorico);
 }
 
 function setTimeframe(minutos, botao) {
@@ -118,7 +113,7 @@ function setTimeframe(minutos, botao) {
     timer = setInterval(atualizarGrafico, timeframe * 60000);
 }
 
-// Filtrar gráfico entre duas datas e destacar
+// Filtrar gráfico entre duas datas e mostrar somente este intervalo
 function filtrarDatas() {
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
@@ -128,36 +123,36 @@ function filtrarDatas() {
     const end = new Date(endInput);
     if (start > end) { alert('Data inicial maior que final!'); return; }
 
-    filtroAtivo = true;
-    filtroX = [];
-    filtroRisco = [];
-    filtroSeguro = [];
+    emTempoReal = false;
 
-    for (let i=0;i<datas.length;i++) {
-        if (datas[i]>=start && datas[i]<=end) {
-            filtroX.push(datas[i]);
-            filtroRisco.push(risco[i]);
-            filtroSeguro.push(seguro[i]);
+    const filteredX = [];
+    const filteredRisco = [];
+    const filteredSeguro = [];
+
+    for (let i = 0; i < datas.length; i++) {
+        if (datas[i] >= start && datas[i] <= end) {
+            filteredX.push(datas[i]);
+            filteredRisco.push(risco[i]);
+            filteredSeguro.push(seguro[i]);
         }
     }
 
-    // Atualiza linha azul
     Plotly.update('grafico', {
-        x: [datas, datas, filtroX],
-        y: [risco, seguro, filtroRisco]
+        x: [filteredX, filteredX],
+        y: [filteredRisco, filteredSeguro]
     });
 
     document.getElementById('intervaloSelecionado').innerText =
         `Intervalo selecionado: ${start.toLocaleString()} até ${end.toLocaleString()}`;
 }
 
+// Volta ao gráfico completo e atualização em tempo real
 function removerFiltro() {
-    filtroAtivo = false;
-    filtroX=[]; filtroRisco=[]; filtroSeguro=[];
+    emTempoReal = true;
     document.getElementById('intervaloSelecionado').innerText = '';
-    Plotly.update('grafico',{
-        x: [datas,datas,[]],
-        y: [risco,seguro,[]]
+    Plotly.update('grafico', {
+        x: [datas, datas],
+        y: [risco, seguro]
     });
 }
 
@@ -176,15 +171,14 @@ const layout = {
     margin: { t: 50 }
 };
 
-Plotly.newPlot('grafico',[
-    {x:datas, y:risco, mode:'lines', name:'Ativos de Risco', line:{color:'red'}},
-    {x:datas, y:seguro, mode:'lines', name:'Ativos Seguros', line:{color:'green'}},
-    {x:[], y:[], mode:'lines', name:'Intervalo Selecionado', line:{color:'blue', dash:'dot'}}
-], layout, {responsive:true});
+Plotly.newPlot('grafico', [
+    { x: datas, y: risco, mode: 'lines', name: 'Ativos de Risco', line: { color: 'red' } },
+    { x: datas, y: seguro, mode: 'lines', name: 'Ativos Seguros', line: { color: 'green' } }
+], layout, { responsive: true });
 
 timer = setInterval(atualizarGrafico, timeframe * 60000);
 
-window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
+window.addEventListener('resize', () => { Plotly.Plots.resize('grafico'); });
 </script>
 
 </body>
