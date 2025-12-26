@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard – Ativos de Risco e Segurança</title>
+<title>Dashboard – Histórico de 2 Dias em Tempo Real</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
 header { background: #1f2937; color: white; padding: 15px; text-align: center; }
-#controls, #filtro { text-align: center; padding: 10px; }
+#controls { text-align: center; padding: 10px; }
 button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
 button.active { background: #2563eb; color: white; }
 #grafico { width: 100%; height: 600px; }
@@ -16,7 +16,7 @@ button.active { background: #2563eb; color: white; }
 <body>
 
 <header>
-<h2>Ativos de Risco x Segurança – Tempo Real</h2>
+<h2>Ativos de Risco x Seguros – Histórico de 2 Dias em Tempo Real</h2>
 </header>
 
 <div id="controls">
@@ -27,72 +27,49 @@ button.active { background: #2563eb; color: white; }
 <button onclick="setTimeframe(60, this)">1h</button>
 </div>
 
-<div id="filtro">
-<button onclick="filtrar('todos', this)" class="active">Todos</button>
-<button onclick="filtrar('seguranca', this)">Segurança</button>
-<button onclick="filtrar('risco', this)">Risco</button>
-</div>
-
 <div id="grafico"></div>
 
 <script>
-// Configurações
 let timeframe = 1; // minutos
 let timer = null;
 
-let datas = [];
-let ativos = {
-    "DXY": [], "VIX": [], "Ouro": [],
-    "S&P 500": [], "NASDAQ": [], "Nikkei": [], "DAX": []
-};
-
-let valores = {
-    "DXY": 100, "VIX": 20, "Ouro": 1800,
-    "S&P 500": 4000, "NASDAQ": 12000, "Nikkei": 30000, "DAX": 15000
-};
-
-let vol = {
-    "DXY": 0.2, "VIX": 0.3, "Ouro": 0.5,
-    "S&P 500": 2, "NASDAQ": 3, "Nikkei": 2.5, "DAX": 2
-};
-
-let ativosSeguranca = ["DXY","VIX","Ouro"];
-let ativosRisco = ["S&P 500","NASDAQ","Nikkei","DAX"];
+let datas = [], risco = [], seguro = [];
+let valorRisco = 100, valorSeguro = 100;
 
 // Função para gerar valores aleatórios
-function atualizarValor(valor, volatilidade){
-    return Math.max(0, valor + (Math.random()-0.5)*volatilidade);
+function atualizarValores(valor, vol){
+    return Math.max(0, valor + (Math.random()-0.5)*vol);
 }
 
-// Gerar histórico de 2 dias (1 ponto/minuto)
+// Gera histórico inicial de 2 dias (1 ponto a cada 1 minuto)
 function gerarHistorico2Dias(){
     const agora = new Date();
-    const start = new Date(agora.getTime() - 2*24*60*60*1000);
-    datas = [];
+    const start = new Date(agora.getTime() - 2*24*60*60*1000); // 2 dias atrás
+    let valR = 100, valS = 100;
+    datas = []; risco = []; seguro = [];
     for(let d = new Date(start); d <= agora; d.setMinutes(d.getMinutes()+1)){
+        valR = atualizarValores(valR,2);
+        valS = atualizarValores(valS,0.5);
         datas.push(new Date(d));
-        for(const ativo in ativos){
-            valores[ativo] = atualizarValor(valores[ativo], vol[ativo]);
-            ativos[ativo].push(valores[ativo]);
-        }
+        risco.push(valR);
+        seguro.push(valS);
     }
+    valorRisco = valR;
+    valorSeguro = valS;
 }
 
 // Atualização em tempo real
 function atualizarGrafico(){
     const agora = new Date();
+    valorRisco = atualizarValores(valorRisco,2);
+    valorSeguro = atualizarValores(valorSeguro,0.5);
     datas.push(agora);
-    for(const ativo in ativos){
-        valores[ativo] = atualizarValor(valores[ativo], vol[ativo]);
-        ativos[ativo].push(valores[ativo]);
-    }
-    Plotly.extendTraces('grafico',{
-        x: Object.values(ativos).map((_,i)=>[agora]),
-        y: Object.values(ativos).map(a=>[a[a.length-1]])
-    }, [...Array(Object.keys(ativos).length).keys()]);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+    Plotly.extendTraces('grafico', {x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1]);
 }
 
-// Alterar timeframe
+// Mudar timeframe
 function setTimeframe(minutos, botao){
     timeframe = minutos;
     document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
@@ -101,54 +78,51 @@ function setTimeframe(minutos, botao){
     timer = setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Filtrar ativos
-function filtrar(tipo, botao){
-    document.querySelectorAll('#filtro button').forEach(b=>b.classList.remove('active'));
-    botao.classList.add('active');
-
-    let tracesVisiveis = [];
-    if(tipo==="todos") tracesVisiveis = Object.keys(ativos);
-    if(tipo==="seguranca") tracesVisiveis = ativosSeguranca;
-    if(tipo==="risco") tracesVisiveis = ativosRisco;
-
-    const update = { visible: Object.keys(ativos).map(a => tracesVisiveis.includes(a)) };
-    Plotly.restyle('grafico', update);
-}
-
 /* Inicialização */
 gerarHistorico2Dias();
 
-// Criar traces
-const cores = {
-    "DXY": "blue", "VIX": "purple", "Ouro": "gold",
-    "S&P 500": "red", "NASDAQ": "orange", "Nikkei": "pink", "DAX": "brown"
-};
-
-const traces = [];
-for(const ativo in ativos){
-    traces.push({
-        x: datas,
-        y: ativos[ativo],
-        mode: 'lines+markers',
-        name: ativo,
-        line:{color:cores[ativo], width:2},
-        marker:{size:4},
-        hovertemplate: 'Ativo: '+ativo+'<br>Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
-    });
-}
-
 const layout = {
-    title: 'Ativos de Risco e Segurança – Tempo Real',
+    title:'Ativos em Tempo Real',
     xaxis:{title:'Data', type:'date'},
     yaxis:{title:'Valor'},
     margin:{t:50},
-    legend:{x:1,xanchor:'right',y:1,font:{size:12},bgcolor:'#f4f6f8',bordercolor:'#888',borderwidth:1}
+    legend: {
+        title: { text: '<b>Ativos</b>' },
+        x: 1,
+        xanchor: 'right',
+        y: 1,
+        font: {size:14},
+        bgcolor: '#f4f6f8',
+        bordercolor: '#888',
+        borderwidth: 1
+    }
 };
 
-Plotly.newPlot('grafico', traces, layout, {responsive:true});
+const traceRisco = {
+    x: datas,
+    y: risco,
+    mode: 'lines+markers',
+    name: 'Ativos de Risco',
+    line:{color:'red', width:2},
+    marker:{size:4, symbol:'circle'},
+    hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
+};
+
+const traceSeguro = {
+    x: datas,
+    y: seguro,
+    mode: 'lines+markers',
+    name: 'Ativos Seguros',
+    line:{color:'green', width:2},
+    marker:{size:4, symbol:'square'},
+    hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
+};
+
+Plotly.newPlot('grafico',[traceRisco, traceSeguro], layout, {responsive:true});
 
 // Atualização em tempo real
 timer = setInterval(atualizarGrafico, timeframe*60000);
+
 window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
 </script>
 
