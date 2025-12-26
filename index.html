@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real</title>
+    <title>Ativos de Risco x Segurança - Tempo Real Suave</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-    <h1>Ativos de Risco vs Seguros - Tempo Real</h1>
+    <h1>Ativos de Risco vs Seguros - Tempo Real Suave</h1>
     <div id="grafico"></div>
 
     <script>
@@ -33,23 +33,23 @@
         risco.push(valor_risco);
         seguro.push(valor_seguro);
 
-        // Dados iniciais
+        // Dados iniciais com suavização (spline)
         var data = [
-            { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red'} },
-            { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green'} }
+            { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red', shape: 'spline'} },
+            { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green', shape: 'spline'} }
         ];
 
         var layout = {
-            title: 'Ativos de Risco vs Seguros - Tempo Real',
-            xaxis: { title: 'Hora' },
-            yaxis: { title: 'Valor' },
+            title: 'Ativos de Risco vs Seguros - Tempo Real Suave',
+            xaxis: { title: 'Hora', showgrid: true },
+            yaxis: { title: 'Valor', showgrid: true },
             margin: { t: 50, r: 30, l: 50, b: 50 }
         };
 
         // Renderizar gráfico
         Plotly.newPlot('grafico', data, layout);
 
-        // Atualizar a cada 2 segundos
+        // Atualizar a cada 2 segundos e acumular todos os dados
         setInterval(function(){
             var agora = new Date().toLocaleTimeString();
             datas.push(agora);
@@ -59,16 +59,10 @@
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
-            // Manter últimos 20 pontos
-            if(datas.length > 20){
-                datas.shift();
-                risco.shift();
-                seguro.shift();
-            }
-
+            // Atualiza gráfico mantendo todo histórico
             Plotly.react('grafico', [
-                { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red'} },
-                { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green'} }
+                { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red', shape: 'spline'} },
+                { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green', shape: 'spline'} }
             ], layout);
 
         }, 2000);
