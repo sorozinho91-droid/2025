@@ -40,11 +40,10 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <div id="grafico"></div>
 
 <script>
-let timeframe = 1; // minutos
+let timeframe = 1;
 let timer = null;
 let emTempoReal = true;
 
-// Histórico real
 let datas = [], risco = [], seguro = [];
 let valorRisco = 100, valorSeguro = 100;
 
@@ -53,7 +52,7 @@ function atualizarValores(valor, vol){
     return Math.max(0, valor + (Math.random()-0.5)*vol);
 }
 
-// Gera histórico real de até 5 anos (1 ponto por dia)
+// Histórico real de até 5 anos (1 ponto/dia)
 function gerarHistoricoAnual(anos=5){
     const dataHoje = new Date();
     const start = new Date(dataHoje.getFullYear()-anos, dataHoje.getMonth(), dataHoje.getDate());
@@ -135,13 +134,41 @@ const layout = {
     title:'Comparação em Tempo Real',
     xaxis:{title:'Data', type:'date'},
     yaxis:{title:'Valor'},
-    margin:{t:50}
+    margin:{t:50},
+    legend: {
+        title: { text: '<b>Ativos</b>' },
+        x: 1,
+        xanchor: 'right',
+        y: 1,
+        font: {size:14},
+        bgcolor: '#f4f6f8',
+        bordercolor: '#888',
+        borderwidth: 1
+    }
 };
 
-Plotly.newPlot('grafico',[
-    {x:datas, y:risco, mode:'lines', name:'Ativos de Risco', line:{color:'red'}},
-    {x:datas, y:seguro, mode:'lines', name:'Ativos Seguros', line:{color:'green'}}
-], layout, {responsive:true});
+// Configuração do hover para mostrar hora completa e valor
+const traceRisco = {
+    x: datas,
+    y: risco,
+    mode: 'lines+markers',
+    name: 'Ativos de Risco',
+    line:{color:'red', width:2},
+    marker:{size:6, symbol:'circle'},
+    hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
+};
+
+const traceSeguro = {
+    x: datas,
+    y: seguro,
+    mode: 'lines+markers',
+    name: 'Ativos Seguros',
+    line:{color:'green', width:2},
+    marker:{size:6, symbol:'square'},
+    hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
+};
+
+Plotly.newPlot('grafico',[traceRisco, traceSeguro], layout, {responsive:true});
 
 timer = setInterval(atualizarGrafico, timeframe*60000);
 window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
