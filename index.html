@@ -80,7 +80,7 @@ function gerarHistorico(pontos) {
 }
 
 function atualizarGrafico() {
-    if (!emTempoReal) return; // não atualiza se estiver filtrado
+    if (!emTempoReal) return;
 
     const agora = new Date();
 
@@ -113,7 +113,6 @@ function setTimeframe(minutos, botao) {
     timer = setInterval(atualizarGrafico, timeframe * 60000);
 }
 
-// Filtrar gráfico entre duas datas e mostrar todo o período
 function filtrarDatas() {
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
@@ -142,31 +141,29 @@ function filtrarDatas() {
         y: [filteredRisco, filteredSeguro]
     });
 
-    Plotly.relayout('grafico', {
-        'xaxis.range': [start, end],
-        'xaxis.dtick': "M1", // tick a cada mês
-        'xaxis.tickformat': "%b/%Y" // mês/ano
-    });
+    // Formatação inteligente: se o período > 3 meses, mostra mês/ano
+    const diff = (end - start)/(1000*60*60*24); // dias
+    if(diff > 90){
+        Plotly.relayout('grafico',{
+            'xaxis.range': [start, end],
+            'xaxis.tickformat': '%b/%Y'
+        });
+    } else {
+        Plotly.relayout('grafico',{
+            'xaxis.range': [start, end],
+            'xaxis.tickformat': '%d/%m'
+        });
+    }
 
     document.getElementById('intervaloSelecionado').innerText =
         `Intervalo selecionado: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
 }
 
-// Voltar ao gráfico completo com atualização em tempo real
 function removerFiltro() {
     emTempoReal = true;
     document.getElementById('intervaloSelecionado').innerText = '';
-
-    Plotly.update('grafico', {
-        x: [datas, datas],
-        y: [risco, seguro]
-    });
-
-    Plotly.relayout('grafico', {
-        'xaxis.autorange': true,
-        'xaxis.dtick': null,
-        'xaxis.tickformat': null
-    });
+    Plotly.update('grafico', { x: [datas, datas], y: [risco, seguro] });
+    Plotly.relayout('grafico', { 'xaxis.autorange': true, 'xaxis.tickformat': null });
 }
 
 /* ================== INICIALIZAÇÃO ================== */
@@ -179,7 +176,7 @@ valorSeguro = historico.valorSeguroHist;
 
 const layout = {
     title: 'Comparação em Tempo Real',
-    xaxis: { title: 'Data', type:'date', tickformat:'%b/%Y', dtick:'M1' },
+    xaxis: { title: 'Data', type:'date' },
     yaxis: { title: 'Valor' },
     margin: { t: 50 }
 };
@@ -190,10 +187,8 @@ Plotly.newPlot('grafico', [
 ], layout, { responsive: true });
 
 timer = setInterval(atualizarGrafico, timeframe * 60000);
-
 window.addEventListener('resize', () => { Plotly.Plots.resize('grafico'); });
 </script>
 
 </body>
 </html>
-
