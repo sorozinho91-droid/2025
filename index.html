@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança em tempo real</title>
+    <title>Risco x Segurança - Histórico em tempo real</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -13,20 +13,20 @@
             margin-top: 50px;
         }
         canvas {
-            width: 800px;
+            width: 1000px;
             height: 400px;
         }
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança em tempo real</h2>
-    <canvas id="realtimeChart"></canvas>
+    <h2>Risco x Segurança - Histórico em tempo real</h2>
+    <canvas id="historicalChart"></canvas>
 
     <script>
-        const ctx = document.getElementById('realtimeChart').getContext('2d');
+        const ctx = document.getElementById('historicalChart').getContext('2d');
 
         const data = {
-            labels: [],
+            labels: [], // horários
             datasets: [
                 {
                     label: 'Risco',
@@ -52,6 +52,7 @@
             data: data,
             options: {
                 responsive: false,
+                animation: false,
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -60,8 +61,13 @@
                     x: {
                         ticks: {
                             autoSkip: true,
-                            maxTicksLimit: 10
+                            maxTicksLimit: 20 // mostra só 20 labels visíveis, mas mantém todo histórico
                         }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
                     }
                 }
             }
@@ -69,25 +75,22 @@
 
         const myChart = new Chart(ctx, config);
 
-        function addData() {
+        function addData(risco, seguranca) {
             const now = new Date().toLocaleTimeString();
-            const risco = Math.random() * 100;
-            const seguranca = Math.random() * 100;
 
             data.labels.push(now);
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
 
-            if (data.labels.length > 20) {
-                data.labels.shift();
-                data.datasets.forEach(ds => ds.data.shift());
-            }
-
             myChart.update();
         }
 
-        // Atualiza a cada 1 segundo
-        setInterval(addData, 1000);
+        // Simulação de dados em tempo real
+        setInterval(() => {
+            const risco = Math.random() * 100;
+            const seguranca = Math.random() * 100;
+            addData(risco, seguranca);
+        }, 1000);
     </script>
 </body>
 </html>
