@@ -2,28 +2,34 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Risco x Segurança — Gráfico em tempo real</title>
+<title>Risk‑On x Risk‑Off — Em Tempo Real</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body {
-  background:#000;
-  color:#fff;
-  font-family:Arial, sans-serif;
-  padding:20px;
+  background: #000;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  padding: 12px;
 }
-canvas{
-  background:#111;
-  border-radius:8px;
+canvas {
+  background: #111;
+  border-radius: 8px;
+}
+h2 {
+  text-align: center;
+  font-size: 16px;
+  margin-bottom: 8px;
 }
 </style>
 </head>
 <body>
 
-<h2>📊 Risco vs Segurança</h2>
+<h2>📊 Risk‑On vs Risk‑Off (Tempo Real — Finnhub)</h2>
 <canvas id="riskChart" width="800" height="400"></canvas>
 
 <script>
-// Labels e datasets
+// === CONFIGURAÇÃO DO GRÁFICO ===
+
 const labels = [];
 const riskData = [];
 const safeData = [];
@@ -32,16 +38,18 @@ const data = {
   labels: labels,
   datasets: [
     {
-      label: 'Risco (S&P500, Nasdaq, Ibovespa, WTI)',
+      label: 'Risk‑On',
       borderColor: 'rgba(255,99,132,1)',
       backgroundColor: 'rgba(255,99,132,0.2)',
-      data: riskData
+      data: riskData,
+      tension: 0.4
     },
     {
-      label: 'Segurança (DXY, Ouro, UST 10Y)',
+      label: 'Risk‑Off',
       borderColor: 'rgba(54,162,235,1)',
       backgroundColor: 'rgba(54,162,235,0.2)',
-      data: safeData
+      data: safeData,
+      tension: 0.4
     }
   ]
 };
@@ -50,11 +58,13 @@ const config = {
   type: 'line',
   data: data,
   options: {
-    responsive:true,
-    plugins: { legend: { display:true } },
+    responsive: true,
+    plugins: {
+      legend: { display: true }
+    },
     scales: {
-      y: { beginAtZero:false, ticks: { color:'#fff' } },
-      x: { ticks: { color:'#fff' } }
+      y: { beginAtZero: false, ticks: { color: '#fff' } },
+      x: { ticks: { color: '#fff' } }
     }
   }
 };
@@ -64,29 +74,76 @@ const riskChart = new Chart(
   config
 );
 
-// Função para buscar variação real via TradingView Mini Widgets
-// OBS: Aqui usamos simulador para demo; você pode substituir pelo fetch de API real
-async function fetchData() {
-  // Substitua com fetch de API real
+// === API FINNHUB ===
+
+// Substitua pela sua chave da Finnhub
+const API_KEY = "YOUR_API_KEY_HERE";
+
+// Símbolos suportados no Finnhub
+// Índices americanos
+const symbolsRisk = [
+  "SPX",        // S&P 500 (Finnhub usa SPX)
+  "NDX",        // Nasdaq 100
+  "IBOVESPA",   // Ibovespa — se não tiver suporte direto, provisorio
+  "CL=F"        // WTI crude oil futures (exemplo padrão — pode ser CLUSD)
+];
+
+// Ativos de segurança
+const symbolsSafe = [
+  "DXY",        // US Dollar Index
+  "XAUUSD",     // Gold (Ouro)
+  "US10Y"       // U.S. 10Y Treasury (proxy)
+];
+
+// Função pegar variação percentual do dia
+async function getVariation(symbol){
+  try {
+    const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
+    const json = await res.json();
+    // data.c = preço atual, pc = preço anterior
+    if(json.c && json.pc){
+      return ((json.c - json.pc) / json.pc) * 100;
+    }
+    return 0;
+  } catch(e) {
+    console.error("Erro API:", symbol, e);
+    return 0;
+  }
+}
+
+// Atualiza dados
+async function updateData(){
   const now = new Date().toLocaleTimeString();
   labels.push(now);
-  if(labels.length>20) labels.shift();
+  if(labels.length > 30) labels.shift();
 
-  // Exemplo de valores simulados (substituir por valores reais)
-  const risk = Math.random()*2-1;
-  const safe = Math.random()*1-0.5;
+  // Risco média
+  let sumRisk = 0;
+  for(const s of symbolsRisk){
+    sumRisk += await getVariation(s);
+  }
+  const avgRisk = sumRisk / symbolsRisk.length;
+  riskData.push(avgRisk);
+  if(riskData.length > 30) riskData.shift();
 
-  riskData.push(risk);
-  safeData.push(safe);
-
-  if(riskData.length>20) riskData.shift();
-  if(safeData.length>20) safeData.shift();
+  // Segurança média
+  let sumSafe = 0;
+  for(const s of symbolsSafe){
+    sumSafe += await getVariation(s);
+  }
+  const avgSafe = sumSafe / symbolsSafe.length;
+  safeData.push(avgSafe);
+  if(safeData.length > 30) safeData.shift();
 
   riskChart.update();
 }
 
 // Atualiza a cada 5 segundos
-setInterval(fetchData, 5000);
+setInterval(updateData, 5000);
+
+// Primeira chamada
+updateData();
+
 </script>
 
 </body>
