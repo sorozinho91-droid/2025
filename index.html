@@ -18,7 +18,7 @@ input[type="date"] { margin: 0 5px; padding: 5px; }
 <body>
 
 <header>
-<h2>Ativos de Risco x Seguros – Comparação por Data</h2>
+<h2>Ativos de Risco x Seguros – Comparação por Datas</h2>
 </header>
 
 <div id="controls">
@@ -30,8 +30,8 @@ input[type="date"] { margin: 0 5px; padding: 5px; }
 </div>
 
 <div id="date-controls">
-<label>De: <input type="date" id="startDate"></label>
-<label>Até: <input type="date" id="endDate"></label>
+<label>Data inicial: <input type="date" id="startDate"></label>
+<label>Data final: <input type="date" id="endDate"></label>
 <button onclick="filtrarDatas()">Comparar</button>
 <button onclick="removerFiltro()">Remover Filtro</button>
 </div>
@@ -89,11 +89,11 @@ function setTimeframe(minutos, botao){
     timer = setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Filtrar por duas datas (início e fim do dia)
+// Filtrar entre duas datas
 function filtrarDatas(){
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
-    if(!startInput || !endInput){ alert('Selecione as duas datas'); return; }
+    if(!startInput || !endInput){ alert('Selecione ambas as datas'); return; }
     const start = new Date(startInput + 'T00:00:00');
     const end = new Date(endInput + 'T23:59:59');
     if(start > end){ alert('Data inicial maior que final'); return; }
