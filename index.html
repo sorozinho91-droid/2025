@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Histórico Diário com Backend</title>
+    <title>Risco x Segurança - Intraday</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -10,50 +10,39 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 30px;
+            margin-top: 20px;
         }
         canvas {
-            width: 1000px;
-            height: 400px;
+            width: 1200px;
+            height: 500px;
         }
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Histórico Diário com Backend Simulado</h2>
-    <canvas id="dailyChart"></canvas>
+    <h2>Risco x Segurança - Histórico Intraday</h2>
+    <canvas id="intradayChart"></canvas>
 
     <script>
-        const ctx = document.getElementById('dailyChart').getContext('2d');
-
-        // Simulação do histórico vindo do backend (JSON)
-        const historicalData = [
-            {"time":"09:00","risco":20,"seguranca":80},
-            {"time":"10:00","risco":35,"seguranca":65},
-            {"time":"11:00","risco":50,"seguranca":50},
-            {"time":"12:00","risco":40,"seguranca":60},
-            {"time":"13:00","risco":55,"seguranca":45},
-            {"time":"14:00","risco":30,"seguranca":70},
-            {"time":"15:00","risco":60,"seguranca":40}
-        ];
+        const ctx = document.getElementById('intradayChart').getContext('2d');
 
         const data = {
-            labels: historicalData.map(d => d.time),
+            labels: [], // timestamps HH:MM:SS
             datasets: [
                 {
                     label: 'Risco',
                     borderColor: 'red',
                     backgroundColor: 'rgba(255,0,0,0.2)',
-                    data: historicalData.map(d => d.risco),
+                    data: [],
                     fill: true,
-                    tension: 0.3
+                    tension: 0.2
                 },
                 {
                     label: 'Segurança',
                     borderColor: 'green',
                     backgroundColor: 'rgba(0,255,0,0.2)',
-                    data: historicalData.map(d => d.seguranca),
+                    data: [],
                     fill: true,
-                    tension: 0.3
+                    tension: 0.2
                 }
             ]
         };
@@ -65,48 +54,49 @@
                 responsive: false,
                 animation: false,
                 scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tempo (HH:MM:SS)'
+                        },
+                        ticks: {
+                            maxTicksLimit: 20
+                        }
+                    },
                     y: {
                         beginAtZero: true,
-                        max: 100
-                    },
-                    x: {
-                        ticks: {
-                            autoSkip: true,
-                            maxTicksLimit: 20
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Valor'
                         }
                     }
                 }
             }
         };
 
-        const dailyChart = new Chart(ctx, config);
+        const intradayChart = new Chart(ctx, config);
 
-        // Função para adicionar novo ponto (recebido do backend)
-        function addDataPoint(timeLabel, risco, seguranca) {
+        // Função para adicionar novo ponto
+        function addIntradayData(risco, seguranca) {
+            const now = new Date();
+            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' +
+                              now.getMinutes().toString().padStart(2,'0') + ':' +
+                              now.getSeconds().toString().padStart(2,'0');
+
             data.labels.push(timeLabel);
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
-            dailyChart.update();
+
+            intradayChart.update();
         }
 
-        // Simulação do WebSocket do backend enviando novos dados a cada 5 segundos
+        // Simulação de dados em tempo real (substitua por API/WebSocket real)
         setInterval(() => {
-            const now = new Date();
-            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' + 
-                              now.getMinutes().toString().padStart(2,'0');
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
-
-            // Aqui é onde, em um sistema real, você receberia os dados via WebSocket
-            addDataPoint(timeLabel, risco, seguranca);
-        }, 5000);
-
-        // Caso queira carregar histórico real de um arquivo JSON:
-        // fetch('historico.json')
-        //     .then(response => response.json())
-        //     .then(jsonData => {
-        //         jsonData.forEach(d => addDataPoint(d.time, d.risco, d.seguranca));
-        //     });
+            addIntradayData(risco, seguranca);
+        }, 1000); // a cada segundo
     </script>
 </body>
 </html>
