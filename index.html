@@ -13,8 +13,8 @@
             margin-top: 50px;
         }
         canvas {
-            max-width: 800px;
-            max-height: 400px;
+            width: 800px;
+            height: 400px;
         }
     </style>
 </head>
@@ -26,13 +26,14 @@
         const ctx = document.getElementById('realtimeChart').getContext('2d');
 
         const data = {
-            labels: [], // horário
+            labels: [],
             datasets: [
                 {
                     label: 'Risco',
                     borderColor: 'red',
                     backgroundColor: 'rgba(255,0,0,0.2)',
                     data: [],
+                    fill: true,
                     tension: 0.3
                 },
                 {
@@ -40,6 +41,7 @@
                     borderColor: 'green',
                     backgroundColor: 'rgba(0,255,0,0.2)',
                     data: [],
+                    fill: true,
                     tension: 0.3
                 }
             ]
@@ -49,11 +51,17 @@
             type: 'line',
             data: data,
             options: {
-                responsive: true,
+                responsive: false,
                 scales: {
                     y: {
                         beginAtZero: true,
                         max: 100
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        }
                     }
                 }
             }
@@ -70,16 +78,16 @@
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
 
-            // manter só os últimos 20 pontos
             if (data.labels.length > 20) {
                 data.labels.shift();
-                data.datasets.forEach(dataset => dataset.data.shift());
+                data.datasets.forEach(ds => ds.data.shift());
             }
 
             myChart.update();
         }
 
-        setInterval(addData, 1000); // atualiza a cada 1 segundo
+        // Atualiza a cada 1 segundo
+        setInterval(addData, 1000);
     </script>
 </body>
 </html>
