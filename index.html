@@ -1,64 +1,51 @@
-import yfinance as yf
-import pandas as pd
-import requests
-from textblob import TextBlob
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Índice de Sentimento vs Ibovespa</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Índice de Sentimento vs Ibovespa</h1>
+    <div id="grafico" style="width:100%;height:600px;"></div>
+    <script>
+        // Dados simulados (exemplo)
+        var datas = [
+            '2025-12-01','2025-12-02','2025-12-03','2025-12-04','2025-12-05',
+            '2025-12-06','2025-12-07','2025-12-08','2025-12-09','2025-12-10'
+        ];
 
-# ----------------------------
-# 1. Baixar dados históricos do Ibovespa (último mês)
-# ----------------------------
-ibov = yf.download("^BVSP", period="1mo", interval="1d")
+        var ibov = [125000, 126000, 124500, 125500, 126500, 127000, 126000, 127500, 128000, 127800];
+        var sentimento = [0.2, 0.3, -0.1, 0.0, 0.4, 0.5, 0.1, 0.3, 0.6, 0.2];
 
-# ----------------------------
-# 2. Capturar notícias reais (GNews API)
-# ----------------------------
-API_KEY = "SUA_CHAVE_API"  # Substitua pela sua chave do GNews
+        // Normalizar sentimento para a escala do Ibovespa
+        var sentimento_normalizado = sentimento.map(function(s) { return s * Math.max(...ibov); });
 
-sentimentos_diarios = []
+        var trace1 = {
+            x: datas,
+            y: ibov,
+            type: 'scatter',
+            name: 'Ibovespa',
+            line: {color: 'blue'}
+        };
 
-for data in ibov.index:
-    data_str = data.strftime('%Y-%m-%d')
-    url = f"https://gnews.io/api/v4/search?q=Ibovespa&lang=pt&from={data_str}&to={data_str}&max=5&token={API_KEY}"
-    res = requests.get(url).json()
-    noticias = [item['title'] for item in res.get('articles', [])]
+        var trace2 = {
+            x: datas,
+            y: sentimento_normalizado,
+            type: 'scatter',
+            name: 'Sentimento',
+            line: {color: 'red', dash: 'dash'}
+        };
 
-    if len(noticias) == 0:
-        noticias = ["Sem notícias relevantes"]  # fallback
+        var data = [trace1, trace2];
 
-    # Sentimento médio diário
-    daily_sentiment = sum(TextBlob(n).sentiment.polarity for n in noticias) / len(noticias)
-    sentimentos_diarios.append(daily_sentiment)
+        var layout = {
+            title: 'Índice de Sentimento vs Ibovespa',
+            xaxis: {title: 'Data'},
+            yaxis: {title: 'Preço Ibovespa'},
+        };
 
-ibov['Sentimento'] = sentimentos_diarios
-
-# ----------------------------
-# 3. Criar gráfico interativo Plotly
-# ----------------------------
-fig = go.Figure()
-
-# Linha do Ibovespa
-fig.add_trace(go.Scatter(
-    x=ibov.index, y=ibov['Close'],
-    mode='lines', name='Ibovespa', line=dict(color='blue')
-))
-
-# Linha do Sentimento (normalizada para escala do preço)
-fig.add_trace(go.Scatter(
-    x=ibov.index, y=ibov['Sentimento']*ibov['Close'].max(),
-    mode='lines', name='Sentimento', line=dict(color='red', dash='dash')
-))
-
-fig.update_layout(
-    title='Índice de Sentimento Diário vs Ibovespa',
-    xaxis_title='Data',
-    yaxis_title='Preço Ibovespa',
-    yaxis2=dict(title='Sentimento', overlaying='y', side='right')
-)
-
-# ----------------------------
-# 4. Salvar gráfico em HTML
-# ----------------------------
-html_file = "sentimento_ibov_diario.html"
-fig.write_html(html_file)
-print(f"Arquivo HTML gerado com sucesso: {html_file}")
+        Plotly.newPlot('grafico', data, layout);
+    </script>
+</body>
+</html>
