@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Acumulado Intraday</title>
+    <title>Risco x Segurança - Intraday Completo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Acumulado Intraday (Atualização a cada 60s)</h2>
+    <h2>Risco x Segurança - Histórico Intraday Completo</h2>
     <canvas id="intradayChart"></canvas>
 
     <script>
@@ -28,14 +28,25 @@
         // Marca o início do gráfico (hora de abertura)
         const startTime = new Date();
 
+        // Simulação do histórico do dia vindo do backend
+        const historicalData = [
+            {"time":"09:00","risco":20,"seguranca":80},
+            {"time":"10:00","risco":35,"seguranca":65},
+            {"time":"11:00","risco":50,"seguranca":50},
+            {"time":"12:00","risco":40,"seguranca":60},
+            {"time":"13:00","risco":55,"seguranca":45},
+            {"time":"14:00","risco":30,"seguranca":70},
+            {"time":"15:00","risco":60,"seguranca":40}
+        ];
+
         const data = {
-            labels: [], // tempo desde abertura (mm:ss)
+            labels: historicalData.map(d => d.time),
             datasets: [
                 {
                     label: 'Risco',
                     borderColor: 'red',
                     backgroundColor: 'rgba(255,0,0,0.2)',
-                    data: [],
+                    data: historicalData.map(d => d.risco),
                     fill: true,
                     tension: 0.2
                 },
@@ -43,7 +54,7 @@
                     label: 'Segurança',
                     borderColor: 'green',
                     backgroundColor: 'rgba(0,255,0,0.2)',
-                    data: [],
+                    data: historicalData.map(d => d.seguranca),
                     fill: true,
                     tension: 0.2
                 }
@@ -60,7 +71,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Tempo desde abertura (mm:ss)'
+                            text: 'Hora'
                         },
                         ticks: {
                             maxTicksLimit: 20
@@ -80,7 +91,7 @@
 
         const intradayChart = new Chart(ctx, config);
 
-        // Função para adicionar novo ponto ao gráfico
+        // Função para adicionar ponto novo em tempo real
         function addIntradayData(risco, seguranca) {
             const now = new Date();
             const elapsedMs = now - startTime;
@@ -95,13 +106,13 @@
             intradayChart.update();
         }
 
-        // Atualização automática a cada 60 segundos
+        // Atualização a cada 60 segundos
         setInterval(() => {
-            // Aqui você pode substituir por dados reais de API/WebSocket
+            // Simulação de dados novos (substitua por API/WebSocket real)
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
             addIntradayData(risco, seguranca);
-        }, 60000); // 60000 ms = 60 segundos
+        }, 60000);
     </script>
 </body>
 </html>
