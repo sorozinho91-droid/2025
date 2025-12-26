@@ -1,1 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard – Ativos de Risco x Seguros</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
+header { background: #1f2937; color: white; padding: 15px; text-align: center; }
+#controls, #date-controls { text-align: center; padding: 10px; }
+button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
+button.active { background: #2563eb; color: white; }
+#grafico { width: 100%; height: 500px; }
+input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
+#intervaloSelecionado { text-align: center; margin: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<header>
+<h2>Ativos de Risco x Seguros – Dashboard</h2>
+</header>
+
+<div id="controls">
+<button onclick="setTimeframe(0.5, this)">30s</button>
+<button onclick="setTimeframe(1, this)" class="active">1m</button>
+<button onclick="setTimeframe(5, this)">5m</button>
+<button onclick="setTimeframe(15, this)">15m</button>
+<button onclick="setTimeframe(60, this)">1h</button>
+</div>
+
+<div id="date-controls">
+<label>De: <input type="datetime-local" id="startDate"></label>
+<label>Até: <input type="datetime-local" id="endDate"></label>
+<button onclick="filtrarDatas()">Comparar</button>
+<button onclick="removerFiltro()">Remover Filtro</button>
+</div>
+
+<div id="intervaloSelecionado"></div>
+<div id="grafico"></div>
+
+<script>
+let timeframe = 1; // minutos
+let timer = null;
+let emTempoReal = true;
+
+let datas = [];       
+let risco = [];
+let seguro = [];
+
+let valorRisco = 100;
+let valorSeguro = 100;
+const pontosHistorico = 120;
+
+function atualizarValores(valor, volatilidade) {
+    return Math.max(0, valor + (Math.random() - 0.5) * volatilidade);
+}
+
+function gerarHistorico(pontos) {
+    let datasHist = [];
+    let riscoHist = [];
+    let seguroHist = [];
+
+    let valorRiscoHist = 100;
+    let valorSeguroHist = 100;
+    const agora = new Date();
+
+    for (let i = pontos - 1; i >= 0; i--) {
+        const hora = new Date(agora - i * timeframe * 60000);
+
+        valorRiscoHist = atualizarValores(valorRiscoHist, 2);
+        valorSeguroHist = atualizarValores(valorSeguroHist, 0.5);
+
+        datasHist.push(hora);
+        riscoHist.push(valorRiscoHist);
+        seguroHist.push(valorSeguroHist);
+    }
+
+    return { datasHist, riscoHist, seguroHist, valorRiscoHist, valorSeguroHist };
+}
+
+function atualizarGrafico() {
+    if (!emTempoReal) return; // não atualiza se estiver filtrado
+
+    const agora = new Date();
+
+    valorRisco = atualizarValores(valorRisco, 2);
+    valorSeguro = atualizarValores(valorSeguro, 0.5);
+
+    datas.push(agora);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+
+    if (datas.length > pontosHistorico) {
+        datas.shift();
+        risco.shift();
+        seguro.shift();
+    }
+
+    Plotly.extendTraces('grafico', {
+        x: [[agora], [agora]],
+        y: [[valorRisco], [valorSeguro]]
+    }, [0,1], pontosHistorico);
+}
+
+function setTimeframe(minutos, botao) {
+    timeframe = minutos;
+
+    document.querySelectorAll('#controls button').forEach(b => b.classList.remove('active'));
+    botao.classList.add('active');
+
+    if (timer) clearInterval(timer);
+    timer = setInterval(atualizarGrafico, timeframe * 60000);
+}
+
+// Filtrar gráfico entre duas datas e mostrar todo o período
+function filtrarDatas() {
+    const startInput = document.getElementById('startDate').value;
+    const endInput = document.getElementById('endDate').value;
+    if (!startInput || !endInput) { alert('Selecione datas válidas!'); return; }
+
+    const start = new Date(startInput);
+    const end = new Date(endInput);
+    if (start > end) { alert('Data inicial maior que final!'); return; }
+
+    emTempoReal = false;
+
+    const filteredX = [];
+    const filteredRisco = [];
+    const filteredSeguro = [];
+
+    for (let i = 0; i < datas.length; i++) {
+        if (datas[i] >= start && datas[i] <= end) {
+            filteredX.push(datas[i]);
+            filteredRisco.push(risco[i]);
+            filteredSeguro.push(seguro[i]);
+        }
+    }
+
+    Plotly.update('grafico', {
+        x: [filteredX, filteredX],
+        y: [filteredRisco, filteredSeguro]
+    });
+
+    Plotly.relayout('grafico', {
+        'xaxis.range': [start, end],
+        'xaxis.dtick': "M1", // tick a cada mês
+        'xaxis.tickformat': "%b/%Y" // mês/ano
+    });
+
+    document.getElementById('intervaloSelecionado').innerText =
+        `Intervalo selecionado: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
+}
+
+// Voltar ao gráfico completo com atualização em tempo real
+function removerFiltro() {
+    emTempoReal = true;
+    document.getElementById('intervaloSelecionado').innerText = '';
+
+    Plotly.update('grafico', {
+        x: [datas, datas],
+        y: [risco, seguro]
+    });
+
+    Plotly.relayout('grafico', {
+        'xaxis.autorange': true,
+        'xaxis.dtick': null,
+        'xaxis.tickformat': null
+    });
+}
+
+/* ================== INICIALIZAÇÃO ================== */
+const historico = gerarHistorico(pontosHistorico);
+datas = historico.datasHist;
+risco = historico.riscoHist;
+seguro = historico.seguroHist;
+valorRisco = historico.valorRiscoHist;
+valorSeguro = historico.valorSeguroHist;
+
+const layout = {
+    title: 'Comparação em Tempo Real',
+    xaxis: { title: 'Data', type:'date', tickformat:'%b/%Y', dtick:'M1' },
+    yaxis: { title: 'Valor' },
+    margin: { t: 50 }
+};
+
+Plotly.newPlot('grafico', [
+    { x: datas, y: risco, mode: 'lines', name: 'Ativos de Risco', line: { color: 'red' } },
+    { x: datas, y: seguro, mode: 'lines', name: 'Ativos Seguros', line: { color: 'green' } }
+], layout, { responsive: true });
+
+timer = setInterval(atualizarGrafico, timeframe * 60000);
+
+window.addEventListener('resize', () => { Plotly.Plots.resize('grafico'); });
+</script>
+
+</body>
+</html>
 
