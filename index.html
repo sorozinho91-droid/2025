@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel + Curva Acumulada Intraday Responsivo</title>
+<title>Painel Real + Intraday com APIs Reais</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 <style>
   body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 20px;
-    background-color: #f0f2f5;
+    background: #f0f2f5;
   }
   .panel {
     display: flex;
@@ -20,20 +20,19 @@
   }
   .panel div {
     flex: 1 1 200px;
-    padding: 12px;
-    border-radius: 10px;
+    padding: 14px;
+    border-radius: 12px;
     background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     text-align: center;
   }
-  .panel h3 { margin: 0 0 6px; font-size: 16px; }
-  .value { font-size: 24px; font-weight: bold; }
-  .change { font-size: 14px; }
+  .panel h3 { margin: 0 0 8px; font-size: 16px; color:#333; }
+  .value { font-size: 26px; font-weight: bold; }
+  .change { font-size: 14px; color:#555; }
   #intradayChart {
     width: 100%;
-    max-width: 1400px;
-    height: 500px;
-    background-color: #fff;
+    height: 550px;
+    background: #fff;
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0,0,0,0.1);
   }
@@ -41,31 +40,13 @@
 </head>
 <body>
 
-<!-- PAINEL DE COTAÇÕES -->
 <div class="panel">
-  <div id="oilWTIPanel">
-    <h3>Petróleo WTI</h3>
-    <div class="value" id="oilWTIPrice">--</div>
-    <div class="change" id="oilWTIChange">--</div>
-  </div>
-  <div id="oilBrentPanel">
-    <h3>Petróleo Brent</h3>
-    <div class="value" id="oilBrentPrice">--</div>
-    <div class="change" id="oilBrentChange">--</div>
-  </div>
-  <div id="dxyPanel">
-    <h3>Índice DXY</h3>
-    <div class="value" id="dxyPrice">--</div>
-    <div class="change" id="dxyChange">--</div>
-  </div>
-  <div id="ironPanel">
-    <h3>Minério de Ferro</h3>
-    <div class="value" id="ironPrice">--</div>
-    <div class="change" id="ironChange">--</div>
-  </div>
+  <div id="oilWTIPanel"><h3>Petroléo WTI</h3><div class="value" id="oilWTIPrice">--</div><div class="change" id="oilWTIChange">--</div></div>
+  <div id="oilBrentPanel"><h3>Petroléo Brent</h3><div class="value" id="oilBrentPrice">--</div><div class="change" id="oilBrentChange">--</div></div>
+  <div id="dxyPanel"><h3>Índice DXY</h3><div class="value" id="dxyPrice">--</div><div class="change" id="dxyChange">--</div></div>
+  <div id="ironPanel"><h3>Minério de Ferro</h3><div class="value" id="ironPrice">--</div><div class="change" id="ironChange">--</div></div>
 </div>
 
-<!-- GRÁFICO INTRADAY -->
 <canvas id="intradayChart"></canvas>
 
 <script>
@@ -75,107 +56,95 @@ const startTime = new Date();
 const data = {
     labels: [],
     datasets: [
-        {
-            label: 'Risco',
-            borderColor: 'rgba(255,99,132,1)',
-            backgroundColor: 'rgba(255,99,132,0.2)',
-            data: [],
-            fill: true,
-            tension: 0.2,
-            pointRadius: 3,
-            borderWidth: 2
-        },
-        {
-            label: 'Segurança',
-            borderColor: 'rgba(54,162,235,1)',
-            backgroundColor: 'rgba(54,162,235,0.2)',
-            data: [],
-            fill: true,
-            tension: 0.2,
-            pointRadius: 3,
-            borderWidth: 2
-        }
+        { label: 'Risco', borderColor: 'rgba(255,99,132,1)', backgroundColor:'rgba(255,99,132,0.2)', data: [], fill:true, tension:0.2 },
+        { label: 'Segurança', borderColor: 'rgba(54,162,235,1)', backgroundColor:'rgba(54,162,235,0.2)', data: [], fill:true, tension:0.2 }
     ]
 };
 
 const config = {
-    type: 'line',
-    data: data,
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        plugins: {
-            legend: { labels: { font: { size: 14 } } },
-            tooltip: { mode: 'index', intersect: false },
-            zoom: {
-                pan: { enabled: true, mode: 'x', modifierKey: 'ctrl' },
-                zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+    type:'line',
+    data:data,
+    options:{
+        responsive:true,
+        plugins:{
+            legend:{labels:{font:{size:14}}},
+            tooltip:{mode:'index',intersect:false},
+            zoom:{
+                pan:{enabled:true,mode:'x',modifierKey:'ctrl'},
+                zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'}
             }
         },
-        scales: {
-            x: {
-                title: { display: true, text: 'Tempo desde abertura (HH:MM:SS)' },
-                ticks: { maxTicksLimit: 20 },
-                grid: { color: 'rgba(0,0,0,0.05)' }
-            },
-            y: {
-                beginAtZero: true,
-                max: 100,
-                title: { display: true, text: 'Valor' },
-                grid: { color: 'rgba(0,0,0,0.05)' }
-            }
+        scales:{
+            x:{ title:{display:true,text:'Tempo (HH:MM:SS)'}, ticks:{maxTicksLimit:20}},
+            y:{ beginAtZero:true, title:{display:true,text:'Valor'} }
         }
     },
-    plugins: [Chart.registry.getPlugin('zoom')]
+    plugins:[Chart.registry.getPlugin('zoom')]
 };
 
 const intradayChart = new Chart(ctx, config);
 
-// Atualiza o gráfico automaticamente
-function addIntradayData(risco, seguranca){
+function addIntradayPoint(risco, seguranca){
     const now = new Date();
-    const timeLabel = now.toLocaleTimeString('pt-BR', {hour12:false});
-    data.labels.push(timeLabel);
+    const label = now.toLocaleTimeString('pt-BR',{hour12:false});
+    data.labels.push(label);
     data.datasets[0].data.push(risco);
     data.datasets[1].data.push(seguranca);
-
-    const maxPoints = 5000;
-    if(data.labels.length > maxPoints){
+    if(data.labels.length > 5000){
         data.labels.shift();
-        data.datasets[0].data.shift();
-        data.datasets[1].data.shift();
+        data.datasets.forEach(ds=>ds.data.shift());
     }
-
     intradayChart.update();
 }
 
-// --------------------
-// PAINEL DE COTAÇÕES
-// --------------------
-function updateQuotes(oilWTI, oilBrent, dxy, iron){
-    document.getElementById('oilWTIPrice').innerText = `$${oilWTI.price}`;
-    document.getElementById('oilWTIChange').innerText = `${oilWTI.change}%`;
-    document.getElementById('oilBrentPrice').innerText = `$${oilBrent.price}`;
-    document.getElementById('oilBrentChange').innerText = `${oilBrent.change}%`;
-    document.getElementById('dxyPrice').innerText = dxy.price;
-    document.getElementById('dxyChange').innerText = `${dxy.change}%`;
-    document.getElementById('ironPrice').innerText = iron.price;
-    document.getElementById('ironChange').innerText = `${iron.change}%`;
+// —————— COTAÇÕES ——————
+
+async function fetchPanelData(){
+    try {
+        const [wtiRes, brentRes, dxyRes, ironRes] = await Promise.all([
+            fetch('/api/oil/wti'),
+            fetch('/api/oil/brent'),
+            fetch('/api/forex/dxy'),
+            fetch('/api/commodity/iron')
+        ]);
+        const wti = await wtiRes.json();
+        const brent = await brentRes.json();
+        const dxy = await dxyRes.json();
+        const iron = await ironRes.json();
+
+        document.getElementById('oilWTIPrice').innerText = `$${wti.price}`;
+        document.getElementById('oilWTIChange').innerText = `${wti.change}%`;
+
+        document.getElementById('oilBrentPrice').innerText = `$${brent.price}`;
+        document.getElementById('oilBrentChange').innerText = `${brent.change}%`;
+
+        document.getElementById('dxyPrice').innerText = dxy.price;
+        document.getElementById('dxyChange').innerText = `${dxy.change}%`;
+
+        document.getElementById('ironPrice').innerText = iron.price;
+        document.getElementById('ironChange').innerText = `${iron.change}%`;
+
+    } catch(err){ console.error('Erro ao buscar painel', err);}
+}
+
+// —————— INTRADAY RISCO ——————
+
+async function fetchIntradayMetrics(){
+    try {
+        const res = await fetch('/api/intraday');
+        const json = await res.json();
+        addIntradayPoint(json.risco,json.seguranca);
+    } catch(err){ console.error('Erro intraday', err);}
 }
 
 function refreshAll(){
-    // Simulação de dados aleatórios
-    const risco = Math.floor(Math.random()*100);
-    const seguranca = Math.floor(Math.random()*100);
-    addIntradayData(risco, seguranca);
-
-    const oilWTI = { price: (70+Math.random()*5).toFixed(2), change: (Math.random()*2-1).toFixed(2) };
-    const oilBrent = { price: (72+Math.random()*5).toFixed(2), change: (Math.random()*2-1).toFixed(2) };
-    const dxy = { price: (104+Math.random()*1.5).toFixed(2), change: (Math.random()*0.5-0.25).toFixed(2) };
-    const iron = { price: (130+Math.random()*5).toFixed(2), change: (Math.random()*1.5-0.75).toFixed(2) };
-
-    updateQuotes(oilWTI, oilBrent, dxy, iron);
+    fetchPanelData();
+    fetchIntradayMetrics();
 }
 
-// Atualiza painel e gráfico automaticamente a cada 60 segundos
+refreshAll();
+setInterval(refreshAll,60000);
+</script>
+
+</body>
+</html>
