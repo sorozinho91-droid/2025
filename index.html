@@ -16,7 +16,7 @@ header {
     padding: 15px;
     text-align: center;
 }
-#controls {
+#controls, #date-controls {
     text-align: center;
     padding: 10px;
 }
@@ -36,6 +36,10 @@ button.active {
     width: 100%;
     height: 500px;
 }
+input[type="datetime-local"] {
+    margin: 0 5px;
+    padding: 5px;
+}
 </style>
 </head>
 <body>
@@ -50,6 +54,12 @@ button.active {
     <button onclick="setTimeframe(5, this)">5m</button>
     <button onclick="setTimeframe(15, this)">15m</button>
     <button onclick="setTimeframe(60, this)">1h</button>
+</div>
+
+<div id="date-controls">
+    <label>De: <input type="datetime-local" id="startDate"></label>
+    <label>Até: <input type="datetime-local" id="endDate"></label>
+    <button onclick="filtrarDatas()">Comparar</button>
 </div>
 
 <div id="grafico"></div>
@@ -68,12 +78,10 @@ let valorSeguro = 100;
 const pontosHistorico = 120; // número de pontos do histórico
 
 /* ================== FUNÇÕES ================== */
-// Atualiza valores com volatilidade
 function atualizarValores(valor, volatilidade) {
     return Math.max(0, valor + (Math.random() - 0.5) * volatilidade);
 }
 
-// Gera histórico inicial
 function gerarHistorico(pontos) {
     let datasHist = [];
     let riscoHist = [];
@@ -99,7 +107,6 @@ function gerarHistorico(pontos) {
     return { datasHist, riscoHist, seguroHist, valorRiscoHist, valorSeguroHist };
 }
 
-// Atualiza gráfico em tempo real
 function atualizarGrafico() {
     const hora = new Date().toLocaleTimeString();
 
@@ -122,7 +129,6 @@ function atualizarGrafico() {
     }, [0, 1], pontosHistorico);
 }
 
-// Define timeframe e reinicia timer
 function setTimeframe(minutos, botao) {
     timeframe = minutos;
 
@@ -133,8 +139,38 @@ function setTimeframe(minutos, botao) {
     timer = setInterval(atualizarGrafico, timeframe * 60000);
 }
 
+// Filtrar gráfico entre duas datas
+function filtrarDatas() {
+    const start = new Date(document.getElementById('startDate').value);
+    const end = new Date(document.getElementById('endDate').value);
+
+    if (!start || !end || start > end) {
+        alert('Selecione datas válidas!');
+        return;
+    }
+
+    const filteredX = [];
+    const filteredRisco = [];
+    const filteredSeguro = [];
+
+    for (let i = 0; i < datas.length; i++) {
+        const horaParts = datas[i].split(':');
+        const now = new Date();
+        now.setHours(horaParts[0], horaParts[1], horaParts[2]);
+        if (now >= start && now <= end) {
+            filteredX.push(datas[i]);
+            filteredRisco.push(risco[i]);
+            filteredSeguro.push(seguro[i]);
+        }
+    }
+
+    Plotly.update('grafico', {
+        x: [filteredX, filteredX],
+        y: [filteredRisco, filteredSeguro]
+    });
+}
+
 /* ================== INICIALIZAÇÃO ================== */
-// Gerar histórico inicial
 const historico = gerarHistorico(pontosHistorico);
 datas = historico.datasHist;
 risco = historico.riscoHist;
@@ -142,7 +178,6 @@ seguro = historico.seguroHist;
 valorRisco = historico.valorRiscoHist;
 valorSeguro = historico.valorSeguroHist;
 
-// Criar gráfico
 const layout = {
     title: 'Comparação em Tempo Real',
     xaxis: { title: 'Hora' },
@@ -155,10 +190,8 @@ Plotly.newPlot('grafico', [
     { x: datas, y: seguro, mode: 'lines', name: 'Ativos Seguros', line: { color: 'green' } }
 ], layout, { responsive: true });
 
-// Iniciar atualização automática
 timer = setInterval(atualizarGrafico, timeframe * 60000);
 
-// Responsividade
 window.addEventListener('resize', () => {
     Plotly.Plots.resize('grafico');
 });
