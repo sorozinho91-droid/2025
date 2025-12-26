@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real com Scroll</title>
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; }
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real com Scroll</h2>
+    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
     <div id="grafico"></div>
 
     <script>
@@ -22,14 +22,15 @@
         var valor_risco = 100;
         var valor_seguro = 100;
 
-        var intervalo = 2 * 1000; // 2 segundos
-        var duracaoJanela = 5 * 60 * 1000; // janela de 5 minutos visíveis
+        var intervalo = 2000; // 2 segundos
+        var duracaoJanela = 5 * 60 * 1000; // 5 minutos visíveis
 
         function atualizarValores(valor) {
             return Math.max(0, valor + (Math.random() - 0.5) * 2);
         }
 
         function inicializarGrafico() {
+            // Adiciona dois pontos iniciais para a linha aparecer
             var agora = new Date();
             datas.push(new Date(agora.getTime() - intervalo));
             datas.push(agora);
@@ -42,7 +43,7 @@
                 type: 'scatter',
                 mode: 'lines+markers',
                 name: 'Ativos de Risco',
-                line: {color: 'red', shape: 'spline'}
+                line: { color: 'red', shape: 'spline' }
             };
 
             var traceSeguro = {
@@ -51,7 +52,7 @@
                 type: 'scatter',
                 mode: 'lines+markers',
                 name: 'Ativos Seguros',
-                line: {color: 'green', shape: 'spline'}
+                line: { color: 'green', shape: 'spline' }
             };
 
             var layout = {
@@ -68,9 +69,7 @@
                 margin: { t:50, r:30, l:50, b:50 }
             };
 
-            var config = { responsive: true };
-
-            Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout, config);
+            Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout, { responsive: true });
         }
 
         inicializarGrafico();
@@ -85,23 +84,30 @@
 
             // Remover dados antigos fora da janela de 5 minutos
             var limite = new Date(agora.getTime() - duracaoJanela);
-            while (datas[0] < limite) {
+            while (datas.length > 0 && datas[0] < limite) {
                 datas.shift();
                 risco.shift();
                 seguro.shift();
             }
 
+            var layoutAtualizado = {
+                xaxis: {
+                    range: [limite, agora],
+                    type: 'date'
+                }
+            };
+
             Plotly.react('grafico', [
-                { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red', shape: 'spline'} },
-                { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green', shape: 'spline'} }
-            ], {}, {responsive:true});
+                { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: { color: 'red', shape: 'spline' } },
+                { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: { color: 'green', shape: 'spline' } }
+            ], layoutAtualizado, { responsive: true });
 
         }, intervalo);
 
+        // Redimensionamento automático
         window.addEventListener('resize', function(){
             Plotly.Plots.resize('grafico');
         });
-
     </script>
 </body>
 </html>
