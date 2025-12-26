@@ -2,20 +2,15 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Avançado</title>
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; }
-        #grafico { width: 95%; height: 500px; margin: auto; }
-        h1 { color: #333; }
-    </style>
 </head>
 <body>
-    <h1>Ativos de Risco vs Seguros - Tempo Real</h1>
-    <div id="grafico"></div>
+    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
+    <div id="grafico" style="width:90%;height:500px;"></div>
 
     <script>
-        // Inicializar arrays
+        // Arrays iniciais
         var datas = [];
         var risco = [];
         var seguro = [];
@@ -26,7 +21,7 @@
 
         // Função para gerar novos valores simulados
         function atualizarValores(valor) {
-            return Math.max(0, valor + (Math.random() - 0.5) * 2); // variação aleatória
+            return Math.max(0, valor + (Math.random() - 0.5) * 2);
         }
 
         // Inicializar primeiro ponto
@@ -34,51 +29,26 @@
         risco.push(valor_risco);
         seguro.push(valor_seguro);
 
-        // Dados iniciais com linhas suavizadas (spline)
+        // Dados iniciais
         var data = [
-            {
-                x: datas,
-                y: risco,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Ativos de Risco',
-                line: {color: '#e74c3c', shape: 'spline', width: 3},
-                marker: {size: 6},
-                hovertemplate: 'Hora: %{x}<br>Valor: %{y}<extra></extra>'
-            },
-            {
-                x: datas,
-                y: seguro,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Ativos Seguros',
-                line: {color: '#2ecc71', shape: 'spline', width: 3},
-                marker: {size: 6},
-                hovertemplate: 'Hora: %{x}<br>Valor: %{y}<extra></extra>'
-            }
+            { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red'} },
+            { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green'} }
         ];
 
         var layout = {
             title: 'Ativos de Risco vs Seguros - Tempo Real',
-            xaxis: {
-                title: 'Hora',
-                showgrid: true,
-                rangeslider: { visible: true } // Scroll horizontal
-            },
-            yaxis: { title: 'Valor', showgrid: true },
-            margin: { t: 50, r: 50, l: 50, b: 50 },
-            legend: { x: 0.1, y: 1.1 },
-            plot_bgcolor: '#fff',
-            paper_bgcolor: '#f9f9f9'
+            xaxis: { title: 'Hora' },
+            yaxis: { title: 'Valor' }
         };
 
         // Renderizar gráfico
         Plotly.newPlot('grafico', data, layout);
 
-        // Atualizar gráfico a cada 2 segundos e acumular histórico
+        // Atualizar gráfico a cada 2 segundos
         setInterval(function(){
             var agora = new Date().toLocaleTimeString();
             datas.push(agora);
+
             valor_risco = atualizarValores(valor_risco);
             valor_seguro = atualizarValores(valor_seguro);
 
@@ -86,29 +56,11 @@
             seguro.push(valor_seguro);
 
             Plotly.react('grafico', [
-                {
-                    x: datas,
-                    y: risco,
-                    type: 'scatter',
-                    mode: 'lines+markers',
-                    name: 'Ativos de Risco',
-                    line: {color: '#e74c3c', shape: 'spline', width: 3},
-                    marker: {size: 6},
-                    hovertemplate: 'Hora: %{x}<br>Valor: %{y}<extra></extra>'
-                },
-                {
-                    x: datas,
-                    y: seguro,
-                    type: 'scatter',
-                    mode: 'lines+markers',
-                    name: 'Ativos Seguros',
-                    line: {color: '#2ecc71', shape: 'spline', width: 3},
-                    marker: {size: 6},
-                    hovertemplate: 'Hora: %{x}<br>Valor: %{y}<extra></extra>'
-                }
+                { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red'} },
+                { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green'} }
             ], layout);
 
-        }, 2000); // atualiza a cada 2 segundos
+        }, 2000);
     </script>
 </body>
 </html>
