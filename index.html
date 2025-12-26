@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard – Ativos de Risco x Seguros (1 Dia)</title>
+<title>Dashboard – Comparação de Ativos por Data</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
@@ -18,7 +18,7 @@ input[type="date"] { margin: 0 5px; padding: 5px; }
 <body>
 
 <header>
-<h2>Ativos de Risco x Seguros – Dashboard (1 Dia)</h2>
+<h2>Ativos de Risco x Seguros – Comparação por Data</h2>
 </header>
 
 <div id="controls">
@@ -30,8 +30,9 @@ input[type="date"] { margin: 0 5px; padding: 5px; }
 </div>
 
 <div id="date-controls">
-<label>Data: <input type="date" id="selectedDate"></label>
-<button onclick="filtrarDia()">Comparar</button>
+<label>De: <input type="date" id="startDate"></label>
+<label>Até: <input type="date" id="endDate"></label>
+<button onclick="filtrarDatas()">Comparar</button>
 <button onclick="removerFiltro()">Remover Filtro</button>
 </div>
 
@@ -88,13 +89,14 @@ function setTimeframe(minutos, botao){
     timer = setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Filtrar apenas um dia
-function filtrarDia(){
-    const dateInput = document.getElementById('selectedDate').value;
-    if(!dateInput){ alert('Selecione uma data'); return; }
-
-    const start = new Date(dateInput + 'T00:00:00');
-    const end = new Date(dateInput + 'T23:59:59');
+// Filtrar por duas datas (início e fim do dia)
+function filtrarDatas(){
+    const startInput = document.getElementById('startDate').value;
+    const endInput = document.getElementById('endDate').value;
+    if(!startInput || !endInput){ alert('Selecione as duas datas'); return; }
+    const start = new Date(startInput + 'T00:00:00');
+    const end = new Date(endInput + 'T23:59:59');
+    if(start > end){ alert('Data inicial maior que final'); return; }
 
     emTempoReal = false;
 
@@ -107,14 +109,14 @@ function filtrarDia(){
         }
     }
 
-    Plotly.update('grafico', {x:[filteredX, filteredX], y:[filteredR, filteredS]});
+    Plotly.update('grafico',{x:[filteredX, filteredX], y:[filteredR, filteredS]});
     Plotly.relayout('grafico', {
         'xaxis.range':[start,end],
-        'xaxis.tickformat':'%H:%M'
+        'xaxis.tickformat':'%d/%m'
     });
 
     document.getElementById('intervaloSelecionado').innerText =
-        `Comparação do dia: ${start.toLocaleDateString()}`;
+        `Comparação do período: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
 }
 
 // Remover filtro e voltar para tempo real
@@ -129,8 +131,8 @@ function removerFiltro(){
 gerarHistoricoAnual(1);
 
 const layout = {
-    title:'Comparação em Tempo Real',
-    xaxis:{title:'Hora', type:'date'},
+    title:'Comparação de Ativos',
+    xaxis:{title:'Data', type:'date'},
     yaxis:{title:'Valor'},
     margin:{t:50},
     legend: {
@@ -152,7 +154,7 @@ const traceRisco = {
     name: 'Ativos de Risco',
     line:{color:'red', width:2},
     marker:{size:6, symbol:'circle'},
-    hovertemplate: 'Hora: %{x|%H:%M}<br>Valor: %{y:.2f}<extra></extra>'
+    hovertemplate: 'Data: %{x|%d/%m/%Y}<br>Valor: %{y:.2f}<extra></extra>'
 };
 
 const traceSeguro = {
@@ -162,7 +164,7 @@ const traceSeguro = {
     name: 'Ativos Seguros',
     line:{color:'green', width:2},
     marker:{size:6, symbol:'square'},
-    hovertemplate: 'Hora: %{x|%H:%M}<br>Valor: %{y:.2f}<extra></extra>'
+    hovertemplate: 'Data: %{x|%d/%m/%Y}<br>Valor: %{y:.2f}<extra></extra>'
 };
 
 Plotly.newPlot('grafico',[traceRisco, traceSeguro], layout, {responsive:true});
