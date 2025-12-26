@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real Responsivo</title>
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; }
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real com Scroll</h2>
+    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
     <div id="grafico"></div>
 
     <script>
@@ -27,7 +27,7 @@
         }
 
         // Inicializar primeiro ponto
-        var agora = new Date().toLocaleTimeString();
+        var agora = new Date();
         datas.push(agora);
         risco.push(valor_risco);
         seguro.push(valor_seguro);
@@ -55,10 +55,9 @@
         var layout = {
             title: 'Ativos de Risco vs Seguros - Tempo Real',
             xaxis: { 
-                title: 'Hora', 
-                showgrid: true, 
-                rangeslider: { visible: true }, // Scroll horizontal
-                type: 'category'
+                title: 'Hora',
+                type: 'date',      // ESSENCIAL: eixo X como data/tempo
+                showgrid: true 
             },
             yaxis: { title: 'Valor', showgrid: true },
             autosize: true,
@@ -71,14 +70,14 @@
 
         // Atualizar gráfico a cada 2 segundos
         setInterval(function(){
-            var agora = new Date().toLocaleTimeString();
+            var agora = new Date();  // objeto Date real
             datas.push(agora);
             valor_risco = atualizarValores(valor_risco);
             valor_seguro = atualizarValores(valor_seguro);
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
-            // Atualiza mantendo histórico completo
+            // Atualiza mantendo histórico
             Plotly.react('grafico', [
                 { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red', shape: 'spline'} },
                 { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green', shape: 'spline'} }
@@ -86,7 +85,7 @@
 
         }, 2000);
 
-        // Redimensionamento automático para manter o foco
+        // Redimensionamento automático
         window.addEventListener('resize', function(){
             Plotly.Plots.resize('grafico');
         });
