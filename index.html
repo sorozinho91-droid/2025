@@ -1,3 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard com Controle de Velocidade</title>
+
+    <!-- IMPORTANTE: Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+<div style="margin-bottom:10px;">
+    <label>
+        Velocidade do gráfico:
+        <input
+            type="range"
+            id="velocidade"
+            min="1000"
+            max="6000"
+            step="500"
+            value="2000"
+        >
+        <span id="velocidadeValor">2.0s</span>
+    </label>
+</div>
+
+<!-- DIV DO GRÁFICO (OBRIGATÓRIO) -->
+<div id="grafico" style="width:100%;height:400px;"></div>
+
 <script>
 let valorRisco = 100;
 let valorSeguro = 100;
@@ -13,7 +42,7 @@ const traceRisco = {
     y: [],
     type: 'scatter',
     mode: 'lines',
-    name: '🔴 Risco — Ativos de Risco',
+    name: '🔴 Risco',
     line: { color: 'red', width: 2 }
 };
 
@@ -22,30 +51,20 @@ const traceSeguro = {
     y: [],
     type: 'scatter',
     mode: 'lines',
-    name: '🟢 Segurança — Ativos Seguros',
+    name: '🟢 Segurança',
     line: { color: 'green', width: 2 }
 };
 
 const layout = {
-    xaxis: { title: 'Tempo', automargin: true },
-    yaxis: { title: 'Valor', automargin: true },
-    margin: { t: 10, l: 50, r: 20, b: 40 },
-    legend: {
-        orientation: 'h',
-        x: 0.5,
-        xanchor: 'center',
-        y: -0.2
-    },
+    xaxis: { title: 'Tempo' },
+    yaxis: { title: 'Valor' },
     transition: {
         duration: 800,
         easing: 'linear'
     }
 };
 
-Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout, {
-    responsive: true,
-    displayModeBar: false
-});
+Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout);
 
 function iniciarGrafico() {
     clearInterval(timer);
@@ -68,7 +87,7 @@ function iniciarGrafico() {
     }, intervalo);
 }
 
-// Slider de velocidade
+// Slider
 const slider = document.getElementById('velocidade');
 const texto = document.getElementById('velocidadeValor');
 
@@ -78,10 +97,8 @@ slider.addEventListener('input', () => {
     iniciarGrafico();
 });
 
-// Inicia pela primeira vez
 iniciarGrafico();
-
-window.addEventListener('resize', () => {
-    Plotly.Plots.resize('grafico');
-});
 </script>
+
+</body>
+</html>
