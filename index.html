@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real</title>
+    <title>Ativos de Risco x Segurança - Diário</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
@@ -10,76 +10,96 @@
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
-    <div id="grafico"></div>
 
-    <script>
-        // Arrays iniciais
-        var datas = [];
-        var risco = [];
-        var seguro = [];
+<h2>Ativos de Risco x Seguros - Acumulado Diário</h2>
+<div id="grafico"></div>
 
-        // Valores iniciais
-        var valor_risco = 100;
-        var valor_seguro = 100;
+<script>
+/* ================= CONFIGURAÇÃO ================= */
+const hoje = new Date().toISOString().slice(0, 10);
+const STORAGE_KEY = "dadosGraficoDiario";
 
-        // Função para gerar novos valores simulados
-        function atualizarValores(valor) {
-            return Math.max(0, valor + (Math.random() - 0.5) * 2);
-        }
+/* ================= CARREGAR DADOS ================= */
+let dadosSalvos = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-        // Adicionar primeiro ponto
-        var agora = new Date().toLocaleTimeString();
-        datas.push(agora);
-        risco.push(valor_risco);
-        seguro.push(valor_seguro);
+let datas = [];
+let risco = [];
+let seguro = [];
+let valor_risco = 100;
+let valor_seguro = 100;
 
-        // Criar gráfico inicial
-        var traceRisco = {
-            x: datas,
-            y: risco,
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: 'Ativos de Risco',
-            line: {color: 'red'}
-        };
+if (dadosSalvos && dadosSalvos.data === hoje) {
+    datas = dadosSalvos.datas;
+    risco = dadosSalvos.risco;
+    seguro = dadosSalvos.seguro;
+    valor_risco = risco[risco.length - 1] ?? 100;
+    valor_seguro = seguro[seguro.length - 1] ?? 100;
+} else {
+    dadosSalvos = {
+        data: hoje,
+        datas: [],
+        risco: [],
+        seguro: []
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosSalvos));
+}
 
-        var traceSeguro = {
-            x: datas,
-            y: seguro,
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: 'Ativos Seguros',
-            line: {color: 'green'}
-        };
+/* ================= GRÁFICO INICIAL ================= */
+const traceRisco = {
+    x: datas,
+    y: risco,
+    type: 'scatter',
+    mode: 'lines',
+    name: 'Ativos de Risco',
+};
 
-        var data = [traceRisco, traceSeguro];
+const traceSeguro = {
+    x: datas,
+    y: seguro,
+    type: 'scatter',
+    mode: 'lines',
+    name: 'Ativos Seguros',
+};
 
-        var layout = {
-            title: 'Ativos de Risco vs Seguros - Tempo Real',
-            xaxis: {title: 'Hora'},
-            yaxis: {title: 'Valor'},
-            margin: {t:50, r:30, l:50, b:50}
-        };
+Plotly.newPlot('grafico', [traceRisco, traceSeguro], {
+    title: 'Acumulado do Dia',
+    xaxis: { title: 'Hora' },
+    yaxis: { title: 'Valor' }
+});
 
-        Plotly.newPlot('grafico', data, layout);
+/* ================= FUNÇÕES ================= */
+function atualizarValores(valor) {
+    return Math.max(0, valor + (Math.random() - 0.5) * 2);
+}
 
-        // Atualizar a cada 2 segundos
-        setInterval(function(){
-            var agora = new Date().toLocaleTimeString();
-            datas.push(agora);
-            valor_risco = atualizarValores(valor_risco);
-            valor_seguro = atualizarValores(valor_seguro);
-            risco.push(valor_risco);
-            seguro.push(valor_seguro);
+function salvarDados() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        data: hoje,
+        datas: datas,
+        risco: risco,
+        seguro: seguro
+    }));
+}
 
-            Plotly.update('grafico', {
-                x: [datas, datas],
-                y: [risco, seguro]
-            }, layout);
+/* ================= LOOP TEMPO REAL ================= */
+setInterval(() => {
+    const agora = new Date().toLocaleTimeString();
 
-        }, 2000);
-    </script>
+    valor_risco = atualizarValores(valor_risco);
+    valor_seguro = atualizarValores(valor_seguro);
+
+    datas.push(agora);
+    risco.push(valor_risco);
+    seguro.push(valor_seguro);
+
+    Plotly.extendTraces('grafico', {
+        x: [[agora], [agora]],
+        y: [[valor_risco], [valor_seguro]]
+    }, [0, 1]);
+
+    salvarDados();
+}, 2000);
+</script>
+
 </body>
 </html>
-
