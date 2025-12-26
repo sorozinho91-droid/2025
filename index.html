@@ -2,33 +2,41 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Risco x Segurança - Intraday Profissional</title>
+    <title>Risco x Segurança - Intraday Moderno</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             margin-top: 20px;
+            background-color: #f5f5f5;
         }
         canvas {
             width: 1200px;
             height: 500px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <h2>Risco x Segurança - Histórico Intraday Profissional</h2>
+    <h2>Risco x Segurança - Intraday Moderno</h2>
     <canvas id="intradayChart"></canvas>
 
     <script>
         const ctx = document.getElementById('intradayChart').getContext('2d');
 
-        // Marca o início do gráfico (hora de abertura)
+        // Marca o início do gráfico
         const startTime = new Date();
 
-        // Simulação de histórico do dia vindo do backend
+        // Histórico inicial simulado (substitua por dados reais)
         const historicalData = [
             {"time":"09:00","risco":20,"seguranca":80},
             {"time":"10:00","risco":35,"seguranca":65},
@@ -44,19 +52,25 @@
             datasets: [
                 {
                     label: 'Risco',
-                    borderColor: 'red',
-                    backgroundColor: 'rgba(255,0,0,0.2)',
+                    borderColor: 'rgba(255,99,132,1)',
+                    backgroundColor: 'rgba(255,99,132,0.2)',
                     data: historicalData.map(d => d.risco),
                     fill: true,
-                    tension: 0.2
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    borderWidth: 2
                 },
                 {
                     label: 'Segurança',
-                    borderColor: 'green',
-                    backgroundColor: 'rgba(0,255,0,0.2)',
+                    borderColor: 'rgba(54,162,235,1)',
+                    backgroundColor: 'rgba(54,162,235,0.2)',
                     data: historicalData.map(d => d.seguranca),
                     fill: true,
-                    tension: 0.2
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    borderWidth: 2
                 }
             ]
         };
@@ -67,50 +81,72 @@
             options: {
                 responsive: false,
                 animation: false,
+                plugins: {
+                    legend: {
+                        labels: { font: { size: 14 } }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'x',
+                        },
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: 'x',
+                        }
+                    }
+                },
                 scales: {
                     x: {
-                        title: { display: true, text: 'Hora' },
-                        ticks: { maxTicksLimit: 20 }
+                        title: { display: true, text: 'Horário (HH:MM)' },
+                        ticks: { maxTicksLimit: 20 },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
                     },
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        title: { display: true, text: 'Valor' }
+                        title: { display: true, text: 'Valor' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
                     }
                 }
-            }
+            },
+            plugins: [Chart.registry.getPlugin('zoom')]
         };
 
         const intradayChart = new Chart(ctx, config);
 
-        // Função para adicionar novos pontos recebidos do backend
-        function addIntradayData(timeLabel, risco, seguranca) {
+        // Função para adicionar dados ao gráfico
+        function addIntradayData(risco, seguranca) {
+            const now = new Date();
+            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' +
+                              now.getMinutes().toString().padStart(2,'0');
+
             data.labels.push(timeLabel);
             data.datasets[0].data.push(risco);
             data.datasets[1].data.push(seguranca);
             intradayChart.update();
         }
 
-        // SIMULAÇÃO WebSocket: Recebe novos dados a cada 60 segundos
+        // Atualização automática a cada 60 segundos
         setInterval(() => {
-            const now = new Date();
-            const timeLabel = now.getHours().toString().padStart(2,'0') + ':' +
-                              now.getMinutes().toString().padStart(2,'0');
-            
-            // Substitua por dados reais do backend
+            // Simulação de dados novos (substitua por API/WebSocket real)
             const risco = Math.floor(Math.random() * 100);
             const seguranca = Math.floor(Math.random() * 100);
-
-            addIntradayData(timeLabel, risco, seguranca);
+            addIntradayData(risco, seguranca);
         }, 60000);
 
-        // EXEMPLO REAL: Conexão WebSocket (substitua URL pelo seu servidor)
+        // Exemplo real: conexão WebSocket
         /*
         const ws = new WebSocket('wss://seu-backend.com/dados-intraday');
         ws.onmessage = (event) => {
             const point = JSON.parse(event.data);
             // point deve ter {time: "HH:MM", risco: number, seguranca: number}
-            addIntradayData(point.time, point.risco, point.seguranca);
+            addIntradayData(point.risco, point.seguranca);
         };
         */
     </script>
