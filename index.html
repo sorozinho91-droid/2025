@@ -2,27 +2,39 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança</title>
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Ativos de Risco x Segurança - Linha do Tempo</h1>
+    <h1>Ativos de Risco x Segurança - Tempo Real</h1>
     <div id="grafico" style="width:100%;height:600px;"></div>
-    <script>
-        // Linha do tempo
-        var datas = [
-            '2025-12-01','2025-12-02','2025-12-03','2025-12-04','2025-12-05',
-            '2025-12-06','2025-12-07','2025-12-08','2025-12-09','2025-12-10'
-        ];
 
-        // Valores acumulados simulados
-        var risco = [100, 102, 101, 105, 104, 107, 106, 110, 108, 112]; // ações/ativos de risco
-        var seguro = [100, 100.5, 101, 101.5, 102, 102.2, 102.5, 103, 103.1, 103.5]; // títulos/ativos seguros
+    <script>
+        // Inicializar dados
+        var datas = [];
+        var risco = [];
+        var seguro = [];
+
+        // Função para gerar novo valor simulado
+        function gerar_valor_anterior(valor) {
+            var variacao = (Math.random() - 0.5) * 2; // variação entre -1 e +1
+            return Math.max(0, valor + variacao); // não permite valor negativo
+        }
+
+        // Inicial valores
+        var valor_risco = 100;
+        var valor_seguro = 100;
+
+        // Inicializar gráficos com 1 ponto
+        datas.push(new Date().toLocaleTimeString());
+        risco.push(valor_risco);
+        seguro.push(valor_seguro);
 
         var trace_risco = {
             x: datas,
             y: risco,
             type: 'scatter',
+            mode: 'lines+markers',
             name: 'Ativos de Risco',
             line: {color: 'red'}
         };
@@ -31,6 +43,7 @@
             x: datas,
             y: seguro,
             type: 'scatter',
+            mode: 'lines+markers',
             name: 'Ativos Seguros',
             line: {color: 'green'}
         };
@@ -39,12 +52,28 @@
 
         var layout = {
             title: 'Evolução Acumulada: Risco vs Segurança',
-            xaxis: {title: 'Data'},
+            xaxis: {title: 'Hora'},
             yaxis: {title: 'Valor Acumulado'},
             legend: {x:0.1, y:1.1},
         };
 
         Plotly.newPlot('grafico', data, layout);
-    </script>
-</body>
-</html>
+
+        // Atualizar gráfico a cada 2 segundos
+        setInterval(function(){
+            var agora = new Date().toLocaleTimeString();
+            datas.push(agora);
+
+            valor_risco = gerar_valor_anterior(valor_risco);
+            valor_seguro = gerar_valor_anterior(valor_seguro);
+
+            risco.push(valor_risco);
+            seguro.push(valor_seguro);
+
+            // Atualiza gráfico Plotly
+            Plotly.update('grafico', {
+                x: [datas, datas],
+                y: [risco, seguro]
+            });
+
+            // Mantém apenas os últimos 20 pontos para vi
