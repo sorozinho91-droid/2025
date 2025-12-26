@@ -2,117 +2,92 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Global - Variação (%)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Risco x Segurança — Gráfico em tempo real</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{
-  background:#0b0f14;
-  color:#eaeaea;
+body {
+  background:#000;
+  color:#fff;
   font-family:Arial, sans-serif;
-  margin:0;
   padding:20px;
 }
-h1{
-  text-align:center;
-  margin-bottom:15px;
-}
-.table-container{
-  margin-bottom:25px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:15px;
-}
-.card{
-  background:#111827;
+canvas{
+  background:#111;
   border-radius:8px;
-  padding:10px;
-}
-.card h2{
-  font-size:14px;
-  text-align:center;
-  margin:5px 0 10px;
 }
 </style>
 </head>
-
 <body>
 
-<h1>🌍 Painel Global — Variação (%)</h1>
+<h2>📊 Risco vs Segurança</h2>
+<canvas id="riskChart" width="800" height="400"></canvas>
 
-<!-- TABELA DE VARIAÇÃO -->
-<div class="table-container">
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
-{
-  "width": "100%",
-  "height": "420",
-  "symbolsGroups": [
+<script>
+// Labels e datasets
+const labels = [];
+const riskData = [];
+const safeData = [];
+
+const data = {
+  labels: labels,
+  datasets: [
     {
-      "name": "BOLSAS",
-      "symbols": [
-        {"name": "SP:SPX", "displayName": "S&P 500"},
-        {"name": "NASDAQ:NDX", "displayName": "Nasdaq"},
-        {"name": "DJ:DJI", "displayName": "Dow Jones"},
-        {"name": "TVC:SX5E", "displayName": "Euro Stoxx 50"},
-        {"name": "TVC:NI225", "displayName": "Nikkei 225"},
-        {"name": "HSI:HSI", "displayName": "Hang Seng"},
-        {"name": "SSE:000001", "displayName": "Shanghai"},
-        {"name": "BMFBOVESPA:IBOV", "displayName": "Ibovespa"}
-      ]
+      label: 'Risco (S&P500, Nasdaq, Ibovespa, WTI)',
+      borderColor: 'rgba(255,99,132,1)',
+      backgroundColor: 'rgba(255,99,132,0.2)',
+      data: riskData
     },
     {
-      "name": "MACRO",
-      "symbols": [
-        {"name": "TVC:DXY", "displayName": "DXY"},
-        {"name": "NYMEX:CL1!", "displayName": "Petróleo WTI"},
-        {"name": "ICEEUR:BRN1!", "displayName": "Petróleo Brent"},
-        {"name": "DCE:IO2309", "displayName": "Minério de Ferro"}
-      ]
+      label: 'Segurança (DXY, Ouro, UST 10Y)',
+      borderColor: 'rgba(54,162,235,1)',
+      backgroundColor: 'rgba(54,162,235,0.2)',
+      data: safeData
     }
-  ],
-  "showSymbolLogo": false,
-  "colorTheme": "dark",
-  "locale": "br"
+  ]
+};
+
+const config = {
+  type: 'line',
+  data: data,
+  options: {
+    responsive:true,
+    plugins: { legend: { display:true } },
+    scales: {
+      y: { beginAtZero:false, ticks: { color:'#fff' } },
+      x: { ticks: { color:'#fff' } }
+    }
+  }
+};
+
+const riskChart = new Chart(
+  document.getElementById('riskChart'),
+  config
+);
+
+// Função para buscar variação real via TradingView Mini Widgets
+// OBS: Aqui usamos simulador para demo; você pode substituir pelo fetch de API real
+async function fetchData() {
+  // Substitua com fetch de API real
+  const now = new Date().toLocaleTimeString();
+  labels.push(now);
+  if(labels.length>20) labels.shift();
+
+  // Exemplo de valores simulados (substituir por valores reais)
+  const risk = Math.random()*2-1;
+  const safe = Math.random()*1-0.5;
+
+  riskData.push(risk);
+  safeData.push(safe);
+
+  if(riskData.length>20) riskData.shift();
+  if(safeData.length>20) safeData.shift();
+
+  riskChart.update();
 }
+
+// Atualiza a cada 5 segundos
+setInterval(fetchData, 5000);
 </script>
-</div>
-
-<!-- GRÁFICOS -->
-<div class="grid">
-
-<div class="card"><h2>S&P 500</h2>
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{"symbol":"SP:SPX","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
-</script></div>
-
-<div class="card"><h2>Nasdaq</h2>
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{"symbol":"NASDAQ:NDX","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
-</script></div>
-
-<div class="card"><h2>Nikkei 225</h2>
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{"symbol":"TVC:NI225","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
-</script></div>
-
-<div class="card"><h2>DXY</h2>
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{"symbol":"TVC:DXY","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
-</script></div>
-
-<div class="card"><h2>Petróleo WTI</h2>
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{"symbol":"NYMEX:CL1!","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
-</script></div>
-
-<div class="card"><h2>Minério de Ferro</h2>
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{"symbol":"DCE:IO2309","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
-</script></div>
-
-</div>
 
 </body>
 </html>
