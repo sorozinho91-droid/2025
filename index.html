@@ -40,36 +40,36 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <div id="grafico"></div>
 
 <script>
-let timeframe = 1; // minutos
+let timeframe = 1; // minutos para atualização em tempo real
 let timer = null;
 let emTempoReal = true;
 
+// Arrays para histórico completo
 let datas = [], risco = [], seguro = [];
 let valorRisco = 100, valorSeguro = 100;
-const pontosHistorico = 200;
 
 // Função para gerar valores aleatórios
 function atualizarValores(valor, vol){
-    return Math.max(0, valor + (Math.random() - 0.5) * vol);
+    return Math.max(0, valor + (Math.random()-0.5)*vol);
 }
 
-// Gera histórico inicial
-function gerarHistorico(pontos){
-    let datasH=[], riscoH=[], seguroH=[];
-    let valR=100, valS=100;
-    const agora=new Date();
-    for(let i=pontos-1;i>=0;i--){
-        const hora = new Date(agora - i*timeframe*60000);
+// Gera histórico real de 1 ano (1 ponto por dia)
+function gerarHistoricoAnual(){
+    const dataHoje = new Date();
+    const start = new Date(dataHoje.getFullYear()-1, dataHoje.getMonth(), dataHoje.getDate());
+    let valR = 100, valS = 100;
+    datas = []; risco = []; seguro = [];
+    for(let d = new Date(start); d <= dataHoje; d.setDate(d.getDate()+1)){
         valR = atualizarValores(valR,2);
         valS = atualizarValores(valS,0.5);
-        datasH.push(hora);
-        riscoH.push(valR);
-        seguroH.push(valS);
+        datas.push(new Date(d));
+        risco.push(valR);
+        seguro.push(valS);
     }
-    return {datasH, riscoH, seguroH, valR, valS};
+    valorRisco = valR; valorSeguro = valS;
 }
 
-// Atualização em tempo real
+// Atualização em tempo real (continua adicionando novos pontos)
 function atualizarGrafico(){
     if(!emTempoReal) return;
     const agora = new Date();
@@ -78,26 +78,25 @@ function atualizarGrafico(){
     datas.push(agora);
     risco.push(valorRisco);
     seguro.push(valorSeguro);
-    if(datas.length>pontosHistorico){ datas.shift(); risco.shift(); seguro.shift(); }
-    Plotly.extendTraces('grafico',{x:[[agora],[agora]],y:[[valorRisco],[valorSeguro]]},[0,1],pontosHistorico);
+    Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]}, [0,1]);
 }
 
-// Muda timeframe
+// Mudar timeframe
 function setTimeframe(minutos, botao){
     timeframe = minutos;
     document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
     botao.classList.add('active');
     if(timer) clearInterval(timer);
-    timer=setInterval(atualizarGrafico,timeframe*60000);
+    timer=setInterval(atualizarGrafico, timeframe*60000);
 }
 
-// Filtrar período mostrando apenas os dados reais
+// Filtrar período mostrando apenas histórico real
 function filtrarDatas(){
-    const startInput=document.getElementById('startDate').value;
-    const endInput=document.getElementById('endDate').value;
+    const startInput = document.getElementById('startDate').value;
+    const endInput = document.getElementById('endDate').value;
     if(!startInput || !endInput){ alert('Selecione datas válidas'); return; }
-    const start=new Date(startInput);
-    const end=new Date(endInput);
+    const start = new Date(startInput);
+    const end = new Date(endInput);
     if(start>end){ alert('Data inicial maior que final'); return; }
 
     emTempoReal = false;
@@ -111,13 +110,13 @@ function filtrarDatas(){
         }
     }
 
-    Plotly.update('grafico',{x:[filteredX, filteredX], y:[filteredR, filteredS]});
+    Plotly.update('grafico',{x:[filteredX,filteredX], y:[filteredR,filteredS]});
     Plotly.relayout('grafico',{
         'xaxis.range':[start,end],
         'xaxis.tickformat':'%b/%Y'
     });
 
-    document.getElementById('intervaloSelecionado').innerText=
+    document.getElementById('intervaloSelecionado').innerText =
         `Intervalo selecionado: ${start.toLocaleDateString()} até ${end.toLocaleDateString()}`;
 }
 
@@ -130,9 +129,7 @@ function removerFiltro(){
 }
 
 /* Inicialização */
-const hist = gerarHistorico(pontosHistorico);
-datas=hist.datasH; risco=hist.riscoH; seguro=hist.seguroH;
-valorRisco=hist.valR; valorSeguro=hist.valS;
+gerarHistoricoAnual();
 
 const layout = {
     title:'Comparação em Tempo Real',
