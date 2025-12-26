@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Histórico Completo</title>
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; }
@@ -11,10 +11,11 @@
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Histórico Completo em Tempo Real</h2>
+    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
     <div id="grafico"></div>
 
     <script>
+        // Arrays para armazenar os dados
         var datas = [];
         var risco = [];
         var seguro = [];
@@ -29,8 +30,8 @@
         }
 
         function inicializarGrafico() {
-            // Dois pontos iniciais para garantir que as linhas apareçam
             var agora = new Date();
+            // Dois pontos iniciais para linha aparecer
             datas.push(new Date(agora.getTime() - intervalo));
             datas.push(agora);
             risco.push(valor_risco, valor_risco);
@@ -55,12 +56,12 @@
             };
 
             var layout = {
-                title: 'Ativos de Risco vs Seguros - Histórico Completo',
+                title: 'Ativos de Risco vs Seguros - Tempo Real',
                 xaxis: {
                     title: 'Hora',
                     type: 'date',
                     showgrid: true,
-                    rangeslider: { visible: true } // Scroll horizontal
+                    rangeslider: { visible: true } // permite scroll horizontal
                 },
                 yaxis: { title: 'Valor', showgrid: true },
                 autosize: true,
@@ -72,6 +73,7 @@
 
         inicializarGrafico();
 
+        // Atualizar linhas em tempo real
         setInterval(function() {
             var agora = new Date();
             datas.push(agora);
@@ -80,7 +82,7 @@
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
-            // Mantemos TODO o histórico, sem remover pontos antigos
+            // Mantém todo histórico para histórico completo
             var layoutAtualizado = {
                 xaxis: {
                     range: [datas[0], agora],
@@ -96,6 +98,7 @@
 
         }, intervalo);
 
+        // Redimensionamento automático
         window.addEventListener('resize', function() {
             Plotly.Plots.resize('grafico');
         });
