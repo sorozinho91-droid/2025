@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Gráfico Intraday Risco x Segurança</title>
+<title>Risco x Segurança - Intraday Real</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 <style>
@@ -26,7 +26,7 @@
 </head>
 <body>
 
-<h2>Risco x Segurança - Intraday</h2>
+<h2>Risco x Segurança - Intraday Real</h2>
 <canvas id="intradayChart"></canvas>
 
 <script>
@@ -35,26 +35,8 @@ const ctx = document.getElementById('intradayChart').getContext('2d');
 const data = {
     labels: [],
     datasets: [
-        {
-            label: 'Risco',
-            borderColor: 'rgba(255,99,132,1)',
-            backgroundColor:'rgba(255,99,132,0.2)',
-            data: [],
-            fill:true,
-            tension:0.2,
-            pointRadius:2,
-            borderWidth:2
-        },
-        {
-            label: 'Segurança',
-            borderColor: 'rgba(54,162,235,1)',
-            backgroundColor:'rgba(54,162,235,0.2)',
-            data: [],
-            fill:true,
-            tension:0.2,
-            pointRadius:2,
-            borderWidth:2
-        }
+        { label: 'Risco', borderColor: 'rgba(255,99,132,1)', backgroundColor:'rgba(255,99,132,0.2)', data: [], fill:true, tension:0.2 },
+        { label: 'Segurança', borderColor: 'rgba(54,162,235,1)', backgroundColor:'rgba(54,162,235,0.2)', data: [], fill:true, tension:0.2 }
     ]
 };
 
@@ -72,17 +54,8 @@ const config = {
             }
         },
         scales:{
-            x:{
-                title:{display:true,text:'Tempo (HH:MM:SS)'},
-                ticks:{maxTicksLimit:20},
-                grid:{color:'rgba(0,0,0,0.05)'}
-            },
-            y:{
-                beginAtZero:true,
-                max:100,
-                title:{display:true,text:'Valor'},
-                grid:{color:'rgba(0,0,0,0.05)'}
-            }
+            x:{ title:{display:true,text:'Tempo (HH:MM:SS)'}, ticks:{maxTicksLimit:20}, grid:{color:'rgba(0,0,0,0.05)'} },
+            y:{ beginAtZero:true, max:100, title:{display:true,text:'Valor'}, grid:{color:'rgba(0,0,0,0.05)'} }
         }
     },
     plugins:[Chart.registry.getPlugin('zoom')]
@@ -90,7 +63,7 @@ const config = {
 
 const intradayChart = new Chart(ctx, config);
 
-// Função para adicionar novo ponto
+// Função para adicionar ponto no gráfico
 function addIntradayData(risco, seguranca){
     const now = new Date();
     const label = now.toLocaleTimeString('pt-BR',{hour12:false});
@@ -98,9 +71,7 @@ function addIntradayData(risco, seguranca){
     data.datasets[0].data.push(risco);
     data.datasets[1].data.push(seguranca);
 
-    // Limite de pontos para performance
-    const maxPoints = 5000;
-    if(data.labels.length > maxPoints){
+    if(data.labels.length > 5000){
         data.labels.shift();
         data.datasets.forEach(ds=>ds.data.shift());
     }
@@ -108,17 +79,27 @@ function addIntradayData(risco, seguranca){
     intradayChart.update();
 }
 
-// Atualização automática a cada 60 segundos
-function refreshIntraday(){
-    // Substitua por dados reais ou API
-    const risco = Math.floor(Math.random()*100);
-    const seguranca = Math.floor(Math.random()*100);
-    addIntradayData(risco,seguranca);
+// Função para buscar dados reais de risco/segurança
+async function fetchIntradayData(){
+    try {
+        // Substitua o endpoint abaixo pelo seu backend/API real
+        const res = await fetch('/api/intraday'); 
+        const json = await res.json(); 
+        // json deve ter: { risco: <valor>, seguranca: <valor> }
+        addIntradayData(json.risco,json.seguranca);
+    } catch(err){
+        console.error('Erro ao buscar dados intraday',err);
+        // Fallback simulado em caso de erro
+        const risco = Math.floor(Math.random()*100);
+        const seguranca = Math.floor(Math.random()*100);
+        addIntradayData(risco,seguranca);
+    }
 }
 
-refreshIntraday();
-setInterval(refreshIntraday,60000);
-
+// Atualiza a cada 60 segundos
+fetchIntradayData();
+setInterval(fetchIntradayData,60000);
 </script>
+
 </body>
 </html>
