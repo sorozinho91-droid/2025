@@ -2,85 +2,104 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real</title>
+    <title>Ativos de Risco x Seguros - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        #grafico { width: 90%; height: 500px; margin: auto; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #grafico {
+            width: 100%;
+            height: 500px;
+        }
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
-    <div id="grafico"></div>
 
-    <script>
-        // Arrays iniciais
-        var datas = [];
-        var risco = [];
-        var seguro = [];
+<h2>Ativos de Risco x Seguros - Tempo Real</h2>
+<div id="grafico"></div>
 
-        // Valores iniciais
-        var valor_risco = 100;
-        var valor_seguro = 100;
+<script>
+    // Arrays iniciais
+    var datas = [];
+    var risco = [];
+    var seguro = [];
 
-        // Função para gerar novos valores simulados
-        function atualizarValores(valor) {
-            return Math.max(0, valor + (Math.random() - 0.5) * 2);
-        }
+    // Valores iniciais
+    var valor_risco = 100;
+    var valor_seguro = 100;
 
-        // Adicionar primeiro ponto
+    // Função para gerar novos valores simulados
+    function atualizarValores(valor) {
+        return Math.max(0, valor + (Math.random() - 0.5) * 2);
+    }
+
+    // Primeiro ponto
+    function adicionarPonto() {
         var agora = new Date().toLocaleTimeString();
         datas.push(agora);
+
+        valor_risco = atualizarValores(valor_risco);
+        valor_seguro = atualizarValores(valor_seguro);
+
         risco.push(valor_risco);
         seguro.push(valor_seguro);
 
-        // Criar gráfico inicial
-        var traceRisco = {
+        // Limitar a 60 pontos (1 hora se for 1 ponto/minuto)
+        if (datas.length > 60) {
+            datas.shift();
+            risco.shift();
+            seguro.shift();
+        }
+
+        Plotly.update('grafico', {
+            x: [datas, datas],
+            y: [risco, seguro]
+        });
+    }
+
+    // Criar gráfico
+    var data = [
+        {
             x: datas,
             y: risco,
             type: 'scatter',
             mode: 'lines+markers',
             name: 'Ativos de Risco',
-            line: {color: 'red'}
-        };
-
-        var traceSeguro = {
+            line: { color: 'red' }
+        },
+        {
             x: datas,
             y: seguro,
             type: 'scatter',
             mode: 'lines+markers',
             name: 'Ativos Seguros',
-            line: {color: 'green'}
-        };
+            line: { color: 'green' }
+        }
+    ];
 
-        var data = [traceRisco, traceSeguro];
+    var layout = {
+        title: 'Ativos de Risco vs Seguros - Tempo Real',
+        xaxis: { title: 'Hora' },
+        yaxis: { title: 'Valor' },
+        autosize: true,
+        margin: { t: 50, r: 30, l: 50, b: 50 }
+    };
 
-        var layout = {
-            title: 'Ativos de Risco vs Seguros - Tempo Real',
-            xaxis: {title: 'Hora'},
-            yaxis: {title: 'Valor'},
-            margin: {t:50, r:30, l:50, b:50}
-        };
+    Plotly.newPlot('grafico', data, layout, { responsive: true });
 
-        Plotly.newPlot('grafico', data, layout);
+    // Atualizar a cada 60 segundos
+    adicionarPonto(); // ponto inicial
+    setInterval(adicionarPonto, 60000);
 
-        // Atualizar a cada 2 segundos
-        setInterval(function(){
-            var agora = new Date().toLocaleTimeString();
-            datas.push(agora);
-            valor_risco = atualizarValores(valor_risco);
-            valor_seguro = atualizarValores(valor_seguro);
-            risco.push(valor_risco);
-            seguro.push(valor_seguro);
+    // Ajustar gráfico ao redimensionar / minimizar
+    window.addEventListener('resize', function () {
+        Plotly.Plots.resize('grafico');
+    });
+</script>
 
-            Plotly.update('grafico', {
-                x: [datas, datas],
-                y: [risco, seguro]
-            }, layout);
-
-        }, 2000);
-    </script>
 </body>
 </html>
-
-
