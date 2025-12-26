@@ -41,13 +41,13 @@ function atualizarValores(valor, vol){
     return Math.max(0, valor + (Math.random()-0.5)*vol);
 }
 
-// Gera histórico inicial de 2 dias (1 ponto a cada 1 minuto)
+// Gera histórico inicial de 2 dias (1 ponto a cada 30 minutos)
 function gerarHistorico2Dias(){
     const agora = new Date();
     const start = new Date(agora.getTime() - 2*24*60*60*1000); // 2 dias atrás
     let valR = 100, valS = 100;
     datas = []; risco = []; seguro = [];
-    for(let d = new Date(start); d <= agora; d.setMinutes(d.getMinutes()+1)){
+    for(let d = new Date(start); d <= agora; d.setMinutes(d.getMinutes()+30)){
         valR = atualizarValores(valR,2);
         valS = atualizarValores(valS,0.5);
         datas.push(new Date(d));
@@ -104,7 +104,7 @@ const traceRisco = {
     mode: 'lines+markers',
     name: 'Ativos de Risco',
     line:{color:'red', width:2},
-    marker:{size:4, symbol:'circle'},
+    marker:{size:6, symbol:'circle'},
     hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
 };
 
@@ -114,7 +114,7 @@ const traceSeguro = {
     mode: 'lines+markers',
     name: 'Ativos Seguros',
     line:{color:'green', width:2},
-    marker:{size:4, symbol:'square'},
+    marker:{size:6, symbol:'square'},
     hovertemplate: 'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
 };
 
