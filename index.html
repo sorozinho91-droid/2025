@@ -40,6 +40,11 @@ input[type="datetime-local"] {
     margin: 0 5px;
     padding: 5px;
 }
+#intervaloSelecionado {
+    text-align: center;
+    margin: 10px;
+    font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -60,7 +65,10 @@ input[type="datetime-local"] {
     <label>De: <input type="datetime-local" id="startDate"></label>
     <label>Até: <input type="datetime-local" id="endDate"></label>
     <button onclick="filtrarDatas()">Comparar</button>
+    <button onclick="removerFiltro()">Remover Filtro</button>
 </div>
+
+<div id="intervaloSelecionado"></div>
 
 <div id="grafico"></div>
 
@@ -75,7 +83,13 @@ let seguro = [];
 
 let valorRisco = 100;
 let valorSeguro = 100;
-const pontosHistorico = 120; // número de pontos do histórico
+const pontosHistorico = 120;
+
+// Arrays do filtro para destaque
+let filtroX = [];
+let filtroRisco = [];
+let filtroSeguro = [];
+let filtroAtivo = false;
 
 /* ================== FUNÇÕES ================== */
 function atualizarValores(valor, volatilidade) {
@@ -89,7 +103,6 @@ function gerarHistorico(pontos) {
 
     let valorRiscoHist = 100;
     let valorSeguroHist = 100;
-
     const agora = new Date();
 
     for (let i = pontos - 1; i >= 0; i--) {
@@ -124,9 +137,11 @@ function atualizarGrafico() {
     }
 
     Plotly.extendTraces('grafico', {
-        x: [[hora], [hora]],
-        y: [[valorRisco], [valorSeguro]]
-    }, [0, 1], pontosHistorico);
+        x: [[hora], [hora], filtroAtivo ? [hora] : []],
+        y: [[valorRisco], [valorSeguro], filtroAtivo ? [null] : []]
+    }, [0, 1, 2], pontosHistorico);
+
+    if (filtroAtivo) atualizarFiltro(); // mantém destaque atualizado
 }
 
 function setTimeframe(minutos, botao) {
@@ -139,7 +154,7 @@ function setTimeframe(minutos, botao) {
     timer = setInterval(atualizarGrafico, timeframe * 60000);
 }
 
-// Filtrar gráfico entre duas datas
+// Filtrar gráfico entre duas datas e destacar
 function filtrarDatas() {
     const start = new Date(document.getElementById('startDate').value);
     const end = new Date(document.getElementById('endDate').value);
@@ -149,24 +164,45 @@ function filtrarDatas() {
         return;
     }
 
-    const filteredX = [];
-    const filteredRisco = [];
-    const filteredSeguro = [];
+    filtroAtivo = true;
+    filtroX = [];
+    filtroRisco = [];
+    filtroSeguro = [];
 
     for (let i = 0; i < datas.length; i++) {
         const horaParts = datas[i].split(':');
         const now = new Date();
         now.setHours(horaParts[0], horaParts[1], horaParts[2]);
         if (now >= start && now <= end) {
-            filteredX.push(datas[i]);
-            filteredRisco.push(risco[i]);
-            filteredSeguro.push(seguro[i]);
+            filtroX.push(datas[i]);
+            filtroRisco.push(risco[i]);
+            filtroSeguro.push(seguro[i]);
         }
     }
 
+    atualizarFiltro();
+
+    document.getElementById('intervaloSelecionado').innerText =
+        `Intervalo selecionado: ${start.toLocaleString()} até ${end.toLocaleString()}`;
+}
+
+// Atualiza a linha do filtro em destaque
+function atualizarFiltro() {
     Plotly.update('grafico', {
-        x: [filteredX, filteredX],
-        y: [filteredRisco, filteredSeguro]
+        x: [datas, datas, filtroX],
+        y: [risco, seguro, filtroRisco],
+    });
+}
+
+function removerFiltro() {
+    filtroAtivo = false;
+    filtroX = [];
+    filtroRisco = [];
+    filtroSeguro = [];
+    document.getElementById('intervaloSelecionado').innerText = '';
+    Plotly.update('grafico', {
+        x: [datas, datas, []],
+        y: [risco, seguro, []],
     });
 }
 
@@ -187,7 +223,8 @@ const layout = {
 
 Plotly.newPlot('grafico', [
     { x: datas, y: risco, mode: 'lines', name: 'Ativos de Risco', line: { color: 'red' } },
-    { x: datas, y: seguro, mode: 'lines', name: 'Ativos Seguros', line: { color: 'green' } }
+    { x: datas, y: seguro, mode: 'lines', name: 'Ativos Seguros', line: { color: 'green' } },
+    { x: [], y: [], mode: 'lines', name: 'Intervalo Selecionado', line: { color: 'blue', dash:'dot' } }
 ], layout, { responsive: true });
 
 timer = setInterval(atualizarGrafico, timeframe * 60000);
