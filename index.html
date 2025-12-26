@@ -23,7 +23,7 @@ h2 {
 
 #grafico {
     width: 100%;
-    height: calc(100vh - 60px); /* NUNCA passa da tela */
+    height: calc(100vh - 50px);
 }
 </style>
 </head>
@@ -33,7 +33,15 @@ h2 {
 <div id="grafico"></div>
 
 <script>
-var traceRisco = {
+let valorRisco = 100;
+let valorSeguro = 100;
+
+function atualizar(valor) {
+    return Math.max(0, valor + (Math.random() - 0.5) * 2);
+}
+
+// traces COM DADOS
+const traceRisco = {
     x: [],
     y: [],
     type: 'scatter',
@@ -42,7 +50,7 @@ var traceRisco = {
     line: { color: 'red' }
 };
 
-var traceSeguro = {
+const traceSeguro = {
     x: [],
     y: [],
     type: 'scatter',
@@ -51,13 +59,13 @@ var traceSeguro = {
     line: { color: 'green' }
 };
 
-var layout = {
-    title: '',
-    xaxis: { automargin: true },
-    yaxis: { automargin: true },
+const layout = {
+    xaxis: { title: 'Tempo', automargin: true },
+    yaxis: { title: 'Valor', automargin: true },
     margin: { t: 10, l: 50, r: 20, b: 40 }
 };
 
+// cria o gráfico
 Plotly.newPlot(
     'grafico',
     [traceRisco, traceSeguro],
@@ -65,7 +73,25 @@ Plotly.newPlot(
     { responsive: true }
 );
 
-// FORÇA ajuste ao minimizar/maximizar
+// adiciona pontos EM TEMPO REAL
+setInterval(() => {
+    const agora = new Date().toLocaleTimeString();
+
+    valorRisco = atualizar(valorRisco);
+    valorSeguro = atualizar(valorSeguro);
+
+    Plotly.extendTraces(
+        'grafico',
+        {
+            x: [[agora], [agora]],
+            y: [[valorRisco], [valorSeguro]]
+        },
+        [0, 1],
+        60
+    );
+}, 2000);
+
+// garante resize perfeito
 window.addEventListener('resize', () => {
     Plotly.Plots.resize('grafico');
 });
