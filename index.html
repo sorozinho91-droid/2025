@@ -6,26 +6,20 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Ativos de Risco x Segurança - Tempo Real</h1>
+    <h1>Ativos de Risco x Segurança - Atualização Automática</h1>
     <div id="grafico" style="width:100%;height:600px;"></div>
 
     <script>
-        // Inicializar dados
+        // Inicializar arrays
         var datas = [];
         var risco = [];
         var seguro = [];
 
-        // Função para gerar novo valor simulado
-        function gerar_valor_anterior(valor) {
-            var variacao = (Math.random() - 0.5) * 2; // variação entre -1 e +1
-            return Math.max(0, valor + variacao); // não permite valor negativo
-        }
-
-        // Inicial valores
+        // Valores iniciais
         var valor_risco = 100;
         var valor_seguro = 100;
 
-        // Inicializar gráficos com 1 ponto
+        // Inicializar gráfico com 1 ponto
         datas.push(new Date().toLocaleTimeString());
         risco.push(valor_risco);
         seguro.push(valor_seguro);
@@ -51,29 +45,44 @@
         var data = [trace_risco, trace_seguro];
 
         var layout = {
-            title: 'Evolução Acumulada: Risco vs Segurança',
+            title: 'Ativos de Risco vs Seguros - Atualização em Tempo Real',
             xaxis: {title: 'Hora'},
-            yaxis: {title: 'Valor Acumulado'},
-            legend: {x:0.1, y:1.1},
+            yaxis: {title: 'Valor'},
+            legend: {x:0.1, y:1.1}
         };
 
         Plotly.newPlot('grafico', data, layout);
+
+        // Função para atualizar valores (simulação)
+        function atualizarValores(valor) {
+            return valor + (Math.random() - 0.5) * 2; // variação aleatória
+        }
 
         // Atualizar gráfico a cada 2 segundos
         setInterval(function(){
             var agora = new Date().toLocaleTimeString();
             datas.push(agora);
 
-            valor_risco = gerar_valor_anterior(valor_risco);
-            valor_seguro = gerar_valor_anterior(valor_seguro);
+            valor_risco = atualizarValores(valor_risco);
+            valor_seguro = atualizarValores(valor_seguro);
 
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
-            // Atualiza gráfico Plotly
+            // Atualiza Plotly
             Plotly.update('grafico', {
                 x: [datas, datas],
                 y: [risco, seguro]
             });
 
-            // Mantém apenas os últimos 20 pontos para vi
+            // Manter apenas últimos 20 pontos
+            if(datas.length > 20){
+                datas.shift();
+                risco.shift();
+                seguro.shift();
+            }
+
+        }, 2000); // atualiza a cada 2 segundos
+    </script>
+</body>
+</html>
