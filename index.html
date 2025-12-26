@@ -1,97 +1,93 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Risk On x Risk Off — Multiativos</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<meta charset="UTF-8">
+<title>Risk On x Risk Off — Tempo Real</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        #grafico {
-            width: 100%;
-            height: 85vh;
-        }
-    </style>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+#grafico {
+    width: 100%;
+    height: 85vh;
+}
+</style>
 </head>
 <body>
 
-<h2>Ativos de Risco x Segurança (Dados Reais)</h2>
+<h2>Risk On x Risk Off — Tempo Real</h2>
 <div id="grafico"></div>
 
 <script>
-    const ativosRisco = {
-        "^GSPC": "S&P 500",
-        "^IXIC": "Nasdaq",
-        "^BVSP": "Ibovespa",
-        "BTC-USD": "Bitcoin",
-        "EEM": "Emergentes"
+const ativos = [
+    { simbolo: "^GSPC", nome: "S&P 500" },
+    { simbolo: "^IXIC", nome: "Nasdaq" },
+    { simbolo: "TLT", nome: "Treasury 20Y" },
+    { simbolo: "GC=F", nome: "Ouro" }
+];
+
+async function ultimoPreco(simbolo) {
+    const url = `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(simbolo)}?range=1d&interval=1m`;
+    const r = await fetch(url);
+    const j = await r.json();
+
+    const res = j.chart.result[0];
+    const timestamps = res.timestamp;
+    const closes = res.indicators.quote[0].close;
+
+    return {
+        tempo: new Date(timestamps[timestamps.length - 1] * 1000).toLocaleTimeString(),
+        preco: closes[closes.length - 1]
     };
+}
 
-    const ativosSeguro = {
-        "TLT": "Treasury 20Y",
-        "DX-Y.NYB": "Dólar",
-        "GC=F": "Ouro",
-        "JPY=X": "Iene",
-        "CHF=X": "Franco Suíço"
-    };
+const traces = ativos.map(a => ({
+    x: [],
+    y: [],
+    type: 'scatter',
+    mode: 'lines',
+    name: a.nome
+}));
 
-    async function buscarDados(simbolo) {
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(simbolo)}?range=1d&interval=5m`;
-        const r = await fetch(url);
-        const j = await r.json();
+Plotly.newPlot(
+    'grafico',
+    traces,
+    {
+        title: 'Ativos de Risco x Segurança (Tempo Real)',
+        xaxis: { title: 'Hora', automargin: true },
+        yaxis: { title: 'Preço', automargin: true },
+        margin: { t: 50 }
+    },
+    { responsive: true }
+);
 
-        const res = j.chart.result[0];
-        const x = res.timestamp.map(t => new Date(t * 1000).toLocaleTimeString());
-        const y = res.indicators.quote[0].close;
+async function atualizarGrafico() {
+    const xData = [];
+    const yData = [];
 
-        return { x, y };
+    for (const ativo of ativos) {
+        const dado = await ultimoPreco(ativo.simbolo);
+        xData.push([dado.tempo]);
+        yData.push([dado.preco]);
     }
 
-    async function montarTraces(ativos, corBase) {
-        const traces = [];
+    Plotly.extendTraces(
+        'grafico',
+        { x: xData, y: yData },
+        ativos.map((_, i) => i),
+        60 // mantém últimos 60 pontos
+    );
+}
 
-        for (const simbolo in ativos) {
-            const dados = await buscarDados(simbolo);
+// primeira carga
+atualizarGrafico();
 
-            traces.push({
-                x: dados.x,
-                y: dados.y,
-                type: 'scatter',
-                mode: 'lines',
-                name: ativos[simbolo],
-                line: { width: 2 },
-                opacity: 0.7
-            });
-        }
-        return traces;
-    }
-
-    async function carregarGrafico() {
-        const tracesRisco = await montarTraces(ativosRisco);
-        const tracesSeguro = await montarTraces(ativosSeguro);
-
-        const layout = {
-            title: 'Risk On (Risco) x Risk Off (Segurança)',
-            xaxis: { title: 'Tempo', automargin: true },
-            yaxis: { title: 'Preço', automargin: true },
-            margin: { t: 50, l: 50, r: 30, b: 50 },
-            legend: { orientation: 'h' }
-        };
-
-        Plotly.newPlot(
-            'grafico',
-            [...tracesRisco, ...tracesSeguro],
-            layout,
-            { responsive: true }
-        );
-    }
-
-    carregarGrafico();
-    setInterval(carregarGrafico, 300000); // atualiza a cada 5 minutos
+// atualiza a cada 60 segundos
+setInterval(atualizarGrafico, 60000);
 </script>
 
 </body>
