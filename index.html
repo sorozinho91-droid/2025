@@ -6,31 +6,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
+body{
   background:#0b0f14;
   color:#eaeaea;
-  font-family: Arial, sans-serif;
+  font-family:Arial, sans-serif;
   margin:0;
   padding:20px;
 }
-h1 {
+h1{
   text-align:center;
-  margin-bottom:20px;
+  margin-bottom:15px;
 }
-.grid {
+.table-container{
+  margin-bottom:25px;
+}
+.grid{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
   gap:15px;
 }
-.card {
+.card{
   background:#111827;
   border-radius:8px;
   padding:10px;
 }
-.card h2 {
+.card h2{
   font-size:14px;
-  margin:5px 0 10px;
   text-align:center;
+  margin:5px 0 10px;
 }
 </style>
 </head>
@@ -39,115 +42,75 @@ h1 {
 
 <h1>🌍 Painel Global — Variação (%)</h1>
 
+<!-- TABELA DE VARIAÇÃO -->
+<div class="table-container">
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
+{
+  "width": "100%",
+  "height": "420",
+  "symbolsGroups": [
+    {
+      "name": "BOLSAS",
+      "symbols": [
+        {"name": "SP:SPX", "displayName": "S&P 500"},
+        {"name": "NASDAQ:NDX", "displayName": "Nasdaq"},
+        {"name": "DJ:DJI", "displayName": "Dow Jones"},
+        {"name": "TVC:SX5E", "displayName": "Euro Stoxx 50"},
+        {"name": "TVC:NI225", "displayName": "Nikkei 225"},
+        {"name": "HSI:HSI", "displayName": "Hang Seng"},
+        {"name": "SSE:000001", "displayName": "Shanghai"},
+        {"name": "BMFBOVESPA:IBOV", "displayName": "Ibovespa"}
+      ]
+    },
+    {
+      "name": "MACRO",
+      "symbols": [
+        {"name": "TVC:DXY", "displayName": "DXY"},
+        {"name": "NYMEX:CL1!", "displayName": "Petróleo WTI"},
+        {"name": "ICEEUR:BRN1!", "displayName": "Petróleo Brent"},
+        {"name": "DCE:IO2309", "displayName": "Minério de Ferro"}
+      ]
+    }
+  ],
+  "showSymbolLogo": false,
+  "colorTheme": "dark",
+  "locale": "br"
+}
+</script>
+</div>
+
+<!-- GRÁFICOS -->
 <div class="grid">
 
-<!-- S&P 500 -->
-<div class="card">
-<h2>S&P 500</h2>
-<div class="tradingview-widget-container">
+<div class="card"><h2>S&P 500</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{
-  "symbol": "SP:SPX",
-  "width": "100%",
-  "height": "220",
-  "locale": "br",
-  "dateRange": "1D",
-  "colorTheme": "dark",
-  "isTransparent": true
-}
-</script>
-</div>
-</div>
+{"symbol":"SP:SPX","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
+</script></div>
 
-<!-- Nasdaq -->
-<div class="card">
-<h2>Nasdaq</h2>
-<div class="tradingview-widget-container">
+<div class="card"><h2>Nasdaq</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{
-  "symbol": "NASDAQ:NDX",
-  "width": "100%",
-  "height": "220",
-  "locale": "br",
-  "dateRange": "1D",
-  "colorTheme": "dark",
-  "isTransparent": true
-}
-</script>
-</div>
-</div>
+{"symbol":"NASDAQ:NDX","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
+</script></div>
 
-<!-- Nikkei -->
-<div class="card">
-<h2>Nikkei 225</h2>
-<div class="tradingview-widget-container">
+<div class="card"><h2>Nikkei 225</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{
-  "symbol": "TVC:NI225",
-  "width": "100%",
-  "height": "220",
-  "locale": "br",
-  "dateRange": "1D",
-  "colorTheme": "dark",
-  "isTransparent": true
-}
-</script>
-</div>
-</div>
+{"symbol":"TVC:NI225","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
+</script></div>
 
-<!-- DXY -->
-<div class="card">
-<h2>DXY</h2>
-<div class="tradingview-widget-container">
+<div class="card"><h2>DXY</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{
-  "symbol": "TVC:DXY",
-  "width": "100%",
-  "height": "220",
-  "locale": "br",
-  "dateRange": "1D",
-  "colorTheme": "dark",
-  "isTransparent": true
-}
-</script>
-</div>
-</div>
+{"symbol":"TVC:DXY","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
+</script></div>
 
-<!-- Petróleo WTI -->
-<div class="card">
-<h2>Petróleo WTI</h2>
-<div class="tradingview-widget-container">
+<div class="card"><h2>Petróleo WTI</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{
-  "symbol": "NYMEX:CL1!",
-  "width": "100%",
-  "height": "220",
-  "locale": "br",
-  "dateRange": "1D",
-  "colorTheme": "dark",
-  "isTransparent": true
-}
-</script>
-</div>
-</div>
+{"symbol":"NYMEX:CL1!","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
+</script></div>
 
-<!-- Minério de Ferro -->
-<div class="card">
-<h2>Minério de Ferro</h2>
-<div class="tradingview-widget-container">
+<div class="card"><h2>Minério de Ferro</h2>
 <script src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js">
-{
-  "symbol": "DCE:IO2309",
-  "width": "100%",
-  "height": "220",
-  "locale": "br",
-  "dateRange": "1D",
-  "colorTheme": "dark",
-  "isTransparent": true
-}
-</script>
-</div>
-</div>
+{"symbol":"DCE:IO2309","width":"100%","height":"220","dateRange":"1D","colorTheme":"dark","isTransparent":true}
+</script></div>
 
 </div>
 
