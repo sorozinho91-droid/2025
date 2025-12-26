@@ -1,150 +1,89 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Risk‑On x Risk‑Off — Em Tempo Real</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body {
-  background: #000;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  padding: 12px;
-}
-canvas {
-  background: #111;
-  border-radius: 8px;
-}
-h2 {
-  text-align: center;
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Risco x Segurança em tempo real</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        canvas {
+            max-width: 800px;
+            max-height: 400px;
+        }
+    </style>
 </head>
 <body>
+    <h2>Risco x Segurança em tempo real</h2>
+    <canvas id="realtimeChart"></canvas>
 
-<h2>📊 Risk‑On vs Risk‑Off (Tempo Real — Finnhub)</h2>
-<canvas id="riskChart" width="800" height="400"></canvas>
+    <script>
+        // Configuração inicial do gráfico
+        const ctx = document.getElementById('realtimeChart').getContext('2d');
+        const data = {
+            labels: [], // timestamps
+            datasets: [
+                {
+                    label: 'Risco',
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255,0,0,0.2)',
+                    data: [],
+                    tension: 0.3
+                },
+                {
+                    label: 'Segurança',
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0,255,0,0.2)',
+                    data: [],
+                    tension: 0.3
+                }
+            ]
+        };
 
-<script>
-// === CONFIGURAÇÃO DO GRÁFICO ===
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'realtime', // vai atualizar automaticamente
+                        realtime: {
+                            delay: 2000,
+                            onRefresh: chart => {
+                                const now = new Date();
+                                chart.data.labels.push(now.toLocaleTimeString());
+                                chart.data.datasets[0].data.push(Math.random() * 100); // Risco (simulado)
+                                chart.data.datasets[1].data.push(Math.random() * 100); // Segurança (simulado)
 
-const labels = [];
-const riskData = [];
-const safeData = [];
+                                // Manter apenas os últimos 20 pontos
+                                if(chart.data.labels.length > 20) {
+                                    chart.data.labels.shift();
+                                    chart.data.datasets.forEach(dataset => dataset.data.shift());
+                                }
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        };
 
-const data = {
-  labels: labels,
-  datasets: [
-    {
-      label: 'Risk‑On',
-      borderColor: 'rgba(255,99,132,1)',
-      backgroundColor: 'rgba(255,99,132,0.2)',
-      data: riskData,
-      tension: 0.4
-    },
-    {
-      label: 'Risk‑Off',
-      borderColor: 'rgba(54,162,235,1)',
-      backgroundColor: 'rgba(54,162,235,0.2)',
-      data: safeData,
-      tension: 0.4
-    }
-  ]
-};
+        const myChart = new Chart(ctx, config);
 
-const config = {
-  type: 'line',
-  data: data,
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { display: true }
-    },
-    scales: {
-      y: { beginAtZero: false, ticks: { color: '#fff' } },
-      x: { ticks: { color: '#fff' } }
-    }
-  }
-};
-
-const riskChart = new Chart(
-  document.getElementById('riskChart'),
-  config
-);
-
-// === API FINNHUB ===
-
-// Substitua pela sua chave da Finnhub
-const API_KEY = "YOUR_API_KEY_HERE";
-
-// Símbolos suportados no Finnhub
-// Índices americanos
-const symbolsRisk = [
-  "SPX",        // S&P 500 (Finnhub usa SPX)
-  "NDX",        // Nasdaq 100
-  "IBOVESPA",   // Ibovespa — se não tiver suporte direto, provisorio
-  "CL=F"        // WTI crude oil futures (exemplo padrão — pode ser CLUSD)
-];
-
-// Ativos de segurança
-const symbolsSafe = [
-  "DXY",        // US Dollar Index
-  "XAUUSD",     // Gold (Ouro)
-  "US10Y"       // U.S. 10Y Treasury (proxy)
-];
-
-// Função pegar variação percentual do dia
-async function getVariation(symbol){
-  try {
-    const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
-    const json = await res.json();
-    // data.c = preço atual, pc = preço anterior
-    if(json.c && json.pc){
-      return ((json.c - json.pc) / json.pc) * 100;
-    }
-    return 0;
-  } catch(e) {
-    console.error("Erro API:", symbol, e);
-    return 0;
-  }
-}
-
-// Atualiza dados
-async function updateData(){
-  const now = new Date().toLocaleTimeString();
-  labels.push(now);
-  if(labels.length > 30) labels.shift();
-
-  // Risco média
-  let sumRisk = 0;
-  for(const s of symbolsRisk){
-    sumRisk += await getVariation(s);
-  }
-  const avgRisk = sumRisk / symbolsRisk.length;
-  riskData.push(avgRisk);
-  if(riskData.length > 30) riskData.shift();
-
-  // Segurança média
-  let sumSafe = 0;
-  for(const s of symbolsSafe){
-    sumSafe += await getVariation(s);
-  }
-  const avgSafe = sumSafe / symbolsSafe.length;
-  safeData.push(avgSafe);
-  if(safeData.length > 30) safeData.shift();
-
-  riskChart.update();
-}
-
-// Atualiza a cada 5 segundos
-setInterval(updateData, 5000);
-
-// Primeira chamada
-updateData();
-
-</script>
-
+        // Atualização automática
+        setInterval(() => {
+            myChart.update('quiet'); // atualizar sem animação
+        }, 1000);
+    </script>
 </body>
 </html>
