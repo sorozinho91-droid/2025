@@ -1,123 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard Tempo Real</title>
-
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-}
-
-#grafico {
-    width: 100%;
-    height: 100%;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Ativos de Risco x Segurança - Tempo Real</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #grafico { width: 90%; height: 500px; margin: auto; }
+    </style>
 </head>
-
 <body>
+    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
+    <div id="grafico"></div>
 
-<div id="grafico"></div>
+    <script>
+        // Arrays iniciais
+        var datas = [];
+        var risco = [];
+        var seguro = [];
 
-<script>
-/* =========================
-   HORÁRIO INICIAL FIXO
-========================= */
-const inicio = new Date();
+        // Valores iniciais
+        var valor_risco = 100;
+        var valor_seguro = 100;
 
-/* =========================
-   VALORES
-========================= */
-let valorRisco = 100;
-let valorSeguro = 100;
+        // Função para gerar novos valores simulados
+        function atualizarValores(valor) {
+            return Math.max(0, valor + (Math.random() - 0.5) * 2);
+        }
 
-/* =========================
-   FUNÇÃO DE ATUALIZAÇÃO
-========================= */
-function atualizar(valor) {
-    return Math.max(0, valor + (Math.random() - 0.5) * 2);
-}
+        // Adicionar primeiro ponto
+        var agora = new Date().toLocaleTimeString();
+        datas.push(agora);
+        risco.push(valor_risco);
+        seguro.push(valor_seguro);
 
-/* =========================
-   TRACES
-========================= */
-const traceRisco = {
-    x: [],
-    y: [],
-    type: 'scatter',
-    mode: 'lines',
-    name: 'Risco',
-    line: { color: 'red' }
-};
+        // Criar gráfico inicial
+        var traceRisco = {
+            x: datas,
+            y: risco,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Ativos de Risco',
+            line: {color: 'red'}
+        };
 
-const traceSeguro = {
-    x: [],
-    y: [],
-    type: 'scatter',
-    mode: 'lines',
-    name: 'Seguro',
-    line: { color: 'green' }
-};
+        var traceSeguro = {
+            x: datas,
+            y: seguro,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Ativos Seguros',
+            line: {color: 'green'}
+        };
 
-/* =========================
-   LAYOUT (X FIXO NO INÍCIO)
-========================= */
-const layout = {
-    autosize: true,
-    xaxis: {
-        type: 'date',
-        title: 'Horário',
-        range: [inicio, inicio],
-        tickformat: '%H:%M:%S'
-    },
-    yaxis: {
-        title: 'Valor'
-    },
-    margin: { t: 30, l: 50, r: 20, b: 50 }
-};
+        var data = [traceRisco, traceSeguro];
 
-/* =========================
-   CRIA O GRÁFICO
-========================= */
-Plotly.newPlot(
-    'grafico',
-    [traceRisco, traceSeguro],
-    layout,
-    { responsive: true }
-);
+        var layout = {
+            title: 'Ativos de Risco vs Seguros - Tempo Real',
+            xaxis: {title: 'Hora'},
+            yaxis: {title: 'Valor'},
+            margin: {t:50, r:30, l:50, b:50}
+        };
 
-/* =========================
-   LOOP EM TEMPO REAL
-========================= */
-setInterval(() => {
-    const agora = new Date();
+        Plotly.newPlot('grafico', data, layout);
 
-    valorRisco = atualizar(valorRisco);
-    valorSeguro = atualizar(valorSeguro);
+        // Atualizar a cada 2 segundos
+        setInterval(function(){
+            var agora = new Date().toLocaleTimeString();
+            datas.push(agora);
+            valor_risco = atualizarValores(valor_risco);
+            valor_seguro = atualizarValores(valor_seguro);
+            risco.push(valor_risco);
+            seguro.push(valor_seguro);
 
-    Plotly.extendTraces(
-        'grafico',
-        {
-            x: [[agora], [agora]],
-            y: [[valorRisco], [valorSeguro]]
-        },
-        [0, 1],
-        60
-    );
+            Plotly.update('grafico', {
+                x: [datas, datas],
+                y: [risco, seguro]
+            }, layout);
 
-    /* início FIXO, final avança */
-    Plotly.relayout('grafico', {
-        'xaxis.range': [inicio, agora]
-    });
-
-}, 3000);
-</script>
-
+        }, 2000);
+    </script>
 </body>
 </html>
+
