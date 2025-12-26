@@ -42,7 +42,6 @@ input[type="datetime-local"] { margin: 0 5px; padding: 5px; }
 <script>
 let timeframe = 1; // minutos
 let timer = null;
-let emTempoReal = true;
 
 let datas = [];       // array de objetos Date
 let risco = [];
@@ -52,6 +51,7 @@ let valorRisco = 100;
 let valorSeguro = 100;
 const pontosHistorico = 120;
 
+// Arrays do filtro para destaque
 let filtroX = [];
 let filtroRisco = [];
 let filtroSeguro = [];
@@ -118,6 +118,7 @@ function setTimeframe(minutos, botao) {
     timer = setInterval(atualizarGrafico, timeframe * 60000);
 }
 
+// Filtrar gráfico entre duas datas e destacar
 function filtrarDatas() {
     const startInput = document.getElementById('startDate').value;
     const endInput = document.getElementById('endDate').value;
@@ -140,17 +141,14 @@ function filtrarDatas() {
         }
     }
 
-    atualizarFiltro();
+    // Atualiza linha azul
+    Plotly.update('grafico', {
+        x: [datas, datas, filtroX],
+        y: [risco, seguro, filtroRisco]
+    });
 
     document.getElementById('intervaloSelecionado').innerText =
         `Intervalo selecionado: ${start.toLocaleString()} até ${end.toLocaleString()}`;
-}
-
-function atualizarFiltro() {
-    Plotly.update('grafico', {
-        x: [datas, datas, filtroX],
-        y: [risco, seguro, filtroRisco],
-    });
 }
 
 function removerFiltro() {
