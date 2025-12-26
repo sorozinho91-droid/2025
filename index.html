@@ -5,8 +5,9 @@
     <title>Ativos de Risco x Segurança - Tempo Real</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
+        body { font-family: Arial, sans-serif; text-align: center; margin:0; padding:0; }
         #grafico { width: 90%; height: 500px; margin: auto; }
+        h2 { margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -14,34 +15,32 @@
     <div id="grafico"></div>
 
     <script>
-        // Arrays iniciais
         var datas = [];
         var risco = [];
         var seguro = [];
 
-        // Valores iniciais
         var valor_risco = 100;
         var valor_seguro = 100;
+        var intervalo = 2000; // 2 segundos
 
-        // Função para gerar novos valores simulados
         function atualizarValores(valor) {
             return Math.max(0, valor + (Math.random() - 0.5) * 2);
         }
 
-        // Adicionar primeiro ponto
-        var agora = new Date().toLocaleTimeString();
+        // Inicializar gráfico com 2 pontos para linhas aparecerem
+        var agora = new Date();
+        datas.push(new Date(agora.getTime() - intervalo));
         datas.push(agora);
-        risco.push(valor_risco);
-        seguro.push(valor_seguro);
+        risco.push(valor_risco, valor_risco);
+        seguro.push(valor_seguro, valor_seguro);
 
-        // Criar gráfico inicial
         var traceRisco = {
             x: datas,
             y: risco,
             type: 'scatter',
             mode: 'lines+markers',
             name: 'Ativos de Risco',
-            line: {color: 'red'}
+            line: {color: 'red', shape: 'spline'}
         };
 
         var traceSeguro = {
@@ -50,23 +49,21 @@
             type: 'scatter',
             mode: 'lines+markers',
             name: 'Ativos Seguros',
-            line: {color: 'green'}
+            line: {color: 'green', shape: 'spline'}
         };
-
-        var data = [traceRisco, traceSeguro];
 
         var layout = {
             title: 'Ativos de Risco vs Seguros - Tempo Real',
-            xaxis: {title: 'Hora'},
-            yaxis: {title: 'Valor'},
-            margin: {t:50, r:30, l:50, b:50}
+            xaxis: { title: 'Hora', type: 'date', rangeslider: { visible: true } },
+            yaxis: { title: 'Valor' },
+            margin: { t:50, r:30, l:50, b:50 }
         };
 
-        Plotly.newPlot('grafico', data, layout);
+        Plotly.newPlot('grafico', [traceRisco, traceSeguro], layout);
 
-        // Atualizar a cada 2 segundos
+        // Atualizar dados em tempo real
         setInterval(function(){
-            var agora = new Date().toLocaleTimeString();
+            var agora = new Date();
             datas.push(agora);
             valor_risco = atualizarValores(valor_risco);
             valor_seguro = atualizarValores(valor_seguro);
@@ -76,10 +73,13 @@
             Plotly.update('grafico', {
                 x: [datas, datas],
                 y: [risco, seguro]
-            }, layout);
+            });
+        }, intervalo);
 
-        }, 2000);
+        // Ajustar gráfico apenas quando a tela for redimensionada ou minimizada
+        window.addEventListener('resize', function() {
+            Plotly.Plots.resize('grafico');
+        });
     </script>
 </body>
 </html>
-
