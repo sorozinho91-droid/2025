@@ -2,39 +2,37 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Ativos de Risco x Segurança - Tempo Real</title>
+    <title>Ativos de Risco x Segurança - Tempo Real com Scroll</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; }
-        #grafico { width: 100%; height: 90vh; } /* ocupa 90% da altura da tela */
+        #grafico { width: 100%; height: 90vh; }
         h2 { margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h2>Ativos de Risco x Seguros - Tempo Real</h2>
+    <h2>Ativos de Risco x Seguros - Tempo Real com Scroll</h2>
     <div id="grafico"></div>
 
     <script>
-        // Arrays para armazenar os dados
         var datas = [];
         var risco = [];
         var seguro = [];
 
-        // Valores iniciais
         var valor_risco = 100;
         var valor_seguro = 100;
 
-        // Função para atualizar valores simulados
+        var intervalo = 2 * 1000; // 2 segundos
+        var duracaoJanela = 5 * 60 * 1000; // janela de 5 minutos visíveis
+
         function atualizarValores(valor) {
             return Math.max(0, valor + (Math.random() - 0.5) * 2);
         }
 
-        // Função para inicializar o gráfico com 2 pontos iniciais (necessário para a linha aparecer)
         function inicializarGrafico() {
             var agora = new Date();
-            datas.push(new Date(agora.getTime() - 2000)); // ponto anterior
+            datas.push(new Date(agora.getTime() - intervalo));
             datas.push(agora);
-
             risco.push(valor_risco, valor_risco);
             seguro.push(valor_seguro, valor_seguro);
 
@@ -58,8 +56,14 @@
 
             var layout = {
                 title: 'Ativos de Risco vs Seguros - Tempo Real',
-                xaxis: { title: 'Hora', type: 'date' },
-                yaxis: { title: 'Valor' },
+                xaxis: {
+                    title: 'Hora',
+                    type: 'date',
+                    showgrid: true,
+                    rangeslider: { visible: true },
+                    autorange: true
+                },
+                yaxis: { title: 'Valor', showgrid: true },
                 autosize: true,
                 margin: { t:50, r:30, l:50, b:50 }
             };
@@ -71,8 +75,7 @@
 
         inicializarGrafico();
 
-        // Atualizar gráfico a cada 2 segundos
-        setInterval(function(){
+        setInterval(function() {
             var agora = new Date();
             datas.push(agora);
             valor_risco = atualizarValores(valor_risco);
@@ -80,13 +83,21 @@
             risco.push(valor_risco);
             seguro.push(valor_seguro);
 
+            // Remover dados antigos fora da janela de 5 minutos
+            var limite = new Date(agora.getTime() - duracaoJanela);
+            while (datas[0] < limite) {
+                datas.shift();
+                risco.shift();
+                seguro.shift();
+            }
+
             Plotly.react('grafico', [
                 { x: datas, y: risco, type: 'scatter', mode: 'lines+markers', name: 'Ativos de Risco', line: {color: 'red', shape: 'spline'} },
                 { x: datas, y: seguro, type: 'scatter', mode: 'lines+markers', name: 'Ativos Seguros', line: {color: 'green', shape: 'spline'} }
             ], {}, {responsive:true});
-        }, 2000);
 
-        // Redimensionamento automático
+        }, intervalo);
+
         window.addEventListener('resize', function(){
             Plotly.Plots.resize('grafico');
         });
