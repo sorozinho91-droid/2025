@@ -325,6 +325,83 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
+<!-- ===== MINI TABELA VARIAÇÃO – CANTO DIREITO ===== -->
+<div id="mini-var-right"></div>
+
+<style>
+#mini-var-right {
+  position: fixed;
+  top: 80px;
+  right: 10px;
+  width: 170px;
+  z-index: 9999;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+/* remove tudo que não interessa */
+#mini-var-right thead,
+#mini-var-right td:nth-child(2),
+#mini-var-right th:nth-child(2),
+#mini-var-right .tv-symbol-logo,
+#mini-var-right .tv-market-quotes__header,
+#mini-var-right .tv-market-quotes__footer {
+  display: none !important;
+}
+
+#mini-var-right table {
+  border-collapse: collapse !important;
+}
+
+#mini-var-right td {
+  padding: 2px 4px !important;
+  border: none !important;
+  white-space: nowrap;
+}
+
+/* nome do ativo */
+#mini-var-right td:first-child {
+  text-align: left;
+}
+
+/* variação */
+#mini-var-right td:last-child {
+  text-align: right;
+  font-weight: bold;
+}
+</style>
+
+<script
+  type="text/javascript"
+  src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js"
+  async>
+{
+  "width": "170",
+  "height": "260",
+  "symbolsGroups": [
+    {
+      "name": "M",
+      "symbols": [
+        {"name": "DJI", "displayName": "DJIA"},
+        {"name": "NASDAQ:NDX", "displayName": "NDX"},
+        {"name": "XETR:DAX", "displayName": "DAX"},
+        {"name": "CBOE:VIX", "displayName": "VIX"},
+        {"name": "BMFBOVESPA:IBOV", "displayName": "IBOV"},
+        {"name": "NYMEX:CL1!", "displayName": "WTI"},
+        {"name": "COMEX:GC1!", "displayName": "GOLD"},
+        {"name": "TVC:DXY", "displayName": "USD"},
+        {"name": "FX:EURUSD", "displayName": "EUR"}
+      ]
+    }
+  ],
+  "showSymbolLogo": false,
+  "colorTheme": "light",
+  "isTransparent": true,
+  "locale": "pt"
+}
+</script>
+<!-- ===== FIM MINI TABELA ===== -->
 
 </body>
 </html>
