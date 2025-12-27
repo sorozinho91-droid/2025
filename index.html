@@ -5,7 +5,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-<h2>Indicador Risco x Segurança (Atualização Real via Alpha Vantage)</h2>
+<h2>Indicador Risco x Segurança (Atualização Automática)</h2>
 
 <label>Selecionar Time Frame: </label>
 <select id="timeframe" onchange="updateInterval()">
@@ -16,59 +16,51 @@
 <div id="grafico" style="width:100%;height:600px;"></div>
 
 <script>
-    const API_KEY = "SUA_API_KEY"; // Coloque sua chave Alpha Vantage aqui
+    // Valores iniciais realistas
+    let valorRisco = 5000;      // média inicial de todos ativos de risco
+    let valorSeguranca = 100;   // média inicial de todos ativos de segurança
 
-    // Códigos Alpha Vantage (exemplo para ações e moedas)
-    const ativos_risco = ["VALE", "PBR"]; // símbolos Alpha Vantage
-    const ativos_seguranca = ["EURBRL", "USDJPY"]; // moedas / índices
-
+    // Criação do gráfico com duas linhas
     let data = [
-        {x: [], y: [], name:"Risco", mode:'lines', line:{color:'red', dash:'dash'}},
-        {x: [], y: [], name:"Segurança", mode:'lines', line:{color:'blue'}}
+        {x:[new Date()], y:[valorRisco], name:"Risco", mode:'lines', line:{color:'red', dash:'dash'}},
+        {x:[new Date()], y:[valorSeguranca], name:"Segurança", mode:'lines', line:{color:'blue'}}
     ];
 
-    const layout = {title:'Indicador Risco x Segurança', xaxis:{title:'Data/Hora'}, yaxis:{title:'Valor'}, legend:{orientation:"h"}};
+    const layout = {
+        title:'Indicador Risco x Segurança',
+        xaxis:{title:'Data/Hora'},
+        yaxis:{title:'Valor'},
+        legend:{orientation:"h"},
+        hovermode:'x unified'
+    };
+
     Plotly.newPlot('grafico', data, layout);
 
-    let intervalTime = 30000;
+    // Intervalo de atualização
+    let intervalTime = 30000; // 30s padrão
     let intervalID = setInterval(updateData, intervalTime);
 
-    async function fetchPrecoAlpha(symbol, isCurrency=false){
-        let url = "";
-        if(isCurrency){
-            // FX intraday
-            url = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${symbol.split("/")[0]}&to_currency=${symbol.split("/")[1]}&apikey=${API_KEY}`;
-            const res = await fetch(url).then(r=>r.json());
-            return parseFloat(res['Realtime Currency Exchange Rate']['5. Exchange Rate']);
-        } else {
-            // Stock quote
-            url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`;
-            const res = await fetch(url).then(r=>r.json());
-            return parseFloat(res['Global Quote']['05. price']);
-        }
-    }
-
-    async function updateData(){
+    function updateData(){
         const now = new Date();
 
-        // Risco
-        let somaR=0, countR=0;
-        for(let symbol of ativos_risco){
-            const preco = await fetchPrecoAlpha(symbol);
-            if(preco){ somaR += preco; countR++; }
-        }
-        if(countR>0){ data[0].x.push(now); data[0].y.push(somaR/countR); }
+        // Simula variação percentual pequena (+-0.5%)
+        valorRisco = valorRisco * (1 + (Math.random()-0.5)/100);
+        valorSeguranca = valorSeguranca * (1 + (Math.random()-0.5)/100);
 
-        // Segurança
-        let somaS=0, countS=0;
-        for(let symbol of ativos_seguranca){
-            const preco = await fetchPrecoAlpha(symbol, true); // FX
-            if(preco){ somaS += preco; countS++; }
-        }
-        if(countS>0){ data[1].x.push(now); data[1].y.push(somaS/countS); }
+        // Atualiza dados do gráfico
+        data[0].x.push(now);
+        data[0].y.push(valorRisco);
 
-        // Limita últimos 20 pontos
-        data.forEach(trace => { if(trace.x.length>20){ trace.x.shift(); trace.y.shift(); } });
+        data[1].x.push(now);
+        data[1].y.push(valorSeguranca);
+
+        // Mantém últimos 20 pontos para visualização limpa
+        data.forEach(trace => {
+            if(trace.x.length > 20){
+                trace.x.shift();
+                trace.y.shift();
+            }
+        });
 
         Plotly.update('grafico', data);
     }
