@@ -362,10 +362,13 @@ const j = await r.json();
         const cls   = varp >= 0 ? "wg-pos" : "wg-neg";
 
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${nome}</td>
-          <td>${preco}</td>
-          <td class="${cls}">${varp.toFixed(2)}%</td>
+tr.innerHTML = `
+  <td class="${cls}" style="text-align:right;">
+    ${varp.toFixed(2)}%
+  </td>
+`;
+
+          
         `;
         tabela.appendChild(tr);
 
