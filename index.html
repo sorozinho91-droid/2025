@@ -38,6 +38,80 @@ thead th { background:#2563eb; color:white;}
 <button onclick="filtrarPorData()">Comparar</button>
 <button onclick="resetGrafico()">Resetar</button>
 </div>
+<!-- ===== MINI VARIAÇÃO – ULTRA COMPACTO ===== -->
+<div id="mini-var-compact"></div>
+
+<style>
+#mini-var-compact {
+  width: 180px;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  line-height: 1.15;
+}
+
+/* remove tudo que não interessa */
+#mini-var-compact thead,
+#mini-var-compact td:nth-child(2),
+#mini-var-compact th:nth-child(2),
+#mini-var-compact .tv-symbol-logo,
+#mini-var-compact .tv-market-quotes__header,
+#mini-var-compact .tv-market-quotes__footer {
+  display: none !important;
+}
+
+#mini-var-compact table {
+  border-collapse: collapse !important;
+}
+
+#mini-var-compact td {
+  padding: 1px 3px !important;
+  border: none !important;
+}
+
+/* nome do ativo */
+#mini-var-compact td:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* variação */
+#mini-var-compact td:last-child {
+  text-align: right;
+  font-weight: bold;
+}
+</style>
+
+<script
+  type="text/javascript"
+  src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js"
+  async>
+{
+  "width": "180",
+  "height": "210",
+  "symbolsGroups": [
+    {
+      "name": "M",
+      "symbols": [
+        {"name": "DJI", "displayName": "DJIA"},
+        {"name": "NASDAQ:NDX", "displayName": "NDX"},
+        {"name": "RUSSELL:RUT", "displayName": "RUT"},
+        {"name": "XETR:DAX", "displayName": "DAX"},
+        {"name": "CBOE:VIX", "displayName": "VIX"},
+        {"name": "BMFBOVESPA:IBOV", "displayName": "IBOV"},
+        {"name": "NYMEX:CL1!", "displayName": "WTI"},
+        {"name": "COMEX:GC1!", "displayName": "GOLD"},
+        {"name": "TVC:DXY", "displayName": "USD"},
+        {"name": "FX:EURUSD", "displayName": "EUR"}
+      ]
+    }
+  ],
+  "showSymbolLogo": false,
+  "colorTheme": "light",
+  "isTransparent": true,
+  "locale": "pt"
+}
+</script>
+<!-- ===== FIM MINI VARIAÇÃO ===== -->
 
 <div id="grafico"></div>
 
