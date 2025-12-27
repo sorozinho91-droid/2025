@@ -690,6 +690,58 @@ tr.innerHTML = `
 }
 </script>
 <!-- ===== FIM DO WIDGET ===== -->
+<!-- ===== WIDGET VARIAÇÃO – LISTA ÚNICA ===== -->
+<div id="tv-var-left"></div>
+
+<style>
+#tv-var-left {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 280px;
+  z-index: 99999;
+}
+</style>
+
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+{
+  "width": "280",
+  "height": "520",
+  "symbolsGroups": [
+    {
+      "name": "Global",
+      "symbols": [
+        {"name": "DJI", "displayName": "DJIA"},
+        {"name": "NASDAQ:NDX", "displayName": "Nasdaq 100"},
+        {"name": "RUSSELL:RUT", "displayName": "Russell 2000"},
+        {"name": "TVC:NI225", "displayName": "Nikkei 225"},
+        {"name": "TVC:SX5E", "displayName": "Euro Stoxx 50"},
+        {"name": "XETR:DAX", "displayName": "DAX"},
+        {"name": "CBOE:VIX", "displayName": "VIX"},
+        {"name": "BMFBOVESPA:IBOV", "displayName": "Ibovespa"},
+
+        {"name": "NYMEX:CL1!", "displayName": "WTI"},
+        {"name": "ICEEUR:BRN1!", "displayName": "Brent"},
+
+        {"name": "TVC:US30Y", "displayName": "30Y"},
+        {"name": "TVC:US10Y", "displayName": "10Y"},
+        {"name": "TVC:US05Y", "displayName": "5Y"},
+        {"name": "TVC:US02Y", "displayName": "2Y"},
+
+        {"name": "COMEX:GC1!", "displayName": "Gold"},
+
+        {"name": "TVC:DXY", "displayName": "USD Index"},
+        {"name": "FX:EURUSD", "displayName": "EUR/USD"}
+      ]
+    }
+  ],
+  "showSymbolLogo": false,
+  "colorTheme": "light",
+  "isTransparent": false,
+  "locale": "pt"
+}
+</script>
+<!-- ===== FIM DO WIDGET ===== -->
 
     
 </body>
