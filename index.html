@@ -240,166 +240,52 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Tabela Lateral de Cotações</title>
-
+<!-- MINI COTAÇÕES REAIS -->
 <style>
-body{
-  margin:0;
-  height:2000px;
-  background:#0b1220;
-  font-family: Consolas, monospace;
-}
-
-/* CAIXA LATERAL */
-#cotacoes{
+#tv-cotacoes {
   position: fixed;
   top: 80px;
-  right: 12px;
-
-  background: rgba(0,0,0,0.75);
-  padding: 10px 12px;
-  border-radius: 6px;
-
-  font-size: 13px;
-  line-height: 1.6;
-  color: #e5e7eb;
-
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-/* LINHA */
-.linha{
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  min-width: 140px;
-}
-
-/* CORES */
-.pos{ color:#22c55e; }
-.neg{ color:#ef4444; }
-</style>
-</head>
-
-<body>
-
-<div id="cotacoes">
-  <div class="linha"><span>DJIA</span><span id="DJIA">0.00%</span></div>
-  <div class="linha"><span>NDX</span><span id="NDX">0.00%</span></div>
-  <div class="linha"><span>DAX</span><span id="DAX">0.00%</span></div>
-  <div class="linha"><span>VIX</span><span id="VIX">0.00%</span></div>
-  <div class="linha"><span>WTI</span><span id="WTI">0.00%</span></div>
-  <div class="linha"><span>GOLD</span><span id="GOLD">0.00%</span></div>
-  <div class="linha"><span>USD</span><span id="USD">0.00%</span></div>
-</div>
-
-<script>
-/* valores iniciais */
-const valores = {
-  DJIA:  0.42,
-  NDX:  -0.18,
-  DAX:   0.31,
-  VIX:   2.10,
-  WTI:  -1.02,
-  GOLD:  0.07,
-  USD:  -0.12
-};
-
-/* renderiza */
-function render(){
-  for(const k in valores){
-    const el = document.getElementById(k);
-    const v  = valores[k];
-
-    el.textContent = (v>0?"+":"") + v.toFixed(2) + "%";
-    el.className   = v>=0 ? "pos" : "neg";
-  }
-}
-
-/* simula mercado */
-function atualizar(){
-  for(const k in valores){
-    valores[k] += (Math.random()-0.5)*0.2;
-  }
-  render();
-}
-
-render();
-setInterval(atualizar, 3000); // atualiza a cada 3s
-</script>
-<!-- MINI TABELA DE COTAÇÕES -->
-<style>
-#mini-cotacoes {
-  position: fixed;
-  top: 80px;
-  right: 12px;
-  background: rgba(0,0,0,0.70);
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  color: #e5e7eb;
+  right: 10px;
+  width: 190px;
+  height: 230px;
   z-index: 9999;
 }
-
-#mini-cotacoes .linha {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.pos { color: #22c55e; }
-.neg { color: #ef4444; }
 </style>
 
-<div id="mini-cotacoes"></div>
+<div id="tv-cotacoes">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+  </div>
+</div>
 
-<script>
-const ativos = {
-  "DJIA": 0.42,
-  "NDX": -0.18,
-  "DAX": 0.31,
-  "VIX": 2.10,
-  "WTI": -1.02,
-  "GOLD": 0.07,
-  "USD": -0.12
-};
-
-function atualizarCotacoes(){
-  const box = document.getElementById("mini-cotacoes");
-  box.innerHTML = "";
-
-  for(const ativo in ativos){
-    // simulação de variação contínua
-    ativos[ativo] += (Math.random() - 0.5) * 0.15;
-
-    const v = ativos[ativo];
-    const cls = v >= 0 ? "pos" : "neg";
-
-    const linha = document.createElement("div");
-    linha.className = "linha";
-    linha.innerHTML = `
-      <span>${ativo}</span>
-      <span class="${cls}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>
-    `;
-
-    box.appendChild(linha);
-  }
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+{
+  "colorTheme": "dark",
+  "dateRange": "1D",
+  "showChart": false,
+  "locale": "pt",
+  "width": "100%",
+  "height": "100%",
+  "tabs": [
+    {
+      "title": "Mercados",
+      "symbols": [
+        { "s": "DJ:DJI", "d": "DJIA" },
+        { "s": "NASDAQ:NDX", "d": "NDX" },
+        { "s": "XETR:DAX", "d": "DAX" },
+        { "s": "CBOE:VIX", "d": "VIX" },
+        { "s": "NYMEX:CL1!", "d": "WTI" },
+        { "s": "COMEX:GC1!", "d": "GOLD" },
+        { "s": "TVC:DXY", "d": "USD" }
+      ]
+    }
+  ],
+  "isTransparent": true,
+  "showSymbolLogo": false,
+  "showFloatingTooltip": false
 }
-
-// inicia
-atualizarCotacoes();
-setInterval(atualizarCotacoes, 3000); // atualiza a cada 3s
 </script>
-<!-- FIM MINI TABELA -->
-
-</body>
-</html>
+<!-- FIM MINI COTAÇÕES -->
 
 </body>
 </html>
