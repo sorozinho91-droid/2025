@@ -346,9 +346,13 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
       }
 
       try{
-        const r = await fetch(
-          `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`,
-          { cache: "no-store" }
+       const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
+const r = await fetch(
+  `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  { cache: "no-store" }
+);
+const j = await r.json();
+
         );
         const j = await r.json();
         const d = j.quoteResponse.result[0];
