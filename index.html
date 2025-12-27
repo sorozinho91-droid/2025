@@ -66,21 +66,32 @@ let filtered = false;
 let filteredStart, filteredEnd;
 let timeframe = 60; // segundos
 
-// Exemplos de ativos
+// Lista ampliada de ativos de risco
 let ativosRisco = [
     {nome:"Ouro Futuros", valor:2766.2},
     {nome:"Cobre Futuros", valor:4.2315},
     {nome:"Petróleo WTI", valor:73.17},
     {nome:"Vale SA ADR", valor:9.16},
-    {nome:"Petrobras ADR", valor:13.88}
+    {nome:"Petrobras ADR", valor:13.88},
+    {nome:"Soja Chicago", valor:1045},
+    {nome:"S&P 500 VIX Futuros", valor:17.61},
+    {nome:"USD/MXN", valor:20.665},
+    {nome:"USD/NOK", valor:11.2378},
+    {nome:"USD/NZD", valor:1.7565}
 ];
 
+// Lista ampliada de ativos de segurança
 let ativosSeguranca = [
     {nome:"Oslo All Share", valor:1709.43},
     {nome:"Dow Jones Futuros", valor:44904},
     {nome:"The Global Dow USD", valor:5079.14},
     {nome:"Financial Select Sector", valor:51.41},
-    {nome:"Consumer Staples", valor:80.01}
+    {nome:"Consumer Staples", valor:80.01},
+    {nome:"Energy Select Sector", valor:90.36},
+    {nome:"SPDR Metals & Mining", valor:58.68},
+    {nome:"iShares MSCI Emerging Markets", valor:42.17},
+    {nome:"iShares Semiconductor ETF", valor:212.55},
+    {nome:"BSE Sensex 30", valor:75366.17}
 ];
 
 // Gerar histórico inicial (30 dias, 1 ponto/hora)
@@ -140,14 +151,10 @@ function atualizarGrafico(){
     risco.push(valorRisco);
     seguro.push(valorSeguro);
 
-    // Limitar pontos
     if(datas.length>1000){
-        datas.shift();
-        risco.shift();
-        seguro.shift();
+        datas.shift(); risco.shift(); seguro.shift();
     }
 
-    // Atualizar gráfico
     if(filtered){
         const newD=[], newR=[], newS=[];
         for(let i=0;i<datas.length;i++){
@@ -162,7 +169,7 @@ function atualizarGrafico(){
         plotGrafico(datas,risco,seguro);
     }
 
-    // Atualizar valores dos ativos
+    // Atualiza valores e variações dos ativos
     ativosRisco.forEach(a=>{
         let novo = a.valor + (Math.random()-0.5)*2;
         a.variacao = ((novo-a.valor)/a.valor)*100;
@@ -203,15 +210,10 @@ function setTimeframe(segundos, botao){
 
 // Inicialização
 gerarHistorico();
-
-// Garantir ao menos 1 ponto
 if(datas.length===0){
     const agora = new Date();
-    datas.push(agora);
-    risco.push(valorRisco);
-    seguro.push(valorSeguro);
+    datas.push(agora); risco.push(valorRisco); seguro.push(valorSeguro);
 }
-
 plotGrafico(datas,risco,seguro);
 atualizarTabelas();
 timer = setInterval(atualizarGrafico, timeframe*1000);
