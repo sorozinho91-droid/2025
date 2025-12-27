@@ -496,6 +496,130 @@ tr.innerHTML = `
 </script>
 <!-- ===== FIM DO WIDGET ===== -->
 
+    <!-- ===== WIDGET VARIAÇÃO GLOBAL (ÚNICO / ISOLADO) ===== -->
+<div id="wg-var-root"></div>
+
+<style>
+#wg-var-root {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  width: 220px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  z-index: 99999;
+}
+
+#wg-var-root table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#wg-var-root td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #eee;
+  text-align: right;
+}
+
+.wg-cat {
+  background: #1f2937;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.wg-pos { color: green; }
+.wg-neg { color: red; }
+</style>
+
+<script>
+(function(){
+  const ativos = [
+    ["Índices","DJIA","^DJI"],
+    ["","Nasdaq 100","^NDX"],
+    ["","Russell 2000","^RUT"],
+    ["","Nikkei 225","^N225"],
+    ["","Euro Stoxx 50","^STOXX50E"],
+    ["","DAX","^GDAXI"],
+    ["","VIX","^VIX"],
+    ["","Ibovespa","^BVSP"],
+
+    ["Energy","WTI","CL=F"],
+    ["","Brent","BZ=F"],
+
+    ["Bonds","30Y","^TYX"],
+    ["","10Y","^TNX"],
+    ["","5Y","^FVX"],
+    ["","2Y","^IRX"],
+
+    ["Metals","Gold","GC=F"],
+
+    ["Currencies","USD Index","DX-Y.NYB"],
+    ["","EUR/USD","EURUSD=X"]
+  ];
+
+  const root = document.getElementById("wg-var-root");
+  root.innerHTML = `<table id="wg-var-table"></table>`;
+  const tabela = root.querySelector("#wg-var-table");
+
+  async function atualizar(){
+    tabela.innerHTML = "";
+    let catAtual = "";
+
+    // 🔹 UMA ÚNICA REQUISIÇÃO (robusto)
+    const symbols = ativos.map(a => a[2]).join(",");
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
+
+    try {
+      const r = await fetch(
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        { cache: "no-store" }
+      );
+      const j = await r.json();
+      const dados = j.quoteResponse.result;
+
+      // mapa rápido
+      const mapa = {};
+      dados.forEach(d => mapa[d.symbol] = d);
+
+      for (const [cat,nome,symbol] of ativos){
+        if (cat && cat !== catAtual){
+          catAtual = cat;
+          const trCat = document.createElement("tr");
+          trCat.innerHTML = `<td class="wg-cat">${cat}</td>`;
+          tabela.appendChild(trCat);
+        }
+
+        const d = mapa[symbol];
+        const varp = d?.regularMarketChangePercent;
+
+        const valor = (varp !== null && varp !== undefined)
+          ? varp.toFixed(2) + "%"
+          : "--";
+
+        const cls = varp >= 0 ? "wg-pos" : "wg-neg";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="${cls}">${nome}: ${valor}</td>`;
+        tabela.appendChild(tr);
+      }
+
+    } catch(e){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>Erro ao carregar cotações</td>`;
+      tabela.appendChild(tr);
+    }
+  }
+
+  atualizar();
+  setInterval(atualizar, 60000); // 1 minuto
+})();
+</script>
+<!-- ===== FIM DO WIDGET ===== -->
+
     
 </body>
 </html>
