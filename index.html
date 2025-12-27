@@ -7,7 +7,7 @@
 <style>
 body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; }
 header { background: #1f2937; color: white; padding: 15px; text-align: center; }
-#controls { text-align: center; padding: 10px; }
+#controls, #compareDates { text-align: center; padding: 10px; }
 button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
 button.active { background: #2563eb; color: white; }
 #grafico { width: 100%; height: 600px; }
@@ -36,6 +36,13 @@ tbody tr:nth-child(even){ background:#f3f4f6; }
 <button onclick="setTimeframe(1, this)">1m</button>
 </div>
 
+<div id="compareDates">
+<label>Início: <input type="datetime-local" id="startDate"></label>
+<label>Fim: <input type="datetime-local" id="endDate"></label>
+<button onclick="filtrarPorData()">Comparar</button>
+<button onclick="resetGrafico()">Resetar</button>
+</div>
+
 <div id="grafico"></div>
 
 <div id="tabelas">
@@ -54,11 +61,12 @@ tbody tr:nth-child(even){ background:#f3f4f6; }
 </div>
 
 <script>
+// ==== Variáveis globais ====
 let timeframe = 60; // segundos
 let timer = null;
 let datas = [], risco = [], seguro = [];
 
-// Ativos e valores iniciais
+// Ativos iniciais
 let ativosRisco = [
   {nome:"Ouro Futuros", valor:2766.2},
   {nome:"Cobre Futuros", valor:4.2315},
@@ -91,9 +99,20 @@ let ativosSeguranca = [
   {nome:"EUR/BRL", valor:6.1843}
 ];
 
-// Calcula médias
+// Calcula média inicial
 let valorRisco = ativosRisco.reduce((a,b)=>a+b.valor,0)/ativosRisco.length;
 let valorSeguro = ativosSeguranca.reduce((a,b)=>a+b.valor,0)/ativosSeguranca.length;
+
+// Layout do gráfico
+const layout = {
+    title:'Ativos em Tempo Real',
+    xaxis:{title:'Data', type:'date', tickformat:'%d/%m %H:%M', rangeslider:{visible:true}},
+    yaxis:{title:'Valor'},
+    margin:{t:50},
+    legend: {x:1, xanchor:'right', y:1}
+};
+
+// ==== Funções ====
 
 // Atualização com ruído
 function atualizarValor(valor, vol, tendencia=0){
@@ -128,7 +147,7 @@ function atualizarGrafico(){
     seguro.push(valorSeguro);
     Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]},[0,1]);
 
-    // Atualiza preços de cada ativo individualmente
+    // Atualiza preços individuais
     ativosRisco.forEach(a=>{
         let novo = atualizarValor(a.valor,2,0.05);
         a.variacao = ((novo - a.valor)/a.valor)*100;
@@ -139,11 +158,10 @@ function atualizarGrafico(){
         a.variacao = ((novo - a.valor)/a.valor)*100;
         a.valor = novo;
     });
-
     atualizarTabelas();
 }
 
-// Atualiza tabelas HTML
+// Atualiza tabelas
 function atualizarTabelas(){
     const tbodyR = document.querySelector("#tabelaRisco tbody");
     tbodyR.innerHTML = "";
@@ -170,44 +188,13 @@ function setTimeframe(segundos, botao){
     timer = setInterval(atualizarGrafico, timeframe*1000);
 }
 
-// Inicialização
-gerarHistorico1Dia();
+// Filtrar gráfico por datas
+function filtrarPorData(){
+    const start = new Date(document.getElementById('startDate').value);
+    const end = new Date(document.getElementById('endDate').value);
+    if(isNaN(start) || isNaN(end)){
+        alert("Selecione datas válidas");
+        return;
+    }
 
-const layout = {
-    title:'Ativos em Tempo Real',
-    xaxis:{title:'Data', type:'date'},
-    yaxis:{title:'Valor'},
-    margin:{t:50},
-    legend: {x:1, xanchor:'right', y:1}
-};
-
-const traceRisco = {
-    x: datas,
-    y: risco,
-    mode:'lines+markers',
-    name:'Ativos de Risco',
-    line:{color:'red', width:2},
-    marker:{size:6,symbol:'circle'},
-    hovertemplate:'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
-};
-
-const traceSeguro = {
-    x: datas,
-    y: seguro,
-    mode:'lines+markers',
-    name:'Ativos de Segurança',
-    line:{color:'green', width:2},
-    marker:{size:6,symbol:'square'},
-    hovertemplate:'Data: %{x|%d/%m/%Y %H:%M}<br>Valor: %{y:.2f}<extra></extra>'
-};
-
-Plotly.newPlot('grafico',[traceRisco,traceSeguro],layout,{responsive:true});
-
-// Timer inicial
-timer = setInterval(atualizarGrafico,timeframe*1000);
-
-window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
-</script>
-
-</body>
-</html>
+    const newRisco = [], newSeguro =
