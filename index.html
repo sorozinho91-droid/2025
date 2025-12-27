@@ -241,5 +241,144 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
 
+<!-- ===== WIDGET COTAÇÕES GLOBAIS (ISOLADO) ===== -->
+<div id="wg-cotacoes-root"></div>
+
+<style>
+#wg-cotacoes-root {
+  all: initial;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 270px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  z-index: 99999;
+}
+
+#wg-cotacoes-root * {
+  all: unset;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+#wg-cotacoes-header {
+  background: #1f2937;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+#wg-cotacoes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#wg-cotacoes-table td {
+  padding: 5px 6px;
+  border-bottom: 1px solid #eee;
+  text-align: right;
+}
+
+#wg-cotacoes-table td:first-child {
+  text-align: left;
+}
+
+.wg-cat {
+  background: #f3f4f6;
+  font-weight: bold;
+}
+
+.wg-pos { color: green; }
+.wg-neg { color: red; }
+</style>
+
+<script>
+(function(){
+  const ativos = [
+    ["Índices","DJIA","^DJI"],
+    ["","Nasdaq 100","^NDX"],
+    ["","Russell 2000","^RUT"],
+    ["","Nikkei 225","^N225"],
+    ["","Euro Stoxx 50","^STOXX50E"],
+    ["","DAX","^GDAXI"],
+    ["","VIX","^VIX"],
+    ["","Ibovespa","^BVSP"],
+
+    ["Energy","Crude Oil WTI","CL=F"],
+    ["","Crude Oil Brent","BZ=F"],
+
+    ["Bonds","30Y Bond","^TYX"],
+    ["","10Y Note","^TNX"],
+    ["","5Y Note","^FVX"],
+    ["","2Y Note","^IRX"],
+
+    ["Metals","Gold","GC=F"],
+
+    ["Currencies","USD Index","DX-Y.NYB"],
+    ["","EUR/USD","EURUSD=X"]
+  ];
+
+  const root = document.getElementById("wg-cotacoes-root");
+  root.innerHTML = `
+    <div id="wg-cotacoes-header">Cotações Globais</div>
+    <table id="wg-cotacoes-table"></table>
+  `;
+
+  const tabela = root.querySelector("#wg-cotacoes-table");
+
+  async function atualizar(){
+    tabela.innerHTML = "";
+    let catAtual = "";
+
+    for (const [cat,nome,symbol] of ativos){
+      if (cat && cat !== catAtual){
+        catAtual = cat;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="wg-cat" colspan="3">${cat}</td>`;
+        tabela.appendChild(tr);
+      }
+
+      try{
+        const r = await fetch(
+          `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`,
+          { cache: "no-store" }
+        );
+        const j = await r.json();
+        const d = j.quoteResponse.result[0];
+
+        const preco = d?.regularMarketPrice?.toFixed(2) ?? "-";
+        const varp  = d?.regularMarketChangePercent ?? 0;
+        const cls   = varp >= 0 ? "wg-pos" : "wg-neg";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${nome}</td>
+          <td>${preco}</td>
+          <td class="${cls}">${varp.toFixed(2)}%</td>
+        `;
+        tabela.appendChild(tr);
+
+      } catch(e){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="3">${nome} indisponível</td>`;
+        tabela.appendChild(tr);
+      }
+    }
+  }
+
+  atualizar();
+  setInterval(atualizar, 60000); // 1 minuto
+})();
+</script>
+<!-- ===== FIM DO WIDGET ===== -->
+
+    
 </body>
 </html>
