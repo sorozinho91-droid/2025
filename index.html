@@ -240,202 +240,103 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
-<!-- MINI TABELA DE COTAÇÕES -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Market Grid</title>
+
 <style>
-#mini-cotacoes {
-  position: fixed;
-  top: 80px;
-  right: 12px;
-  background: rgba(0,0,0,0.70);
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  color: #e5e7eb;
-  z-index: 9999;
-}
-
-#mini-cotacoes .linha {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.pos { color: #22c55e; }
-.neg { color: #ef4444; }
-</style>
-
-<div id="mini-cotacoes"></div>
-
-<script>
-const ativos = {
-  "DJIA": 0.42,
-  "NDX": -0.18,
-  "DAX": 0.31,
-  "VIX": 2.10,
-  "WTI": -1.02,
-  "GOLD": 0.07,
-  "USD": -0.12
-};
-
-function atualizarCotacoes(){
-  const box = document.getElementById("mini-cotacoes");
-  box.innerHTML = "";
-
-  for(const ativo in ativos){
-    // simulação de variação contínua
-    ativos[ativo] += (Math.random() - 0.5) * 0.15;
-
-    const v = ativos[ativo];
-    const cls = v >= 0 ? "pos" : "neg";
-
-    const linha = document.createElement("div");
-    linha.className = "linha";
-    linha.innerHTML = `
-      <span>${ativo}</span>
-      <span class="${cls}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>
-    `;
-
-    box.appendChild(linha);
-  }
-}
-
-// inicia
-atualizarCotacoes();
-setInterval(atualizarCotacoes, 3000); // atualiza a cada 3s
-</script>
-<!-- FIM MINI TABELA -->
-<!-- MINI COTAÇÕES REAIS -->
-<style>
-#tv-cotacoes {
+#market-grid {
   position: fixed;
   top: 80px;
   right: 10px;
-  width: 190px;
-  height: 230px;
+  width: 320px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-family: Arial, sans-serif;
   z-index: 9999;
 }
+
+.market-card {
+  background: #0f172a;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 0 6px rgba(0,0,0,.4);
+}
+
+.symbol {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.change {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.positive { color: #00e676; }
+.negative { color: #ff5252; }
 </style>
+</head>
 
-<div id="tv-cotacoes">
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-  </div>
-</div>
+<body>
 
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-{
-  "colorTheme": "dark",
-  "dateRange": "1D",
-  "showChart": false,
-  "locale": "pt",
-  "width": "100%",
-  "height": "100%",
-  "tabs": [
-    {
-      "title": "Mercados",
-      "symbols": [
-        { "s": "DJ:DJI", "d": "DJIA" },
-        { "s": "NASDAQ:NDX", "d": "NDX" },
-        { "s": "XETR:DAX", "d": "DAX" },
-        { "s": "CBOE:VIX", "d": "VIX" },
-        { "s": "NYMEX:CL1!", "d": "WTI" },
-        { "s": "COMEX:GC1!", "d": "GOLD" },
-        { "s": "TVC:DXY", "d": "USD" }
-      ]
-    }
-  ],
-  "isTransparent": true,
-  "showSymbolLogo": false,
-  "showFloatingTooltip": false
+<div id="market-grid"></div>
+
+<script>
+const assets = [
+  { symbol: "ES", change: 0 },
+  { symbol: "NQ", change: 0 },
+  { symbol: "RTY", change: 0 },
+  { symbol: "CL", change: 0 },
+  { symbol: "GC", change: 0 },
+  { symbol: "BTC", change: 0 },
+  { symbol: "EURUSD", change: 0 },
+  { symbol: "US10Y", change: 0 }
+];
+
+const grid = document.getElementById("market-grid");
+
+function renderGrid() {
+  grid.innerHTML = "";
+  assets.forEach(a => {
+    const card = document.createElement("div");
+    card.className = "market-card";
+
+    const cls = a.change >= 0 ? "positive" : "negative";
+
+    card.innerHTML = `
+      <div class="symbol">${a.symbol}</div>
+      <div class="change ${cls}">
+        ${a.change > 0 ? "+" : ""}${a.change.toFixed(2)}%
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
 }
+
+// SIMULAÇÃO — substituir por API real
+function updateData() {
+  assets.forEach(a => {
+    a.change = (Math.random() * 4 - 2);
+  });
+  renderGrid();
+}
+
+}
+
+renderGrid();
+setInterval(updateData, 2000);
 </script>
-<!-- FIM MINI COTAÇÕES -->
-<!-- CONTAINER GERAL -->
-<style>
-#layout-mercado {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
 
-/* AJUSTE DO GRAFICO (não altera seu conteúdo) */
-#grafico {
-  flex: 1;
-}
-
-/* PAINEL DE COTAÇÕES */
-#painel-mercado {
-  width: 180px;
-  background: rgba(10,10,10,0.85);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  font-family: "Inter", "Segoe UI", Arial, sans-serif;
-  font-size: 11px;
-  color: #e5e7eb;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-}
-
-#painel-mercado header {
-  padding: 6px 8px;
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #9ca3af;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-#painel-mercado iframe {
-  width: 100%;
-  height: 200px;
-  border: none;
-}
-</style>
-
-<!-- LAYOUT -->
-<div id="layout-mercado">
-
-  <!-- SEU GRAFICO JÁ EXISTENTE -->
-  <div id="grafico"></div>
-
-  <!-- TABELA DE COTAÇÕES -->
-  <div id="painel-mercado">
-    <header>Markets</header>
-    <div class="tradingview-widget-container">
-      <div class="tradingview-widget-container__widget"></div>
-    </div>
-  </div>
-
-</div>
-
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-{
-  "colorTheme": "dark",
-  "dateRange": "1D",
-  "showChart": false,
-  "locale": "pt",
-  "width": "100%",
-  "height": "200",
-  "isTransparent": true,
-  "showSymbolLogo": false,
-  "showFloatingTooltip": false,
-  "tabs": [
-    {
-      "title": "",
-      "symbols": [
-        { "s": "DJ:DJI", "d": "DJIA" },
-        { "s": "NASDAQ:NDX", "d": "NDX" },
-        { "s": "XETR:DAX", "d": "DAX" },
-        { "s": "CBOE:VIX", "d": "VIX" },
-        { "s": "NYMEX:CL1!", "d": "WTI" },
-        { "s": "COMEX:GC1!", "d": "GOLD" },
-        { "s": "TVC:DXY", "d": "USD" }
-      ]
-    }
-  ]
-}
-</script>
+</body>
+</html>
 
 </body>
 </html>
