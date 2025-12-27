@@ -197,4 +197,42 @@ function filtrarPorData(){
         return;
     }
 
-    const newRisco = [], newSeguro =
+    const newRisco = [], newSeguro = [], newDatas = [];
+    for(let i=0;i<datas.length;i++){
+        if(datas[i] >= start && datas[i] <= end){
+            newDatas.push(datas[i]);
+            newRisco.push(risco[i]);
+            newSeguro.push(seguro[i]);
+        }
+    }
+
+    Plotly.react('grafico',[
+        {x:newDatas, y:newRisco, mode:'lines+markers', name:'Ativos de Risco', line:{color:'red', width:2}, marker:{size:6,symbol:'circle'}},
+        {x:newDatas, y:newSeguro, mode:'lines+markers', name:'Ativos de Segurança', line:{color:'green', width:2}, marker:{size:6,symbol:'square'}}
+    ], layout);
+}
+
+// Resetar gráfico para histórico completo
+function resetGrafico(){
+    Plotly.react('grafico',[
+        {x:datas, y:risco, mode:'lines+markers', name:'Ativos de Risco', line:{color:'red', width:2}, marker:{size:6,symbol:'circle'}},
+        {x:datas, y:seguro, mode:'lines+markers', name:'Ativos de Segurança', line:{color:'green', width:2}, marker:{size:6,symbol:'square'}}
+    ], layout);
+}
+
+// ==== Inicialização ====
+gerarHistorico1Dia();
+atualizarTabelas();
+
+Plotly.newPlot('grafico',[
+    {x:datas, y:risco, mode:'lines+markers', name:'Ativos de Risco', line:{color:'red', width:2}, marker:{size:6,symbol:'circle'}},
+    {x:datas, y:seguro, mode:'lines+markers', name:'Ativos de Segurança', line:{color:'green', width:2}, marker:{size:6,symbol:'square'}}
+], layout,{responsive:true});
+
+timer = setInterval(atualizarGrafico,timeframe*1000);
+
+window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
+</script>
+
+</body>
+</html>
