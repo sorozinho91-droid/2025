@@ -10,14 +10,7 @@ header { background: #1f2937; color: white; padding: 15px; text-align: center; }
 #controls, #compareDates { text-align: center; padding: 10px; }
 button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
 button.active { background: #2563eb; color: white; }
-#grafico { 
-    width: 90%;       /* largura menor que 100% */
-    height: 400px;    /* altura menor */
-    margin: 20px auto; /* centralizado horizontalmente */
-    background: #ffffff; 
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
+#grafico { width: 90%; height: 400px; margin: 20px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
 table { width:90%; margin:10px auto; border-collapse:collapse; }
 th, td { padding:6px; border:1px solid #ccc; text-align:center; font-size:14px; }
 thead th { background:#2563eb; color:white; }
@@ -62,7 +55,7 @@ tbody tr:nth-child(even){ background:#f3f4f6; }
 </div>
 
 <script>
-// ===== Variáveis =====
+// ==== Variáveis ====
 let timeframe = 60; // segundos
 let timer = null;
 let datas = [], risco = [], seguro = [];
@@ -96,12 +89,12 @@ const layout = {
     legend:{x:1,xanchor:'right',y:1}
 };
 
-// ===== Funções =====
+// ==== Funções ====
 function atualizarValor(valor, vol, tendencia=0){
     return Math.max(0, valor + (Math.random()-0.5)*vol + tendencia);
 }
 
-// Histórico até 1 ano (1 ponto/hora)
+// Gerar histórico inicial 1 ano (1 ponto/hora)
 function gerarHistoricoAno(){
     const agora = new Date();
     const start = new Date(agora.getTime() - 365*24*60*60*1000);
@@ -119,6 +112,7 @@ function gerarHistoricoAno(){
     valorSeguro = valS;
 }
 
+// Atualizar gráfico em tempo real
 function atualizarGrafico(){
     const agora = new Date();
     valorRisco = atualizarValor(valorRisco,2,0.1);
@@ -126,8 +120,20 @@ function atualizarGrafico(){
     datas.push(agora);
     risco.push(valorRisco);
     seguro.push(valorSeguro);
-    Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]},[0,1]);
 
+    // Limitar pontos para não travar (últimos 1000)
+    if(datas.length>1000){
+        datas.shift();
+        risco.shift();
+        seguro.shift();
+    }
+
+    Plotly.update('grafico',{
+        x:[datas, datas],
+        y:[risco, seguro]
+    });
+
+    // Atualizar tabela
     ativosRisco.forEach(a=>{
         let novo = atualizarValor(a.valor,2,0.05);
         a.variacao = ((novo-a.valor)/a.valor)*100;
@@ -146,14 +152,14 @@ function atualizarTabelas(){
     tbodyR.innerHTML="";
     ativosRisco.forEach(a=>{
         let tr = document.createElement("tr");
-        tr.innerHTML=`<td class="risco">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao.toFixed(2)}%</td>`;
+        tr.innerHTML=`<td class="risco">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao?.toFixed(2)??0}%</td>`;
         tbodyR.appendChild(tr);
     });
     const tbodyS = document.querySelector("#tabelaSeguro tbody");
     tbodyS.innerHTML="";
     ativosSeguranca.forEach(a=>{
         let tr = document.createElement("tr");
-        tr.innerHTML=`<td class="seguro">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao.toFixed(2)}%</td>`;
+        tr.innerHTML=`<td class="seguro">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao?.toFixed(2)??0}%</td>`;
         tbodyS.appendChild(tr);
     });
 }
@@ -170,6 +176,7 @@ function filtrarPorData(){
     const start = new Date(document.getElementById('startDate').value);
     const end = new Date(document.getElementById('endDate').value);
     if(isNaN(start) || isNaN(end)){ alert("Selecione datas válidas"); return; }
+
     const newR = [], newS = [], newD = [];
     for(let i=0;i<datas.length;i++){
         if(datas[i]>=start && datas[i]<=end){
@@ -178,6 +185,7 @@ function filtrarPorData(){
             newS.push(seguro[i]);
         }
     }
+
     Plotly.react('grafico',[
         {x:newD,y:newR,mode:'lines+markers',name:'Ativos de Risco',line:{color:'red'}},
         {x:newD,y:newS,mode:'lines+markers',name:'Ativos de Segurança',line:{color:'green'}}
@@ -194,12 +202,13 @@ function resetGrafico(){
 // ==== Inicialização ====
 gerarHistoricoAno();
 atualizarTabelas();
-Plotly.newPlot('grafico',[
-    {x:datas,y:risco,mode:'lines+markers',name:'Ativos de Risco',line:{color:'red'}},
-    {x:datas,y:seguro,mode:'lines+markers',name:'Ativos de Segurança',line:{color:'green'}}
-],layout,{responsive:true});
 
-timer = setInterval(atualizarGrafico,timeframe*1000);
+Plotly.newPlot('grafico',[
+    {x:datas, y:risco, mode:'lines+markers', name:'Ativos de Risco', line:{color:'red'}},
+    {x:datas, y:seguro, mode:'lines+markers', name:'Ativos de Segurança', line:{color:'green'}}
+], layout, {responsive:true});
+
+timer = setInterval(atualizarGrafico, timeframe*1000);
 window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
 </script>
 
