@@ -244,85 +244,92 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Cotações Lateral</title>
+<title>Tabela Lateral de Cotações</title>
 
 <style>
-#cotacoes {
+body{
+  margin:0;
+  height:2000px;
+  background:#0b1220;
+  font-family: Consolas, monospace;
+}
+
+/* CAIXA LATERAL */
+#cotacoes{
   position: fixed;
   top: 80px;
   right: 12px;
 
-  background: rgba(0,0,0,0.7);
-  padding: 8px 10px;
+  background: rgba(0,0,0,0.75);
+  padding: 10px 12px;
   border-radius: 6px;
 
-  font-family: Consolas, monospace;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
   color: #e5e7eb;
 
-  z-index: 9999;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
-.cotacao {
+/* LINHA */
+.linha{
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 14px;
+  min-width: 140px;
 }
 
-.pos { color: #22c55e; }
-.neg { color: #ef4444; }
+/* CORES */
+.pos{ color:#22c55e; }
+.neg{ color:#ef4444; }
 </style>
 </head>
 
 <body>
 
 <div id="cotacoes">
-  <div class="cotacao"><span>DJIA</span><span id="DJI">--</span></div>
-  <div class="cotacao"><span>NDX</span><span id="NDX">--</span></div>
-  <div class="cotacao"><span>DAX</span><span id="DAX">--</span></div>
-  <div class="cotacao"><span>VIX</span><span id="VIX">--</span></div>
-  <div class="cotacao"><span>WTI</span><span id="WTI">--</span></div>
-  <div class="cotacao"><span>GOLD</span><span id="GOLD">--</span></div>
-  <div class="cotacao"><span>USD</span><span id="USD">--</span></div>
+  <div class="linha"><span>DJIA</span><span id="DJIA">0.00%</span></div>
+  <div class="linha"><span>NDX</span><span id="NDX">0.00%</span></div>
+  <div class="linha"><span>DAX</span><span id="DAX">0.00%</span></div>
+  <div class="linha"><span>VIX</span><span id="VIX">0.00%</span></div>
+  <div class="linha"><span>WTI</span><span id="WTI">0.00%</span></div>
+  <div class="linha"><span>GOLD</span><span id="GOLD">0.00%</span></div>
+  <div class="linha"><span>USD</span><span id="USD">0.00%</span></div>
 </div>
 
 <script>
-const ativos = {
-  DJI:  "DJI",
-  NDX:  "NDX",
-  DAX:  "DAX",
-  VIX:  "VIX",
-  WTI:  "CL=F",
-  GOLD: "GC=F",
-  USD:  "DX-Y.NYB"
+/* valores iniciais */
+const valores = {
+  DJIA:  0.42,
+  NDX:  -0.18,
+  DAX:   0.31,
+  VIX:   2.10,
+  WTI:  -1.02,
+  GOLD:  0.07,
+  USD:  -0.12
 };
 
-async function atualizar() {
-  try {
-    const symbols = Object.values(ativos).join(",");
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
-    const res = await fetch(url);
-    const data = await res.json();
+/* renderiza */
+function render(){
+  for(const k in valores){
+    const el = document.getElementById(k);
+    const v  = valores[k];
 
-    data.quoteResponse.result.forEach(a => {
-      const id = Object.keys(ativos).find(k => ativos[k] === a.symbol);
-      if (!id) return;
-
-      const el = document.getElementById(id);
-      const pct = a.regularMarketChangePercent;
-
-      el.textContent = pct.toFixed(2) + "%";
-      el.className = pct >= 0 ? "pos" : "neg";
-    });
-
-  } catch (e) {
-    console.error("Erro ao atualizar cotações");
+    el.textContent = (v>0?"+":"") + v.toFixed(2) + "%";
+    el.className   = v>=0 ? "pos" : "neg";
   }
 }
 
-atualizar();
-setInterval(atualizar, 30000); // atualiza a cada 30s
+/* simula mercado */
+function atualizar(){
+  for(const k in valores){
+    valores[k] += (Math.random()-0.5)*0.2;
+  }
+  render();
+}
+
+render();
+setInterval(atualizar, 3000); // atualiza a cada 3s
 </script>
 
 </body>
