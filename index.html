@@ -70,14 +70,10 @@ let timeframe = 60; // segundos
 let ativosRisco = [
     {nome:"Ouro Futuros", valor:2766.2},
     {nome:"Cobre Futuros", valor:4.2315},
-    {nome:"Petróleo WTI", valor:73.17}, // adicionado explicitamente
+    {nome:"Petróleo WTI", valor:73.17},
     {nome:"Vale SA ADR", valor:9.16},
     {nome:"Petrobras ADR", valor:13.88},
     {nome:"Soja Chicago", valor:1045},
-    {nome:"S&P 500 VIX Futuros", valor:17.61},
-    {nome:"USD/MXN", valor:20.665},
-    {nome:"USD/NOK", valor:11.2378},
-    {nome:"USD/NZD", valor:1.7565},
     {nome:"Oslo All Share", valor:1709.43},
     {nome:"Dow Jones Futuros", valor:44904},
     {nome:"The Global Dow USD", valor:5079.14},
@@ -88,7 +84,7 @@ let ativosRisco = [
     {nome:"Shanghai Composite", valor:3252.63}
 ];
 
-// Ativos de Segurança (DXY, ETFs, Setores)
+// Ativos de Segurança (DXY, ETFs, Setores, FX)
 let ativosSeguranca = [
     {nome:"DXY - Índice Dólar", valor:107.16},
     {nome:"Financial Select Sector", valor:51.41},
@@ -98,7 +94,11 @@ let ativosSeguranca = [
     {nome:"iShares MSCI Emerging Markets", valor:42.17},
     {nome:"iShares Semiconductor ETF", valor:212.55},
     {nome:"The Global Dow USD", valor:5079.14},
-    {nome:"EUR/BRL", valor:6.1843}
+    {nome:"EUR/BRL", valor:6.1843},
+    {nome:"S&P 500 VIX Futuros", valor:17.61},
+    {nome:"USD/MXN", valor:20.665},
+    {nome:"USD/NOK", valor:11.2378},
+    {nome:"USD/NZD", valor:1.7565}
 ];
 
 // Gerar histórico inicial (30 dias, 1 ponto/hora)
