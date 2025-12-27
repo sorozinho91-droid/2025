@@ -122,4 +122,103 @@ function atualizarTabelas(){
         tr.innerHTML=`<td class="risco">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao?.toFixed(2)??0}%</td>`;
         tbodyR.appendChild(tr);
     });
-    const tbodyS
+    const tbodyS = document.querySelector("#tabelaSeguro tbody");
+    tbodyS.innerHTML="";
+    ativosSeguranca.forEach(a=>{
+        let tr = document.createElement("tr");
+        tr.innerHTML=`<td class="seguro">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao?.toFixed(2)??0}%</td>`;
+        tbodyS.appendChild(tr);
+    });
+}
+
+// Atualização em tempo real
+function atualizarGrafico(){
+    const agora = new Date();
+    valorRisco += (Math.random()-0.5)*2;
+    valorSeguro += (Math.random()-0.5)*1;
+    datas.push(agora);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+
+    // Limitar pontos
+    if(datas.length>1000){
+        datas.shift();
+        risco.shift();
+        seguro.shift();
+    }
+
+    // Atualizar gráfico
+    if(filtered){
+        const newD=[], newR=[], newS=[];
+        for(let i=0;i<datas.length;i++){
+            if(datas[i]>=filteredStart && datas[i]<=filteredEnd){
+                newD.push(datas[i]);
+                newR.push(risco[i]);
+                newS.push(seguro[i]);
+            }
+        }
+        plotGrafico(newD,newR,newS);
+    } else {
+        plotGrafico(datas,risco,seguro);
+    }
+
+    // Atualizar valores dos ativos
+    ativosRisco.forEach(a=>{
+        let novo = a.valor + (Math.random()-0.5)*2;
+        a.variacao = ((novo-a.valor)/a.valor)*100;
+        a.valor = novo;
+    });
+    ativosSeguranca.forEach(a=>{
+        let novo = a.valor + (Math.random()-0.5)*1;
+        a.variacao = ((novo-a.valor)/a.valor)*100;
+        a.valor = novo;
+    });
+
+    atualizarTabelas();
+}
+
+// Filtrar por datas
+function filtrarPorData(){
+    filteredStart = new Date(document.getElementById('startDate').value);
+    filteredEnd = new Date(document.getElementById('endDate').value);
+    if(isNaN(filteredStart) || isNaN(filteredEnd)){ alert("Selecione datas válidas"); return; }
+    filtered = true;
+    atualizarGrafico();
+}
+
+// Resetar filtro
+function resetGrafico(){
+    filtered = false;
+    plotGrafico(datas,risco,seguro);
+}
+
+// Alterar timeframe
+function setTimeframe(segundos, botao){
+    timeframe = segundos;
+    document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
+    botao.classList.add('active');
+    if(timer) clearInterval(timer);
+    timer = setInterval(atualizarGrafico, timeframe*1000);
+}
+
+// Inicialização
+gerarHistorico();
+
+// Garantir ao menos 1 ponto
+if(datas.length===0){
+    const agora = new Date();
+    datas.push(agora);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+}
+
+plotGrafico(datas,risco,seguro);
+atualizarTabelas();
+timer = setInterval(atualizarGrafico, timeframe*1000);
+
+// Redimensionamento responsivo
+window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
+</script>
+
+</body>
+</html>
