@@ -241,11 +241,11 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
 
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Gráfico + Mini Cotações</title>
+<title>Gráfico + Lista de Variação</title>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -256,54 +256,52 @@ body{
   font-family: Arial, sans-serif;
 }
 
-/* CONTAINER PRINCIPAL */
-#painel{
-  width:95%;
-  margin:10px auto;
-  display:flex;
-  align-items:flex-start;
-  gap:8px;
-}
-
-/* GRÁFICO */
+/* GRÁFICO NORMAL */
 #grafico{
-  flex:1;
-  height:360px;
+  width:90%;
+  height:420px;
+  margin:20px auto;
   background:#111827;
-  border-radius:6px;
+  border-radius:8px;
 }
 
-/* MINI TABELA */
-#mini-tabela{
-  width:150px;
+/* LISTA FIXA NO CANTO DIREITO */
+#lista-cotacoes{
+  position:fixed;
+  top:80px;          /* ajusta para cima/baixo */
+  right:10px;
+
+  width:140px;
+  padding:6px;
+
   background:rgba(0,0,0,0.65);
   border-radius:6px;
-  padding:6px;
 
   font-family: Consolas, monospace;
   font-size:10px;
-  line-height:1.3;
+  line-height:1.4;
+  z-index:9999;
 }
 
 /* LIMPEZA VISUAL */
-#mini-tabela table{
+#lista-cotacoes table{
   border-collapse:collapse !important;
 }
 
-#mini-tabela td{
+#lista-cotacoes td{
   padding:2px 4px !important;
   border:none !important;
   white-space:nowrap;
   color:#e5e7eb;
 }
 
-/* ESCONDER TUDO QUE NÃO É % */
-#mini-tabela thead,
-#mini-tabela td:nth-child(2),
-#mini-tabela th:nth-child(2),
-#mini-tabela .tv-symbol-logo,
-#mini-tabela .tv-market-quotes__header,
-#mini-tabela .tv-market-quotes__footer{
+/* ESCONDER PREÇO E OUTROS ELEMENTOS */
+#lista-cotacoes thead,
+#lista-cotacoes td:nth-child(2),
+#lista-cotacoes th:nth-child(2),
+#lista-cotacoes .tv-symbol-logo,
+#lista-cotacoes .tv-market-quotes__header,
+#lista-cotacoes .tv-market-quotes__footer{
   display:none !important;
 }
 </style>
@@ -311,23 +309,19 @@ body{
 
 <body>
 
-<div id="painel">
+<!-- GRÁFICO -->
+<div id="grafico"></div>
 
-  <!-- GRÁFICO -->
-  <div id="grafico"></div>
-
-  <!-- MINI TABELA -->
-  <div id="mini-tabela" class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-  </div>
-
+<!-- LISTA DE VARIAÇÃO -->
+<div id="lista-cotacoes" class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
 </div>
 
-<!-- GRÁFICO SIMPLES (NÃO CONFLITA) -->
+<!-- GRÁFICO SIMPLES (EXEMPLO) -->
 <script>
 Plotly.newPlot("grafico", [{
   x:[1,2,3,4,5],
-  y:[100,102,101,103,104],
+  y:[100,101,99,102,104],
   mode:"lines",
   line:{color:"#22c55e"}
 }],{
@@ -338,13 +332,13 @@ Plotly.newPlot("grafico", [{
 });
 </script>
 
-<!-- TRADINGVIEW – VARIAÇÃO EM TEMPO REAL -->
+<!-- TRADINGVIEW – VARIAÇÃO % -->
 <script
   src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js"
   async>
 {
-  "width": "150",
-  "height": "220",
+  "width": "140",
+  "height": "260",
   "symbolsGroups": [
     {
       "name": "Mercado",
@@ -369,6 +363,6 @@ Plotly.newPlot("grafico", [{
 </body>
 </html>
 
-
+    
 </body>
 </html>
