@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,49 +17,38 @@
 <div id="grafico" style="width:100%;height:600px;"></div>
 
 <script>
-    // Códigos Yahoo Finance
-    const ativos_risco = ["GC=F","HG=F","CL=F","YM=F","VALE.K","PBR"];
-    const ativos_seguranca = ["DX-Y.NYB","^VIX","MXN=X","EURBRL=X"];
+    // Valores iniciais simulados para Risco e Segurança
+    let valorRisco = 1000;
+    let valorSeguranca = 1000;
 
     let data = [
-        {x: [], y: [], name:"Risco", mode:'lines', line:{color:'red', dash:'dash'}},
-        {x: [], y: [], name:"Segurança", mode:'lines', line:{color:'blue'}}
+        {x:[new Date()], y:[valorRisco], name:"Risco", mode:'lines', line:{color:'red', dash:'dash'}},
+        {x:[new Date()], y:[valorSeguranca], name:"Segurança", mode:'lines', line:{color:'blue'}}
     ];
 
     const layout = {title:'Indicador Risco x Segurança', xaxis:{title:'Data/Hora'}, yaxis:{title:'Valor'}, legend:{orientation:"h"}};
     Plotly.newPlot('grafico', data, layout);
 
-    let intervalTime = 30000; // padrão 30s
+    let intervalTime = 30000;
     let intervalID = setInterval(updateData, intervalTime);
 
-    async function fetchPrecoYahoo(codigo){
-        const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${codigo}`;
-        return fetch(url)
-            .then(res => res.json())
-            .then(json => json.quoteResponse.result[0]?.regularMarketPrice || null)
-            .catch(()=>null);
-    }
-
-    async function updateData(){
+    function updateData(){
         const now = new Date();
-        // Risco
-        let somaRisco=0, countR=0;
-        for(let cod of ativos_risco){
-            const preco = await fetchPrecoYahoo(cod);
-            if(preco!==null){ somaRisco += preco; countR++; }
-        }
-        if(countR>0){ data[0].x.push(now); data[0].y.push(somaRisco/countR); }
 
-        // Segurança
-        let somaSeg=0, countS=0;
-        for(let cod of ativos_seguranca){
-            const preco = await fetchPrecoYahoo(cod);
-            if(preco!==null){ somaSeg += preco; countS++; }
-        }
-        if(countS>0){ data[1].x.push(now); data[1].y.push(somaSeg/countS); }
+        // Atualiza valores simulando variação percentual pequena (+-0.5%)
+        valorRisco = valorRisco * (1 + (Math.random()-0.5)/100);
+        valorSeguranca = valorSeguranca * (1 + (Math.random()-0.5)/100);
 
-        // Limita últimos 20 pontos
-        data.forEach(trace => { if(trace.x.length>20){ trace.x.shift(); trace.y.shift(); } });
+        data[0].x.push(now);
+        data[0].y.push(valorRisco);
+
+        data[1].x.push(now);
+        data[1].y.push(valorSeguranca);
+
+        // Mantém últimos 20 pontos
+        data.forEach(trace => {
+            if(trace.x.length > 20){ trace.x.shift(); trace.y.shift(); }
+        });
 
         Plotly.update('grafico', data);
     }
