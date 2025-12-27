@@ -66,12 +66,12 @@ let filtered = false;
 let filteredStart, filteredEnd;
 let timeframe = 60; // segundos
 
-// Ativos de Risco (Bolsas Globais, Commodities, Petróleo, Minério de Ferro)
+// Ativos de Risco
 let ativosRisco = [
     {nome:"Ouro Futuros", valor:2766.2},
     {nome:"Cobre Futuros", valor:4.2315},
     {nome:"Petróleo WTI", valor:73.17},
-    {nome:"Minério de Ferro", valor:56.72}, // novo ativo de risco
+    {nome:"Minério de Ferro", valor:56.72},
     {nome:"Vale SA ADR", valor:9.16},
     {nome:"Petrobras ADR", valor:13.88},
     {nome:"Soja Chicago", valor:1045},
@@ -82,24 +82,26 @@ let ativosRisco = [
     {nome:"Hang Seng Futuros", valor:20430.5},
     {nome:"China A50 Futuros", valor:12983},
     {nome:"SZSE Component", valor:10292.73},
-    {nome:"Shanghai Composite", valor:3252.63}
-];
-
-// Ativos de Segurança (DXY, ETFs, Setores, FX)
-let ativosSeguranca = [
-    {nome:"DXY - Índice Dólar", valor:107.16},
+    {nome:"Shanghai Composite", valor:3252.63},
     {nome:"Financial Select Sector", valor:51.41},
     {nome:"Consumer Staples", valor:80.01},
     {nome:"Energy Select Sector", valor:90.36},
     {nome:"SPDR Metals & Mining", valor:58.68},
     {nome:"iShares MSCI Emerging Markets", valor:42.17},
-    {nome:"iShares Semiconductor ETF", valor:212.55},
-    {nome:"The Global Dow USD", valor:5079.14},
+    {nome:"iShares Semiconductor ETF", valor:212.55}
+];
+
+// Ativos de Segurança
+let ativosSeguranca = [
+    {nome:"DXY - Índice Dólar", valor:107.16},
     {nome:"EUR/BRL", valor:6.1843},
     {nome:"S&P 500 VIX Futuros", valor:17.61},
     {nome:"USD/MXN", valor:20.665},
     {nome:"USD/NOK", valor:11.2378},
-    {nome:"USD/NZD", valor:1.7565}
+    {nome:"USD/NZD", valor:1.7565},
+    {nome:"USD/AUD", valor:1.5892},
+    {nome:"USD/KRW", valor:1432.84},
+    {nome:"USD/CNY", valor:7.2509}
 ];
 
 // Gerar histórico inicial (30 dias, 1 ponto/hora)
