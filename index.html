@@ -10,9 +10,16 @@ header { background: #1f2937; color: white; padding: 15px; text-align: center; }
 #controls, #compareDates { text-align: center; padding: 10px; }
 button { margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #e5e7eb; }
 button.active { background: #2563eb; color: white; }
-#grafico { width: 100%; height: 600px; }
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-th, td { padding:8px; border:1px solid #ccc; text-align:center; }
+#grafico { 
+    width: 90%;       /* largura menor que 100% */
+    height: 400px;    /* altura menor */
+    margin: 20px auto; /* centralizado horizontalmente */
+    background: #ffffff; 
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+table { width:90%; margin:10px auto; border-collapse:collapse; }
+th, td { padding:6px; border:1px solid #ccc; text-align:center; font-size:14px; }
 thead th { background:#2563eb; color:white; }
 tbody tr:nth-child(even){ background:#f3f4f6; }
 .risco { color:red; }
@@ -22,7 +29,7 @@ tbody tr:nth-child(even){ background:#f3f4f6; }
 <body>
 
 <header>
-<h2>Dashboard – Ativos de Risco x Segurança (1 Dia)</h2>
+<h2>Dashboard – Ativos de Risco x Segurança (até 1 ano)</h2>
 </header>
 
 <div id="controls">
@@ -55,7 +62,7 @@ tbody tr:nth-child(even){ background:#f3f4f6; }
 </div>
 
 <script>
-// ====== Variáveis ======
+// ===== Variáveis =====
 let timeframe = 60; // segundos
 let timer = null;
 let datas = [], risco = [], seguro = [];
@@ -83,9 +90,9 @@ let valorSeguro = ativosSeguranca.reduce((a,b)=>a+b.valor,0)/ativosSeguranca.len
 
 const layout = {
     title:'Ativos em Tempo Real',
-    xaxis:{title:'Data', type:'date', tickformat:'%d/%m %H:%M'},
+    xaxis:{title:'Data', type:'date', tickformat:'%d/%m/%Y %H:%M', rangeslider:{visible:true}},
     yaxis:{title:'Valor'},
-    margin:{t:50},
+    margin:{t:40, l:50, r:50, b:50},
     legend:{x:1,xanchor:'right',y:1}
 };
 
@@ -94,13 +101,14 @@ function atualizarValor(valor, vol, tendencia=0){
     return Math.max(0, valor + (Math.random()-0.5)*vol + tendencia);
 }
 
-function gerarHistorico1Dia(){
+// Histórico até 1 ano (1 ponto/hora)
+function gerarHistoricoAno(){
     const agora = new Date();
-    const start = new Date(agora.getTime() - 24*60*60*1000);
+    const start = new Date(agora.getTime() - 365*24*60*60*1000);
     datas = []; risco = []; seguro = [];
     let valR = valorRisco;
     let valS = valorSeguro;
-    for(let d=new Date(start); d<=agora; d.setMinutes(d.getMinutes()+1)){
+    for(let d=new Date(start); d<=agora; d.setHours(d.getHours()+1)){
         valR = atualizarValor(valR,2,0.1);
         valS = atualizarValor(valS,0.5,0.02);
         datas.push(new Date(d));
@@ -120,7 +128,6 @@ function atualizarGrafico(){
     seguro.push(valorSeguro);
     Plotly.extendTraces('grafico',{x:[[agora],[agora]], y:[[valorRisco],[valorSeguro]]},[0,1]);
 
-    // Atualiza ativos individuais
     ativosRisco.forEach(a=>{
         let novo = atualizarValor(a.valor,2,0.05);
         a.variacao = ((novo-a.valor)/a.valor)*100;
@@ -185,7 +192,7 @@ function resetGrafico(){
 }
 
 // ==== Inicialização ====
-gerarHistorico1Dia();
+gerarHistoricoAno();
 atualizarTabelas();
 Plotly.newPlot('grafico',[
     {x:datas,y:risco,mode:'lines+markers',name:'Ativos de Risco',line:{color:'red'}},
