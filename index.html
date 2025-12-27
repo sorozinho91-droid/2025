@@ -10,7 +10,12 @@ header { background:#1f2937; color:white; padding:15px; text-align:center; }
 #controls, #compareDates { text-align:center; padding:10px; }
 button { margin:5px; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#e5e7eb; }
 button.active { background:#2563eb; color:white; }
-#grafico { width:90%; height:400px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+#grafico { width:90%; max-width:1200px; height:400px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+table { width:90%; max-width:1200px; margin:20px auto; border-collapse: collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+th, td { padding:8px; border:1px solid #ccc; text-align:center; font-size:14px;}
+thead th { background:#2563eb; color:white;}
+.risco { color:red; }
+.seguro { color:green; }
 </style>
 </head>
 <body>
@@ -34,6 +39,21 @@ button.active { background:#2563eb; color:white; }
 
 <div id="grafico"></div>
 
+<!-- Tabelas de Ativos -->
+<table id="tabelaRisco">
+<thead>
+<tr><th>Ativo de Risco</th><th>Valor Atual</th><th>Variação (%)</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<table id="tabelaSeguro">
+<thead>
+<tr><th>Ativo de Segurança</th><th>Valor Atual</th><th>Variação (%)</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
 <script>
 // ==== Variáveis ====
 let datas = [];
@@ -45,6 +65,23 @@ let timer = null;
 let filtered = false;
 let filteredStart, filteredEnd;
 let timeframe = 60; // segundos
+
+// Exemplos de ativos
+let ativosRisco = [
+    {nome:"Ouro Futuros", valor:2766.2},
+    {nome:"Cobre Futuros", valor:4.2315},
+    {nome:"Petróleo WTI", valor:73.17},
+    {nome:"Vale SA ADR", valor:9.16},
+    {nome:"Petrobras ADR", valor:13.88}
+];
+
+let ativosSeguranca = [
+    {nome:"Oslo All Share", valor:1709.43},
+    {nome:"Dow Jones Futuros", valor:44904},
+    {nome:"The Global Dow USD", valor:5079.14},
+    {nome:"Financial Select Sector", valor:51.41},
+    {nome:"Consumer Staples", valor:80.01}
+];
 
 // Gerar histórico inicial (30 dias, 1 ponto/hora)
 function gerarHistorico(){
@@ -69,74 +106,20 @@ function plotGrafico(x, yR, yS){
         {x:x, y:yS, mode:'lines+markers', name:'Segurança', line:{color:'green'}}
     ],{
         title:'Linha do Tempo Risco x Segurança',
-        xaxis:{title:'Data', type:'date', rangeslider:{visible:false}}, // range slider desativado
+        xaxis:{title:'Data', type:'date', rangeslider:{visible:false}},
         yaxis:{title:'Valor'},
         margin:{t:40,l:50,r:50,b:50},
         legend:{x:1,xanchor:'right',y:1}
     });
 }
 
-// Atualização em tempo real
-function atualizarGrafico(){
-    const agora = new Date();
-    valorRisco += (Math.random()-0.5)*2;
-    valorSeguro += (Math.random()-0.5)*1;
-    datas.push(agora);
-    risco.push(valorRisco);
-    seguro.push(valorSeguro);
-
-    // Limitar pontos para performance
-    if(datas.length>1000){
-        datas.shift();
-        risco.shift();
-        seguro.shift();
-    }
-
-    // Se filtrado, mostrar apenas intervalo
-    if(filtered){
-        const newD = [], newR = [], newS = [];
-        for(let i=0;i<datas.length;i++){
-            if(datas[i]>=filteredStart && datas[i]<=filteredEnd){
-                newD.push(datas[i]);
-                newR.push(risco[i]);
-                newS.push(seguro[i]);
-            }
-        }
-        plotGrafico(newD,newR,newS);
-    } else {
-        plotGrafico(datas,risco,seguro);
-    }
-}
-
-// Filtrar por datas
-function filtrarPorData(){
-    filteredStart = new Date(document.getElementById('startDate').value);
-    filteredEnd = new Date(document.getElementById('endDate').value);
-    if(isNaN(filteredStart) || isNaN(filteredEnd)){ alert("Selecione datas válidas"); return; }
-    filtered = true;
-    atualizarGrafico();
-}
-
-// Resetar filtro
-function resetGrafico(){
-    filtered = false;
-    plotGrafico(datas,risco,seguro);
-}
-
-// Alterar timeframe de atualização
-function setTimeframe(segundos, botao){
-    timeframe = segundos;
-    document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
-    botao.classList.add('active');
-    if(timer) clearInterval(timer);
-    timer = setInterval(atualizarGrafico, timeframe*1000);
-}
-
-// Inicialização
-gerarHistorico();
-plotGrafico(datas,risco,seguro);
-timer = setInterval(atualizarGrafico, timeframe*1000);
-</script>
-
-</body>
-</html>
+// Atualizar tabelas
+function atualizarTabelas(){
+    const tbodyR = document.querySelector("#tabelaRisco tbody");
+    tbodyR.innerHTML="";
+    ativosRisco.forEach(a=>{
+        let tr = document.createElement("tr");
+        tr.innerHTML=`<td class="risco">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td>${a.variacao?.toFixed(2)??0}%</td>`;
+        tbodyR.appendChild(tr);
+    });
+    const tbodyS
