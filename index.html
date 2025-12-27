@@ -352,6 +352,90 @@ setInterval(atualizarCotacoes, 3000); // atualiza a cada 3s
 }
 </script>
 <!-- FIM MINI COTAÇÕES -->
+<!-- CONTAINER GERAL -->
+<style>
+#layout-mercado {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* AJUSTE DO GRAFICO (não altera seu conteúdo) */
+#grafico {
+  flex: 1;
+}
+
+/* PAINEL DE COTAÇÕES */
+#painel-mercado {
+  width: 180px;
+  background: rgba(10,10,10,0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  color: #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+#painel-mercado header {
+  padding: 6px 8px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+#painel-mercado iframe {
+  width: 100%;
+  height: 200px;
+  border: none;
+}
+</style>
+
+<!-- LAYOUT -->
+<div id="layout-mercado">
+
+  <!-- SEU GRAFICO JÁ EXISTENTE -->
+  <div id="grafico"></div>
+
+  <!-- TABELA DE COTAÇÕES -->
+  <div id="painel-mercado">
+    <header>Markets</header>
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+{
+  "colorTheme": "dark",
+  "dateRange": "1D",
+  "showChart": false,
+  "locale": "pt",
+  "width": "100%",
+  "height": "200",
+  "isTransparent": true,
+  "showSymbolLogo": false,
+  "showFloatingTooltip": false,
+  "tabs": [
+    {
+      "title": "",
+      "symbols": [
+        { "s": "DJ:DJI", "d": "DJIA" },
+        { "s": "NASDAQ:NDX", "d": "NDX" },
+        { "s": "XETR:DAX", "d": "DAX" },
+        { "s": "CBOE:VIX", "d": "VIX" },
+        { "s": "NYMEX:CL1!", "d": "WTI" },
+        { "s": "COMEX:GC1!", "d": "GOLD" },
+        { "s": "TVC:DXY", "d": "USD" }
+      ]
+    }
+  ]
+}
+</script>
 
 </body>
 </html>
