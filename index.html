@@ -240,52 +240,72 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
-<!-- MINI COTAÇÕES REAIS -->
+<!-- MINI TABELA DE COTAÇÕES -->
 <style>
-#tv-cotacoes {
+#mini-cotacoes {
   position: fixed;
   top: 80px;
-  right: 10px;
-  width: 190px;
-  height: 230px;
+  right: 12px;
+  background: rgba(0,0,0,0.70);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #e5e7eb;
   z-index: 9999;
 }
+
+#mini-cotacoes .linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.pos { color: #22c55e; }
+.neg { color: #ef4444; }
 </style>
 
-<div id="tv-cotacoes">
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-  </div>
-</div>
+<div id="mini-cotacoes"></div>
 
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-{
-  "colorTheme": "dark",
-  "dateRange": "1D",
-  "showChart": false,
-  "locale": "pt",
-  "width": "100%",
-  "height": "100%",
-  "tabs": [
-    {
-      "title": "Mercados",
-      "symbols": [
-        { "s": "DJ:DJI", "d": "DJIA" },
-        { "s": "NASDAQ:NDX", "d": "NDX" },
-        { "s": "XETR:DAX", "d": "DAX" },
-        { "s": "CBOE:VIX", "d": "VIX" },
-        { "s": "NYMEX:CL1!", "d": "WTI" },
-        { "s": "COMEX:GC1!", "d": "GOLD" },
-        { "s": "TVC:DXY", "d": "USD" }
-      ]
-    }
-  ],
-  "isTransparent": true,
-  "showSymbolLogo": false,
-  "showFloatingTooltip": false
+<script>
+const ativos = {
+  "DJIA": 0.42,
+  "NDX": -0.18,
+  "DAX": 0.31,
+  "VIX": 2.10,
+  "WTI": -1.02,
+  "GOLD": 0.07,
+  "USD": -0.12
+};
+
+function atualizarCotacoes(){
+  const box = document.getElementById("mini-cotacoes");
+  box.innerHTML = "";
+
+  for(const ativo in ativos){
+    // simulação de variação contínua
+    ativos[ativo] += (Math.random() - 0.5) * 0.15;
+
+    const v = ativos[ativo];
+    const cls = v >= 0 ? "pos" : "neg";
+
+    const linha = document.createElement("div");
+    linha.className = "linha";
+    linha.innerHTML = `
+      <span>${ativo}</span>
+      <span class="${cls}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>
+    `;
+
+    box.appendChild(linha);
+  }
 }
+
+// inicia
+atualizarCotacoes();
+setInterval(atualizarCotacoes, 3000); // atualiza a cada 3s
 </script>
-<!-- FIM MINI COTAÇÕES -->
+<!-- FIM MINI TABELA -->
 
 </body>
 </html>
