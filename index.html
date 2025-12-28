@@ -244,27 +244,36 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Cotações Reais</title>
+<title>Painel Compacto de Cotações</title>
 <style>
-  /* Painel flutuante no canto superior direito */
+  /* Painel compacto no canto superior direito */
   #cotacoes {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 320px;
+    width: 250px;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     z-index: 1000;
+    font-family: Arial, sans-serif;
+  }
+  #cotacoes h3 {
+    margin: 0 0 6px 0;
+    font-size: 16px;
+    text-align: center;
+  }
+  .tradingview-widget-container {
+    width: 100%;
   }
 </style>
 </head>
 <body>
 
 <div id="cotacoes">
-  <!-- TradingView Widget -->
+  <h3>Cotações</h3>
   <div class="tradingview-widget-container">
     <div id="tradingview_cotacoes"></div>
   </div>
@@ -274,51 +283,23 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" async>
 {
   "symbols": [
-    {
-      "title": "Ouro",
-      "proName": "COMEX:GC1!"
-    },
-    {
-      "title": "Brent",
-      "proName": "ICE:BRN1!"
-    },
-    {
-      "title": "WTI",
-      "proName": "NYMEX:CL1!"
-    },
-    {
-      "title": "DXY",
-      "proName": "FOREXCOM:DX1!"
-    },
-    {
-      "title": "S&P 500",
-      "proName": "INDEX:SPX"
-    },
-    {
-      "title": "Nasdaq",
-      "proName": "INDEX:NDX"
-    },
-    {
-      "title": "Dow Jones",
-      "proName": "INDEX:DJI"
-    },
-    {
-      "title": "Nikkei 225",
-      "proName": "INDEX:NKY"
-    },
-    {
-      "title": "Hang Seng",
-      "proName": "INDEX:HSI"
-    },
-    {
-      "title": "Shanghai",
-      "proName": "INDEX:SSEC"
-    }
+    { "title": "Ouro", "proName": "COMEX:GC1!" },
+    { "title": "Brent", "proName": "ICE:BRN1!" },
+    { "title": "WTI", "proName": "NYMEX:CL1!" },
+    { "title": "DXY", "proName": "FOREXCOM:DX1!" },
+    { "title": "S&P 500", "proName": "INDEX:SPX" },
+    { "title": "Nasdaq", "proName": "INDEX:NDX" },
+    { "title": "Dow Jones", "proName": "INDEX:DJI" },
+    { "title": "Nikkei 225", "proName": "INDEX:NKY" },
+    { "title": "Hang Seng", "proName": "INDEX:HSI" },
+    { "title": "Shanghai", "proName": "INDEX:SSEC" }
   ],
   "colorTheme": "light",
   "isTransparent": false,
-  "showSymbolLogo": true,
-  "locale": "pt"
+  "showSymbolLogo": false,
+  "locale": "pt",
+  "width": "100%",
+  "height": "250"
 }
 </script>
 
