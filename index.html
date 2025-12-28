@@ -244,7 +244,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Vertical de Cotações</title>
+<title>Painel Vertical com Variação Percentual</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -255,9 +255,9 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   /* Painel vertical fixo à direita */
   #painel-direita {
     position: fixed;
-    top: 50px; /* afastado do topo */
+    top: 50px;
     right: 0;
-    width: 200px;
+    width: 220px;
     height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
@@ -289,7 +289,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
   /* Conteúdo principal */
   #conteudo {
-    margin: 20px 220px 20px 20px; /* espaço para painel lateral */
+    margin: 20px 240px 20px 20px; /* espaço para painel lateral */
     padding: 20px;
   }
 </style>
@@ -302,17 +302,18 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     <thead>
       <tr>
         <th>Ativo</th>
-        <th>Cotação</th>
+        <th>Preço</th>
+        <th>%</th>
       </tr>
     </thead>
     <tbody id="tabela-cotacoes">
-      <tr><td>Nikkei 225</td><td class="price">--</td></tr>
-      <tr><td>Brent</td><td class="price">--</td></tr>
-      <tr><td>WTI</td><td class="price">--</td></tr>
-      <tr><td>DXY</td><td class="price">--</td></tr>
-      <tr><td>S&P 500</td><td class="price">--</td></tr>
-      <tr><td>Nasdaq</td><td class="price">--</td></tr>
-      <tr><td>Dow Jones</td><td class="price">--</td></tr>
+      <tr><td>Nikkei 225</td><td class="price">--</td><td class="perc">--</td></tr>
+      <tr><td>Brent</td><td class="price">--</td><td class="perc">--</td></tr>
+      <tr><td>WTI</td><td class="price">--</td><td class="perc">--</td></tr>
+      <tr><td>DXY</td><td class="price">--</td><td class="perc">--</td></tr>
+      <tr><td>S&P 500</td><td class="price">--</td><td class="perc">--</td></tr>
+      <tr><td>Nasdaq</td><td class="price">--</td><td class="perc">--</td></tr>
+      <tr><td>Dow Jones</td><td class="price">--</td><td class="perc">--</td></tr>
     </tbody>
   </table>
 </div>
@@ -320,11 +321,11 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <!-- Conteúdo principal -->
 <div id="conteudo">
   <h1>Bem-vindo ao seu site</h1>
-  <p>O painel vertical mostra os ativos e suas cotações em uma tabela minimalista.</p>
+  <p>O painel vertical mostra ativos, preços e variação percentual com cores indicativas de alta/baixa.</p>
 </div>
 
 <script>
-// Lista de ativos e valores simulados
+// Lista de ativos com preço inicial
 const ativos = [
   {nome: "Nikkei 225", valor: 33000},
   {nome: "Brent", valor: 85},
@@ -339,22 +340,5 @@ function atualizarCotacoes() {
   const linhas = document.querySelectorAll("#tabela-cotacoes tr");
   linhas.forEach((linha, index) => {
     if (index >= ativos.length) return;
-    const valorCell = linha.querySelector(".price");
-    const novoValor = ativos[index].valor + (Math.random() - 0.5) * 20; // simula variação
-    valorCell.textContent = novoValor.toFixed(2);
-
-    // Define cor verde/vermelha
-    if (novoValor > ativos[index].valor) valorCell.className = "price up";
-    else if (novoValor < ativos[index].valor) valorCell.className = "price down";
-    
-    ativos[index].valor = novoValor;
-  });
-}
-
-// Atualiza a cada 5 segundos (simulação)
-atualizarCotacoes();
-setInterval(atualizarCotacoes, 5000);
-</script>
-
-</body>
-</html>
+    const priceCell = linha.querySelector(".price");
+    const percCell = linha.querySelector(".perc");
