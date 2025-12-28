@@ -244,70 +244,77 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Vertical com Variação Percentual</title>
+<title>Mini Painel de Variação Percentual</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
   }
 
-  /* Painel vertical fixo à direita */
+  /* Painel compacto fixo à direita, deslocado 20px para a esquerda */
   #painel-direita {
     position: fixed;
     top: 50px;
-    right: 0;
-    width: 240px;
+    right: 20px; /* deslocamento para a esquerda */
+    width: 120px;
     height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
     z-index: 9999;
-    padding: 10px;
+    padding: 5px;
     box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
     overflow-y: auto;
     font-size: 12px;
   }
 
-  /* Título */
+  /* Esconde título */
   #painel-direita h2 {
-    font-size: 14px;
-    margin: 0 0 8px 0;
-    text-align: center;
+    display: none;
   }
 
   /* Conteúdo principal */
   #conteudo {
-    margin-right: 260px; /* espaço para painel lateral */
+    margin-right: 160px; /* largura do painel + deslocamento */
     padding: 20px;
   }
 
   /* =======================
-     CSS para mostrar apenas variação percentual
+     CSS para painel compacto só com variação %
      ======================= */
   .tradingview-widget-container .tv-symbol-name,
-  .tradingview-widget-container .tv-symbol-price-quote {
-    display: none !important;
+  .tradingview-widget-container .tv-symbol-price-quote,
+  .tradingview-widget-container .tv-symbol-group-name,
+  .tradingview-widget-container .tv-widget-quote__logo {
+    display: none !important; /* esconde nome, preço, grupos e logos */
   }
 
   .tradingview-widget-container .tv-widget-quote__change {
     display: block !important;
     font-weight: bold;
+    font-size: 16px; /* maior visibilidade */
     text-align: right;
-    font-size: 14px;
+    padding: 2px 0;
   }
 
+  .tradingview-widget-container .tv-widget-quote__change.tv-positive {
+    color: #008000 !important; /* verde */
+  }
+
+  .tradingview-widget-container .tv-widget-quote__change.tv-negative {
+    color: #FF0000 !important; /* vermelho */
+  }
 </style>
 </head>
 <body>
 
 <div id="painel-direita">
-  <h2>Variação %</h2>
   <div class="tradingview-widget-container">
     <!-- TradingView Market Quotes Widget -->
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
     {
-      "width": 240,
+      "width": 120,
       "height": "100%",
-      "showSymbolLogo": true,
+      "showSymbolLogo": false,
       "colorTheme": "light",
       "locale": "pt",
       "symbolsGroups": [
@@ -336,7 +343,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
 <div id="conteudo">
   <h1>Bem‑vindo ao seu site</h1>
-  <p>O painel à direita mostra **somente a variação percentual** dos ativos, atualizado automaticamente via TradingView.</p>
+  <p>O painel à direita mostra **somente a variação percentual**, de forma compacta e clara, atualizado automaticamente via TradingView.</p>
   <p>Você pode rolar a página normalmente e o painel fica fixo ao lado.</p>
 </div>
 
