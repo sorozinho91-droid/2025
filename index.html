@@ -251,14 +251,12 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     margin: 0;
   }
 
-  /* Painel vertical fixo à direita, responsivo */
+  /* Painel vertical fixo à direita */
   #painel-direita {
     position: fixed;
     top: 50px;
     right: 0;
-    width: 25vw; /* largura relativa à tela */
-    max-width: 320px; /* máximo para desktop */
-    min-width: 220px; /* mínimo para telas pequenas */
+    width: 280px; /* largura suficiente para mostrar cotações */
     height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
@@ -275,13 +273,13 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     text-align: center;
   }
 
-  /* Conteúdo principal responsivo */
+  /* Conteúdo principal */
   #conteudo {
-    margin-right: 25vw; /* espaço proporcional ao painel */
-    max-margin-right: 320px; /* não exceder o max do painel */
+    margin-right: 300px; /* espaço para painel lateral */
     padding: 20px;
   }
 
+  /* Responsivo para tablets e celulares */
   @media (max-width: 768px) {
     #painel-direita {
       width: 40vw;
@@ -310,12 +308,42 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
 <div id="painel-direita">
   <h2>Cotações</h2>
-  <div class="tradingview-widget-container">
+  <div class="tradingview-widget-container" style="width:100%; height:600px;">
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
     {
       "width": "100%",
-      "height": "100%",
+      "height": 600,
       "showSymbolLogo": true,
       "colorTheme": "light",
       "locale": "pt",
-      "symbolsGroups":
+      "symbolsGroups": [
+        {
+          "name": "Índices & Commodities",
+          "symbols": [
+            { "name": "INDEX:NIKK", "displayName": "Nikkei 225" },
+            { "name": "ICE:BRN1!", "displayName": "Brent" },
+            { "name": "NYMEX:CL1!", "displayName": "WTI" },
+            { "name": "FOREXCOM:DX1!", "displayName": "DXY" }
+          ]
+        },
+        {
+          "name": "Principais Índices EUA",
+          "symbols": [
+            { "name": "INDEX:SPX", "displayName": "S&P 500" },
+            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
+            { "name": "INDEX:DJI", "displayName": "Dow Jones" }
+          ]
+        }
+      ]
+    }
+    </script>
+  </div>
+</div>
+
+<div id="conteudo">
+  <h1>Bem‑vindo ao seu site</h1>
+  <p>O painel lateral agora está **responsivo e funcional**, exibindo **ativos e cotações visíveis**, com altura mínima suficiente para não cortar informações.</p>
+</div>
+
+</body>
+</html>
