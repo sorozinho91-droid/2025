@@ -244,7 +244,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Vertical Responsivo com Cotações</title>
+<title>Painel Vertical Próximo ao Gráfico</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -256,7 +256,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     position: fixed;
     top: 50px;
     right: 0;
-    width: 280px; /* largura suficiente para mostrar cotações */
+    width: 260px; /* largura ajustada para ficar próximo ao gráfico */
     height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
@@ -273,17 +273,16 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     text-align: center;
   }
 
-  /* Conteúdo principal */
+  /* Conteúdo principal ajustado para ficar próximo ao painel */
   #conteudo {
-    margin-right: 300px; /* espaço para painel lateral */
+    margin-right: 270px; /* menos margem, aproxima o painel do gráfico */
     padding: 20px;
   }
 
-  /* Responsivo para tablets e celulares */
+  /* Responsivo */
   @media (max-width: 768px) {
     #painel-direita {
       width: 40vw;
-      max-width: none;
     }
     #conteudo {
       margin-right: 40vw;
@@ -323,27 +322,4 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
             { "name": "INDEX:NIKK", "displayName": "Nikkei 225" },
             { "name": "ICE:BRN1!", "displayName": "Brent" },
             { "name": "NYMEX:CL1!", "displayName": "WTI" },
-            { "name": "FOREXCOM:DX1!", "displayName": "DXY" }
-          ]
-        },
-        {
-          "name": "Principais Índices EUA",
-          "symbols": [
-            { "name": "INDEX:SPX", "displayName": "S&P 500" },
-            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
-            { "name": "INDEX:DJI", "displayName": "Dow Jones" }
-          ]
-        }
-      ]
-    }
-    </script>
-  </div>
-</div>
-
-<div id="conteudo">
-  <h1>Bem‑vindo ao seu site</h1>
-  <p>O painel lateral agora está **responsivo e funcional**, exibindo **ativos e cotações visíveis**, com altura mínima suficiente para não cortar informações.</p>
-</div>
-
-</body>
-</html>
+            { "name": "FOREXCOM:DX1!",
