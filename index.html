@@ -254,38 +254,38 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   /* Painel vertical máximo à direita */
   #painel-direita {
     position: fixed;
-    top: 0; /* ocupa desde o topo */
+    top: 0;
     right: 0;
-    width: 200px; /* largura máxima confortável para variações */
-    height: 100vh; /* altura máxima da tela */
-    background-color: #fff; /* fundo branco */
+    width: 250px; /* largura maior */
+    height: 100vh; /* ocupa toda altura da tela */
+    background-color: #fff;
     padding: 10px;
     overflow-y: auto;
-    font-size: 20px; /* texto grande para máxima visibilidade */
+    font-size: 24px; /* fonte grande */
     z-index: 9999;
-    box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   }
 
   /* Conteúdo principal */
   #conteudo {
-    margin-right: 220px; /* espaço para o painel maior */
+    margin-right: 270px; /* espaço para painel */
     padding: 20px;
   }
 
   /* =======================
-     CSS para painel com variação %
+     CSS para mostrar apenas variação %
      ======================= */
   .tradingview-widget-container .tv-symbol-name,
   .tradingview-widget-container .tv-symbol-price-quote,
   .tradingview-widget-container .tv-symbol-group-name,
   .tradingview-widget-container .tv-widget-quote__logo {
-    display: none !important; /* esconde tudo que não é variação */
+    display: none !important;
   }
 
   .tradingview-widget-container .tv-widget-quote__change {
     display: block !important;
     font-weight: bold;
-    font-size: 24px; /* tamanho máximo confortável */
+    font-size: 28px; /* tamanho máximo visível */
     text-align: center;
     padding: 2px 0;
   }
@@ -302,15 +302,4 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <body>
 
 <div id="painel-direita">
-  <div class="tradingview-widget-container">
-    <!-- TradingView Market Quotes Widget -->
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
-    {
-      "width": 200,
-      "height": "100%",
-      "showSymbolLogo": false,
-      "colorTheme": "light",
-      "locale": "pt",
-      "symbolsGroups": [
-        {
-          "name": "Índices & Commodities
+  <div class="tradingview-wi
