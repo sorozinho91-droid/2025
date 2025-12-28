@@ -298,11 +298,10 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80"; 
 const API_BASE = "https://finnhub.io/api/v1/quote?symbol=";
 
-// Símbolos compatíveis que retornam preço e variação
 const ativos = [
-  { nome: "Ouro", symbol: "GC=F" },
-  { nome: "Brent", symbol: "BZ=F" },
-  { nome: "WTI", symbol: "CL=F" },
+  { nome: "Ouro", symbol: "XAUUSD" },
+  { nome: "Brent", symbol: "CO1:COM" },
+  { nome: "WTI", symbol: "CL1:COM" },
   { nome: "DXY", symbol: "DXY" },
   { nome: "S&P 500", symbol: "^GSPC" },
   { nome: "Nasdaq", symbol: "^IXIC" },
@@ -312,12 +311,15 @@ const ativos = [
   { nome: "Shanghai", symbol: "000001.SS" }
 ];
 
-// Função para cor de fundo proporcional à variação
+// Função para transformar a variação percentual em intensidade de cor
 function getCorFundo(perc) {
-  const maxIntensidade = 0.5; // opacidade máxima
-  const intensidade = Math.min(Math.abs(perc) / 5, 1) * maxIntensidade;
-  if (perc >= 0) return `rgba(0, 200, 0, ${intensidade})`; // verde
-  else return `rgba(200, 0, 0, ${intensidade})`; // vermelho
+  const maxIntensidade = 0.5; // máximo de opacidade para gradiente
+  const intensidade = Math.min(Math.abs(perc) / 5, 1) * maxIntensidade; // varia entre 0 e maxIntensidade
+  if (perc >= 0) {
+    return `rgba(0, 200, 0, ${intensidade})`; // verde
+  } else {
+    return `rgba(200, 0, 0, ${intensidade})`; // vermelho
+  }
 }
 
 async function atualizarCotacoes() {
