@@ -244,12 +244,11 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Vertical com Variação Percentual</title>
+<title>Painel Vertical com Cotações Reais</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
-    background-color: #f5f5f5;
   }
 
   /* Painel vertical fixo à direita */
@@ -257,7 +256,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     position: fixed;
     top: 50px;
     right: 0;
-    width: 220px;
+    width: 240px;
     height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
@@ -265,80 +264,65 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     padding: 10px;
     box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
     overflow-y: auto;
-  }
-
-  /* Tabela minimalista */
-  table {
-    width: 100%;
-    border-collapse: collapse;
     font-size: 12px;
   }
 
-  th, td {
-    text-align: left;
-    padding: 4px 8px;
+  /* Título */
+  #painel-direita h2 {
+    font-size: 14px;
+    margin: 0 0 8px 0;
+    text-align: center;
   }
-
-  th {
-    border-bottom: 1px solid #ccc;
-    font-weight: bold;
-  }
-
-  .up { color: green; }
-  .down { color: red; }
 
   /* Conteúdo principal */
   #conteudo {
-    margin: 20px 240px 20px 20px; /* espaço para painel lateral */
+    margin-right: 260px; /* espaço para painel lateral */
     padding: 20px;
   }
 </style>
 </head>
 <body>
 
-<!-- Painel vertical à direita -->
 <div id="painel-direita">
-  <table>
-    <thead>
-      <tr>
-        <th>Ativo</th>
-        <th>Preço</th>
-        <th>%</th>
-      </tr>
-    </thead>
-    <tbody id="tabela-cotacoes">
-      <tr><td>Nikkei 225</td><td class="price">--</td><td class="perc">--</td></tr>
-      <tr><td>Brent</td><td class="price">--</td><td class="perc">--</td></tr>
-      <tr><td>WTI</td><td class="price">--</td><td class="perc">--</td></tr>
-      <tr><td>DXY</td><td class="price">--</td><td class="perc">--</td></tr>
-      <tr><td>S&P 500</td><td class="price">--</td><td class="perc">--</td></tr>
-      <tr><td>Nasdaq</td><td class="price">--</td><td class="perc">--</td></tr>
-      <tr><td>Dow Jones</td><td class="price">--</td><td class="perc">--</td></tr>
-    </tbody>
-  </table>
+  <h2>Cotações</h2>
+  <div class="tradingview-widget-container">
+    <!-- TradingView Market Quotes Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
+    {
+      "width": 240,
+      "height": 600,
+      "showSymbolLogo": true,
+      "colorTheme": "light",
+      "locale": "pt",
+      "symbolsGroups": [
+        {
+          "name": "Índices & Commodities",
+          "symbols": [
+            { "name": "INDEX:NIKK", "displayName": "Nikkei 225" },
+            { "name": "ICE:BRN1!", "displayName": "Brent" },
+            { "name": "NYMEX:CL1!", "displayName": "WTI" },
+            { "name": "FOREXCOM:DX1!", "displayName": "DXY" }
+          ]
+        },
+        {
+          "name": "Principais Índices EUA",
+          "symbols": [
+            { "name": "INDEX:SPX", "displayName": "S&P 500" },
+            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
+            { "name": "INDEX:DJI", "displayName": "Dow Jones" }
+          ]
+        }
+      ]
+    }
+    </script>
+  </div>
 </div>
 
-<!-- Conteúdo principal -->
 <div id="conteudo">
-  <h1>Bem-vindo ao seu site</h1>
-  <p>O painel vertical mostra ativos, preços e variação percentual com cores indicativas de alta/baixa.</p>
+  <h1>Bem‑vindo ao seu site</h1>
+  <p>O painel à direita mostra **preços reais** e **variações percentuais** dos ativos — atualizado automaticamente via TradingView.</p>
+  <p>Você pode rolar a página normalmente e o painel fica fixo ao lado.</p>
 </div>
 
-<script>
-// Lista de ativos com preço inicial
-const ativos = [
-  {nome: "Nikkei 225", valor: 33000},
-  {nome: "Brent", valor: 85},
-  {nome: "WTI", valor: 80},
-  {nome: "DXY", valor: 105},
-  {nome: "S&P 500", valor: 4500},
-  {nome: "Nasdaq", valor: 13500},
-  {nome: "Dow Jones", valor: 35000}
-];
-
-function atualizarCotacoes() {
-  const linhas = document.querySelectorAll("#tabela-cotacoes tr");
-  linhas.forEach((linha, index) => {
-    if (index >= ativos.length) return;
-    const priceCell = linha.querySelector(".price");
-    const percCell = linha.querySelector(".perc");
+</body>
+</html>
