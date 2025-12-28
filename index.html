@@ -240,6 +240,82 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
+<div id="cotacoes" style="
+    float: right;
+    width: 300px;
+    font-family: Arial, sans-serif;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 10px;
+">
+  <h3 style="text-align: center; margin: 0 0 10px 0;">Cotações</h3>
+  <table cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background-color: #f0f0f0; border-bottom: 1px solid #ccc;">
+        <th style="text-align: left;">Ativo</th>
+        <th style="text-align: right;">Variação (%)</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-cotacoes">
+      <!-- Linhas preenchidas pelo JS -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+const ativos = [
+  { nome: "Ouro", symbol: "GC=F" },
+  { nome: "VIX", symbol: "^VIX" },
+  { nome: "Brent", symbol: "BZ=F" },
+  { nome: "WTI", symbol: "CL=F" },
+  { nome: "DXY", symbol: "DX-Y.NYB" },
+  { nome: "S&P 500", symbol: "^GSPC" },
+  { nome: "Nasdaq", symbol: "^IXIC" },
+  { nome: "Dow Jones", symbol: "^DJI" },
+  { nome: "Nikkei 225", symbol: "^N225" },
+  { nome: "Hang Seng", symbol: "^HSI" },
+  { nome: "Shanghai", symbol: "000001.SS" }
+];
+
+async function atualizarCotacoes() {
+  const tabela = document.getElementById("tabela-cotacoes");
+  tabela.innerHTML = "";
+
+  for (let ativo of ativos) {
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ativo.symbol}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const quote = data.quoteResponse.result[0];
+
+      let perc = "0.00";
+      if (quote?.regularMarketChangePercent != null) {
+        perc = quote.regularMarketChangePercent.toFixed(2);
+      }
+
+      tabela.innerHTML += `
+        <tr>
+          <td style="padding: 4px;">${ativo.nome}</td>
+          <td style="padding: 4px; text-align: right; color: ${perc >= 0 ? 'green' : 'red'};">${perc}%</td>
+        </tr>
+      `;
+    } catch (error) {
+      console.error("Erro ao buscar cotação:", error);
+      tabela.innerHTML += `
+        <tr>
+          <td>${ativo.nome}</td>
+          <td style="color: gray; text-align: right;">Erro</td>
+        </tr>
+      `;
+    }
+  }
+}
+
+// Atualiza a cada 30 segundos
+atualizarCotacoes();
+setInterval(atualizarCotacoes, 30000);
+</script>
 
 </body>
 </html>
