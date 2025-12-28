@@ -244,14 +244,14 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Cotações Reais com Gradiente</title>
+<title>Painel de Cotações Reais</title>
 <style>
+  /* Painel flutuante no canto superior direito */
   #cotacoes {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 360px;
-    font-family: Arial, sans-serif;
+    width: 320px;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 10px;
@@ -259,106 +259,67 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 1000;
   }
-  #cotacoes h3 {
-    text-align: center;
-    margin: 0 0 10px 0;
-  }
-  #cotacoes table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  #cotacoes th, #cotacoes td {
-    padding: 6px;
-  }
-  #cotacoes th:first-child, #cotacoes td:first-child {
-    text-align: left;
-  }
-  #cotacoes th {
-    background: #f0f0f0;
-  }
 </style>
 </head>
 <body>
 
 <div id="cotacoes">
-  <h3>Cotações Reais</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Ativo</th>
-        <th style="text-align:right;">Preço</th>
-        <th style="text-align:right;">Δ %</th>
-      </tr>
-    </thead>
-    <tbody id="tabela-cotacoes"></tbody>
-  </table>
+  <!-- TradingView Widget -->
+  <div class="tradingview-widget-container">
+    <div id="tradingview_cotacoes"></div>
+  </div>
 </div>
 
-<script>
-const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80"; 
-const API_BASE = "https://finnhub.io/api/v1/quote?symbol=";
-
-const ativos = [
-  { nome: "Ouro", symbol: "XAUUSD" },
-  { nome: "Brent", symbol: "CO1:COM" },
-  { nome: "WTI", symbol: "CL1:COM" },
-  { nome: "DXY", symbol: "DXY" },
-  { nome: "S&P 500", symbol: "^GSPC" },
-  { nome: "Nasdaq", symbol: "^IXIC" },
-  { nome: "Dow Jones", symbol: "^DJI" },
-  { nome: "Nikkei 225", symbol: "^N225" },
-  { nome: "Hang Seng", symbol: "^HSI" },
-  { nome: "Shanghai", symbol: "000001.SS" }
-];
-
-// Função para transformar a variação percentual em intensidade de cor
-function getCorFundo(perc) {
-  const maxIntensidade = 0.5; // máximo de opacidade para gradiente
-  const intensidade = Math.min(Math.abs(perc) / 5, 1) * maxIntensidade; // varia entre 0 e maxIntensidade
-  if (perc >= 0) {
-    return `rgba(0, 200, 0, ${intensidade})`; // verde
-  } else {
-    return `rgba(200, 0, 0, ${intensidade})`; // vermelho
-  }
-}
-
-async function atualizarCotacoes() {
-  const tabela = document.getElementById("tabela-cotacoes");
-  tabela.innerHTML = "";
-
-  for (let ativo of ativos) {
-    try {
-      const res = await fetch(`${API_BASE}${ativo.symbol}&token=${API_KEY}`);
-      const data = await res.json();
-
-      let preco = data.c?.toFixed(2) ?? "-";
-      let perc = parseFloat(data.dp?.toFixed(2)) || 0;
-      let corFundo = getCorFundo(perc);
-      let corTexto = perc >= 0 ? "green" : "red";
-      let icon = perc >= 0 ? "▲" : "▼";
-
-      tabela.innerHTML += `
-        <tr style="background-color:${corFundo}">
-          <td>${ativo.nome}</td>
-          <td style="text-align:right;">${preco}</td>
-          <td style="text-align:right; color:${corTexto};">${icon} ${perc}%</td>
-        </tr>
-      `;
-    } catch (err) {
-      tabela.innerHTML += `
-        <tr style="background-color:#eee;">
-          <td>${ativo.nome}</td>
-          <td style="text-align:right; color:gray;">-</td>
-          <td style="text-align:right; color:gray;">Erro</td>
-        </tr>
-      `;
+<!-- TradingView Lightweight Widget -->
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" async>
+{
+  "symbols": [
+    {
+      "title": "Ouro",
+      "proName": "COMEX:GC1!"
+    },
+    {
+      "title": "Brent",
+      "proName": "ICE:BRN1!"
+    },
+    {
+      "title": "WTI",
+      "proName": "NYMEX:CL1!"
+    },
+    {
+      "title": "DXY",
+      "proName": "FOREXCOM:DX1!"
+    },
+    {
+      "title": "S&P 500",
+      "proName": "INDEX:SPX"
+    },
+    {
+      "title": "Nasdaq",
+      "proName": "INDEX:NDX"
+    },
+    {
+      "title": "Dow Jones",
+      "proName": "INDEX:DJI"
+    },
+    {
+      "title": "Nikkei 225",
+      "proName": "INDEX:NKY"
+    },
+    {
+      "title": "Hang Seng",
+      "proName": "INDEX:HSI"
+    },
+    {
+      "title": "Shanghai",
+      "proName": "INDEX:SSEC"
     }
-  }
+  ],
+  "colorTheme": "light",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "locale": "pt"
 }
-
-// Atualiza a cada 30 segundos
-atualizarCotacoes();
-setInterval(atualizarCotacoes, 30000);
 </script>
 
 </body>
@@ -366,3 +327,4 @@ setInterval(atualizarCotacoes, 30000);
 
 </body>
 </html>
+
