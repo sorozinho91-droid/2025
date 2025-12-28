@@ -244,13 +244,13 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Cotações Simuladas</title>
+<title>Painel de Cotações Reais</title>
 <style>
   #cotacoes {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 300px;
+    width: 320px;
     font-family: Arial, sans-serif;
     background-color: #fff;
     border: 1px solid #ccc;
@@ -269,26 +269,25 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   }
   #cotacoes th, #cotacoes td {
     padding: 4px;
-    text-align: right;
   }
   #cotacoes th:first-child, #cotacoes td:first-child {
     text-align: left;
   }
-  #cotacoes thead tr {
-    background-color: #f0f0f0;
+  #cotacoes th {
+    background: #f0f0f0;
   }
 </style>
 </head>
 <body>
 
 <div id="cotacoes">
-  <h3>Cotações Simuladas</h3>
+  <h3>Cotações Reais</h3>
   <table>
     <thead>
       <tr>
         <th>Ativo</th>
-        <th>Preço</th>
-        <th>Δ %</th>
+        <th style="text-align:right;">Preço</th>
+        <th style="text-align:right;">Δ %</th>
       </tr>
     </thead>
     <tbody id="tabela-cotacoes"></tbody>
@@ -296,55 +295,59 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </div>
 
 <script>
+const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80"; 
+const API_BASE = "https://finnhub.io/api/v1/quote?symbol=";
+
+// Lista de ativos com símbolos compatíveis
 const ativos = [
-  "Ouro",
-  "VIX",
-  "Brent",
-  "WTI",
-  "DXY",
-  "S&P 500",
-  "Nasdaq",
-  "Dow Jones",
-  "Nikkei 225",
-  "Hang Seng",
-  "Shanghai"
+  { nome: "Ouro", symbol: "XAUUSD" },
+  { nome: "Brent", symbol: "CO1:COM" },
+  { nome: "WTI", symbol: "CL1:COM" },
+  { nome: "DXY", symbol: "DXY" },
+  { nome: "S&P 500", symbol: "^GSPC" },
+  { nome: "Nasdaq", symbol: "^IXIC" },
+  { nome: "Dow Jones", symbol: "^DJI" },
+  { nome: "Nikkei 225", symbol: "^N225" },
+  { nome: "Hang Seng", symbol: "^HSI" },
+  { nome: "Shanghai", symbol: "000001.SS" }
 ];
 
-// Função para gerar preços aleatórios e variação percentual
-function gerarCotacao(prev) {
-  let delta = (Math.random() - 0.5) * 2; // variação -1 a +1
-  let preco = prev ? prev + delta : Math.random() * 1000 + 100;
-  let perc = delta / preco * 100;
-  return { preco: preco.toFixed(2), perc: perc.toFixed(2) };
-}
-
-// Inicializa cotações
-let cotacoes = ativos.map(a => gerarCotacao());
-
-function atualizarTabela() {
+async function atualizarCotacoes() {
   const tabela = document.getElementById("tabela-cotacoes");
   tabela.innerHTML = "";
 
-  // Atualiza preços
-  cotacoes = cotacoes.map(c => gerarCotacao(parseFloat(c.preco)));
+  for (let ativo of ativos) {
+    try {
+      const res = await fetch(`${API_BASE}${ativo.symbol}&token=${API_KEY}`);
+      const data = await res.json();
 
-  cotacoes.forEach((c, i) => {
-    let cor = c.perc >= 0 ? "green" : "red";
-    let icon = c.perc >= 0 ? "▲" : "▼";
+      let preco = data.c?.toFixed(2) ?? "-";
+      let perc = data.dp?.toFixed(2) ?? "-";
+      let cor = parseFloat(perc) >= 0 ? "green" : "red";
+      let icon = parseFloat(perc) >= 0 ? "▲" : "▼";
 
-    tabela.innerHTML += `
-      <tr>
-        <td>${ativos[i]}</td>
-        <td>${c.preco}</td>
-        <td style="color:${cor}">${icon} ${c.perc}%</td>
-      </tr>
-    `;
-  });
+      tabela.innerHTML += `
+        <tr>
+          <td>${ativo.nome}</td>
+          <td style="text-align:right;">${preco}</td>
+          <td style="text-align:right; color:${cor};">${icon} ${perc}%</td>
+        </tr>
+      `;
+    } catch (err) {
+      tabela.innerHTML += `
+        <tr>
+          <td>${ativo.nome}</td>
+          <td style="text-align:right; color:gray;">-</td>
+          <td style="text-align:right; color:gray;">Erro</td>
+        </tr>
+      `;
+    }
+  }
 }
 
-// Atualiza a cada 1 segundo
-atualizarTabela();
-setInterval(atualizarTabela, 1000);
+// Atualiza a cada 30 segundos
+atualizarCotacoes();
+setInterval(atualizarCotacoes, 30000);
 </script>
 
 </body>
