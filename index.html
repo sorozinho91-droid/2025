@@ -244,39 +244,41 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Gráfico com Tabela de Cotações</title>
+<title>Layout com Tabela de Cotações</title>
+
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
   }
 
-  /* Container principal: gráfico + tabela lateral */
+  /* Container principal */
   #container-principal {
     display: flex;
-    height: 500px; /* altura do gráfico */
+    height: 500px; /* altura da área do gráfico */
   }
 
-  /* Coluna do gráfico */
-  #coluna-grafico {
+  /* Área do gráfico (livre, sem TradingView) */
+  #area-grafico {
     flex: 3;
     padding: 10px;
     box-sizing: border-box;
+    background: #f2f2f2;
   }
 
-  /* Coluna da tabela de cotações (lado direito do gráfico) */
+  /* Coluna direita: tabela de cotações */
   #coluna-cotacoes {
     flex: 1;
     padding: 10px;
     box-sizing: border-box;
     background-color: #fff;
-    font-size: 24px;
     overflow-y: auto;
+    font-size: 24px;
     box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   }
 
   /* =======================
-     CSS para tabela de cotações: apenas variação %
+     TradingView: mostrar só variação %
      ======================= */
   .tradingview-widget-container .tv-symbol-name,
   .tradingview-widget-container .tv-symbol-price-quote,
@@ -293,55 +295,48 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     padding: 5px 0;
   }
 
-  .tradingview-widget-container .tv-widget-quote__change.tv-positive {
+  .tv-widget-quote__change.tv-positive {
     color: #008000 !important;
   }
 
-  .tradingview-widget-container .tv-widget-quote__change.tv-negative {
+  .tv-widget-quote__change.tv-negative {
     color: #FF0000 !important;
   }
 
-  /* Container de ativos de risco e segurança abaixo do gráfico */
+  /* Ativos de risco e segurança (abaixo) */
   #ativos-risco-seguranca {
     margin-top: 20px;
-    padding: 10px;
-    background-color: #f9f9f9;
+    padding: 15px;
+    background-color: #fafafa;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 </style>
 </head>
+
 <body>
 
-<!-- Gráfico + tabela de cotações ao lado -->
+<!-- GRÁFICO + TABELA LATERAL -->
 <div id="container-principal">
-  <div id="coluna-grafico">
-    <!-- Gráfico TradingView -->
-    <div class="tradingview-widget-container">
-      <div id="grafico-tradingview"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-      <script type="text/javascript">
-        new TradingView.widget({
-          "width": "100%",
-          "height": "100%",
-          "symbol": "NASDAQ:AAPL",
-          "interval": "D",
-          "timezone": "America/Sao_Paulo",
-          "theme": "light",
-          "style": "1",
-          "locale": "pt",
-          "toolbar_bg": "#f1f3f6",
-          "enable_publishing": false,
-          "allow_symbol_change": true,
-          "container_id": "grafico-tradingview"
-        });
-      </script>
-    </div>
+
+  <!-- ÁREA DO GRÁFICO (livre) -->
+  <div id="area-grafico">
+    <h2>Área do Gráfico</h2>
+    <p>
+      Aqui você pode colocar:
+      <br>• outro gráfico
+      <br>• imagem
+      <br>• iframe
+      <br>• script próprio
+    </p>
   </div>
 
+  <!-- TABELA DE COTAÇÕES AO LADO -->
   <div id="coluna-cotacoes">
     <h2 style="text-align:center;">Variação %</h2>
+
     <div class="tradingview-widget-container">
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
+      <script type="text/javascript"
+        src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
       {
         "width": "100%",
         "height": "100%",
@@ -365,7 +360,33 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   </div>
 </div>
 
+<!-- ATIVOS DE RISCO E SEGURANÇA ABAIXO -->
+<div id="ativos-risco-seguranca">
+  <h2>Ativos de Risco e Segurança</h2>
 
+  <div class="tradingview-widget-container">
+    <script type="text/javascript"
+      src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
+    {
+      "width": "100%",
+      "height": "220",
+      "showSymbolLogo": true,
+      "colorTheme": "light",
+      "locale": "pt",
+      "symbolsGroups": [
+        {
+          "name": "Risco & Segurança",
+          "symbols": [
+            { "name": "INDEX:VIX", "displayName": "VIX" },
+            { "name": "FOREXCOM:EURUSD", "displayName": "EUR/USD" },
+            { "name": "FOREXCOM:USDJPY", "displayName": "USD/JPY" }
+          ]
+        }
+      ]
+    }
+    </script>
+  </div>
+</div>
 
 </body>
 </html>
