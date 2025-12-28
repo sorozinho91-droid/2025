@@ -240,7 +240,6 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -267,15 +266,12 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     font-size: 12px;
   }
 
-  /* Espaço do gráfico ajustado */
-  #grafico {
-    width: 100%;
+  /* Espaço para o conteúdo abaixo do painel */
+  #conteudo {
+    margin-top: 22px; /* espaço para o painel não sobrepor */
     max-width: 1200px;
-    height: 600px;
-    margin: 22px auto 0 auto; /* margem para não ficar atrás do painel */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    margin-left: auto;
+    margin-right: auto;
   }
 </style>
 </head>
@@ -288,9 +284,9 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   </div>
 </div>
 
-<!-- Área do gráfico -->
-<div id="grafico">
-  <p style="text-align:center; padding-top:280px;">[Seu gráfico aqui]</p>
+<!-- Área de conteúdo abaixo do painel (onde você coloca seu gráfico) -->
+<div id="conteudo">
+  <!-- Seu gráfico ou outro conteúdo vai aqui -->
 </div>
 
 <!-- TradingView Lightweight Widget -->
@@ -317,7 +313,6 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </body>
 </html>
 
-    
 </body>
 </html>
 
