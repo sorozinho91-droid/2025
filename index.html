@@ -240,87 +240,115 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
-<div id="cotacoes" style="
-    float: right;
-    width: 340px;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Cotações Simuladas</title>
+<style>
+  #cotacoes {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 300px;
     font-family: Arial, sans-serif;
-    background-color: rgba(255,255,255,0.95);
-    border-radius: 12px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 12px;
-">
-  <h3 style="text-align: center; margin: 0 0 12px 0;">Cotações</h3>
-  <table cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    z-index: 1000;
+  }
+  #cotacoes h3 {
+    text-align: center;
+    margin: 0 0 10px 0;
+  }
+  #cotacoes table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #cotacoes th, #cotacoes td {
+    padding: 4px;
+    text-align: right;
+  }
+  #cotacoes th:first-child, #cotacoes td:first-child {
+    text-align: left;
+  }
+  #cotacoes thead tr {
+    background-color: #f0f0f0;
+  }
+</style>
+</head>
+<body>
+
+<div id="cotacoes">
+  <h3>Cotações Simuladas</h3>
+  <table>
     <thead>
-      <tr style="background-color: #f0f0f0;">
-        <th style="text-align: left;">Ativo</th>
-        <th style="text-align: right;">Preço</th>
-        <th style="text-align: right;">Δ %</th>
+      <tr>
+        <th>Ativo</th>
+        <th>Preço</th>
+        <th>Δ %</th>
       </tr>
     </thead>
-    <tbody id="tabela-cotacoes">
-      <!-- preenchido pelo JS -->
-    </tbody>
+    <tbody id="tabela-cotacoes"></tbody>
   </table>
 </div>
 
 <script>
-const API_KEY = "YOUR_API_KEY"; // Substitua pela sua chave Finnhub
-const API_BASE = "https://finnhub.io/api/v1/quote?symbol=";
-
 const ativos = [
-  { nome: "Ouro", symbol: "XAUUSD" },
-  { nome: "VIX", symbol: "^VIX" },
-  { nome: "Brent", symbol: "CO1:COM" },
-  { nome: "WTI", symbol: "CL1:COM" },
-  { nome: "DXY", symbol: "DX-Y.NYB" },
-  { nome: "S&P 500", symbol: "^GSPC" },
-  { nome: "Nasdaq", symbol: "^IXIC" },
-  { nome: "Dow Jones", symbol: "^DJI" },
-  { nome: "Nikkei 225", symbol: "^N225" },
-  { nome: "Hang Seng", symbol: "^HSI" },
-  { nome: "Shanghai", symbol: "000001.SS" }
+  "Ouro",
+  "VIX",
+  "Brent",
+  "WTI",
+  "DXY",
+  "S&P 500",
+  "Nasdaq",
+  "Dow Jones",
+  "Nikkei 225",
+  "Hang Seng",
+  "Shanghai"
 ];
 
-async function atualizarCotacoes() {
+// Função para gerar preços aleatórios e variação percentual
+function gerarCotacao(prev) {
+  let delta = (Math.random() - 0.5) * 2; // variação -1 a +1
+  let preco = prev ? prev + delta : Math.random() * 1000 + 100;
+  let perc = delta / preco * 100;
+  return { preco: preco.toFixed(2), perc: perc.toFixed(2) };
+}
+
+// Inicializa cotações
+let cotacoes = ativos.map(a => gerarCotacao());
+
+function atualizarTabela() {
   const tabela = document.getElementById("tabela-cotacoes");
   tabela.innerHTML = "";
 
-  for (let ativo of ativos) {
-    try {
-      const res = await fetch(`${API_BASE}${ativo.symbol}&token=${API_KEY}`);
-      const data = await res.json();
+  // Atualiza preços
+  cotacoes = cotacoes.map(c => gerarCotacao(parseFloat(c.preco)));
 
-      let preco = data.c?.toFixed(2) ?? "-";
-      let perc = data.dp?.toFixed(2) ?? "0.00";
+  cotacoes.forEach((c, i) => {
+    let cor = c.perc >= 0 ? "green" : "red";
+    let icon = c.perc >= 0 ? "▲" : "▼";
 
-      // Ícone de subida/descida
-      let icon = perc >= 0 ? "▲" : "▼";
-      let cor = perc >= 0 ? "green" : "red";
-
-      tabela.innerHTML += `
-        <tr>
-          <td>${ativo.nome}</td>
-          <td style="text-align: right;">${preco}</td>
-          <td style="text-align: right; color: ${cor};">${icon} ${perc}%</td>
-        </tr>
-      `;
-    } catch (error) {
-      tabela.innerHTML += `
-        <tr>
-          <td>${ativo.nome}</td>
-          <td style="text-align: right; color: gray;">-</td>
-          <td style="text-align: right; color: gray;">Erro</td>
-        </tr>
-      `;
-    }
-  }
+    tabela.innerHTML += `
+      <tr>
+        <td>${ativos[i]}</td>
+        <td>${c.preco}</td>
+        <td style="color:${cor}">${icon} ${c.perc}%</td>
+      </tr>
+    `;
+  });
 }
 
-// Atualiza automaticamente a cada 30 segundos
-atualizarCotacoes();
-setInterval(atualizarCotacoes, 30000);
+// Atualiza a cada 1 segundo
+atualizarTabela();
+setInterval(atualizarTabela, 1000);
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
