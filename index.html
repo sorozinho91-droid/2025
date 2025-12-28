@@ -244,22 +244,22 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Vertical Máximo de Variação Percentual</title>
+<title>Painel Vertical Completo de Variação Percentual</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
   }
 
-  /* Painel vertical máximo à direita */
+  /* Painel vertical grande à direita */
   #painel-direita {
     position: fixed;
     top: 0;
     right: 0;
-    width: 250px; /* largura maior */
-    height: 100vh; /* ocupa toda altura da tela */
+    width: 250px; /* largura grande */
+    height: 100vh; /* altura máxima */
     background-color: #fff;
-    padding: 10px;
+    padding: 15px;
     overflow-y: auto;
     font-size: 24px; /* fonte grande */
     z-index: 9999;
@@ -268,7 +268,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
   /* Conteúdo principal */
   #conteudo {
-    margin-right: 270px; /* espaço para painel */
+    margin-right: 270px; /* espaço para o painel maior */
     padding: 20px;
   }
 
@@ -279,15 +279,15 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   .tradingview-widget-container .tv-symbol-price-quote,
   .tradingview-widget-container .tv-symbol-group-name,
   .tradingview-widget-container .tv-widget-quote__logo {
-    display: none !important;
+    display: none !important; /* escondemos tudo que não é variação */
   }
 
   .tradingview-widget-container .tv-widget-quote__change {
     display: block !important;
     font-weight: bold;
-    font-size: 28px; /* tamanho máximo visível */
+    font-size: 28px; /* fonte máxima confortável */
     text-align: center;
-    padding: 2px 0;
+    padding: 5px 0;
   }
 
   .tradingview-widget-container .tv-widget-quote__change.tv-positive {
@@ -302,4 +302,43 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <body>
 
 <div id="painel-direita">
-  <div class="tradingview-wi
+  <div class="tradingview-widget-container">
+    <!-- TradingView Market Quotes Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
+    {
+      "width": "250",
+      "height": "100%",
+      "showSymbolLogo": false,
+      "colorTheme": "light",
+      "locale": "pt",
+      "symbolsGroups": [
+        {
+          "name": "Índices & Commodities",
+          "symbols": [
+            { "name": "INDEX:NIKK", "displayName": "Nikkei 225" },
+            { "name": "ICE:BRN1!", "displayName": "Brent" },
+            { "name": "NYMEX:CL1!", "displayName": "WTI" },
+            { "name": "FOREXCOM:DX1!", "displayName": "DXY" }
+          ]
+        },
+        {
+          "name": "Principais Índices EUA",
+          "symbols": [
+            { "name": "INDEX:SPX", "displayName": "S&P 500" },
+            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
+            { "name": "INDEX:DJI", "displayName": "Dow Jones" }
+          ]
+        }
+      ]
+    }
+    </script>
+  </div>
+</div>
+
+<div id="conteudo">
+  <h1>Bem-vindo ao seu site</h1>
+  <p>O painel à direita mostra **somente as variações percentuais**, em tamanho grande, atualizado em tempo real via TradingView.</p>
+</div>
+
+</body>
+</html>
