@@ -292,84 +292,158 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   "height": "26"
 }
 </script>
-<script>
-const palavrasChave = [
-  "fed","cpi","juros","taxa",
-  "guerra","war",
-  "inflação","inflation",
-  "banco central","central bank"
-];
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Macro – Risco x Segurança</title>
 
-const painel = document.getElementById("painel-news");
-const header = document.querySelector(".news-header");
-const lista = document.getElementById("newsList");
-const som = document.getElementById("alertSound");
-const aguardando = document.getElementById("aguardando");
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-let cache = {};
-let alertaAtivo = false;
-
-async function buscarNoticias(){
-  try{
-    const query = palavrasChave.join(" OR ");
-    const rss =
-      "https://news.google.com/rss/search?q=" +
-      encodeURIComponent(query) +
-      "&hl=pt-BR&gl=BR&ceid=BR:pt-419";
-
-    const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-
-    const res = await fetch(url);
-    const text = await res.text();
-
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(text,"text/xml");
-    const items = xml.querySelectorAll("item");
-
-    items.forEach(item=>{
-      const titulo = item.querySelector("title")?.textContent || "";
-      const link = item.querySelector("link")?.textContent || "";
-      const data = item.querySelector("pubDate")?.textContent || "";
-
-      if(cache[link]) return;
-
-      const tituloLower = titulo.toLowerCase();
-      const isBreaking = palavrasChave.some(p => tituloLower.includes(p));
-      if(!isBreaking) return;
-
-      cache[link] = true;
-      if(aguardando) aguardando.remove();
-
-      const div = document.createElement("div");
-      div.className = "news-item breaking";
-      div.innerHTML = `
-        <strong>🚨 BREAKING</strong><br>
-        <strong>${titulo}</strong><br>
-        <small>${data}</small><br>
-        <a href="${link}" target="_blank">Ler notícia</a>
-      `;
-
-      lista.prepend(div);
-
-      if(!alertaAtivo){
-        alertaAtivo = true;
-        painel.classList.add("breaking");
-        header.classList.add("breaking");
-        som.play().catch(()=>{});
-
-        setTimeout(()=>{
-          painel.classList.remove("breaking");
-          header.classList.remove("breaking");
-          alertaAtivo = false;
-        },15000);
-      }
-    });
-
-  }catch(e){
-    console.error("Erro ao buscar notícias:", e);
-  }
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f6f8;
 }
 
-buscarNoticias();
-setInterval(buscarNoticias, 30000);
+/* ===== PAINEL COTAÇÕES TOPO ===== */
+#painel-cotacoes{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:26px;
+  background:#fff;
+  border-bottom:1px solid #ccc;
+  z-index:9999;
+}
+
+/* ===== LAYOUT ===== */
+#layout{
+  display:flex;
+  margin-top:28px;
+}
+
+/* ===== CONTEÚDO PRINCIPAL ===== */
+#main{
+  flex:1;
+  padding:15px;
+}
+
+/* ===== GRÁFICO ===== */
+#grafico{
+  width:100%;
+  height:420px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ===== PAINEL NEWS ===== */
+#painel-news{
+  width:320px;
+  background:#111827;
+  color:white;
+  padding:10px;
+  box-shadow:-2px 0 6px rgba(0,0,0,0.2);
+}
+
+.news-header{
+  font-weight:bold;
+  text-align:center;
+  padding:6px;
+  background:#1f2937;
+  border-radius:4px;
+  margin-bottom:8px;
+}
+
+#newsList{
+  font-size:13px;
+  max-height:80vh;
+  overflow-y:auto;
+}
+
+.news-item{
+  padding:6px;
+  border-bottom:1px solid #374151;
+}
+
+.news-item a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+.breaking{
+  animation:piscar 1s infinite;
+}
+
+@keyframes piscar{
+  0%{background:#7f1d1d;}
+  50%{background:#dc2626;}
+  100%{background:#7f1d1d;}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== PAINEL DE COTAÇÕES ===== -->
+<div id="painel-cotacoes">
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
+{
+  "symbols": [
+    { "title": "Nikkei 225", "proName": "INDEX:NIKK" },
+    { "title": "Hang Seng", "proName": "INDEX:HSI" },
+    { "title": "Shanghai", "proName": "INDEX:SHCOMP" },
+    { "title": "Kospi", "proName": "INDEX:KOSPI" },
+    { "title": "DXY", "proName": "FOREXCOM:DX1!" },
+    { "title": "S&P 500", "proName": "INDEX:SPX" },
+    { "title": "Nasdaq", "proName": "INDEX:NDX" }
+  ],
+  "colorTheme":"light",
+  "isTransparent":true,
+  "showSymbolLogo":false,
+  "locale":"pt",
+  "width":"100%",
+  "height":"26"
+}
 </script>
+</div>
+
+<div id="layout">
+
+<!-- ===== CONTEÚDO ===== -->
+<div id="main">
+  <div id="grafico"></div>
+</div>
+
+<!-- ===== PAINEL DE NOTÍCIAS ===== -->
+<div id="painel-news">
+  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
+  <div id="newsList">
+    <div id="aguardando">Aguardando notícias...</div>
+  </div>
+</div>
+
+</div>
+
+<!-- ===== SOM ALERTA ===== -->
+<audio id="alertSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ===== GRÁFICO (SIMPLES) =====
+let x=[], risco=[], seguro=[];
+let vr=100, vs=100;
+
+function atualizarGrafico(){
+  const agora=new Date();
+  vr+=(Math.random()-0.5)*2;
+  vs+=(Math.random()-0.5)*1;
+  x.push(agora); risco.push(vr); seguro.push(vs);
+  if(x.length>200){x.shift();risco.shift();seguro.shift();}
+
+  Plotly.react('grafico',[
+    {x:x
