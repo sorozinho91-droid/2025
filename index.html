@@ -256,7 +256,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     position: fixed;
     top: 50px;
     right: 0;
-    width: 240px;
+    width: 280px; /* aumentada para caber as cotações */
     height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
@@ -267,7 +267,6 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     font-size: 12px;
   }
 
-  /* Título */
   #painel-direita h2 {
     font-size: 14px;
     margin: 0 0 8px 0;
@@ -276,7 +275,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
   /* Conteúdo principal */
   #conteudo {
-    margin-right: 260px; /* espaço para painel lateral */
+    margin-right: 300px; /* ajustado para painel maior */
     padding: 20px;
   }
 </style>
@@ -286,11 +285,10 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <div id="painel-direita">
   <h2>Cotações</h2>
   <div class="tradingview-widget-container">
-    <!-- TradingView Market Quotes Widget -->
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
     {
-      "width": 240,
-      "height": 600,
+      "width": 280,   /* largura ajustada */
+      "height": 700,  /* altura maior para mostrar tudo sem corte */
       "showSymbolLogo": true,
       "colorTheme": "light",
       "locale": "pt",
@@ -307,22 +305,4 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
         {
           "name": "Principais Índices EUA",
           "symbols": [
-            { "name": "INDEX:SPX", "displayName": "S&P 500" },
-            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
-            { "name": "INDEX:DJI", "displayName": "Dow Jones" }
-          ]
-        }
-      ]
-    }
-    </script>
-  </div>
-</div>
-
-<div id="conteudo">
-  <h1>Bem‑vindo ao seu site</h1>
-  <p>O painel à direita mostra **preços reais** e **variações percentuais** dos ativos — atualizado automaticamente via TradingView.</p>
-  <p>Você pode rolar a página normalmente e o painel fica fixo ao lado.</p>
-</div>
-
-</body>
-</html>
+            { "name
