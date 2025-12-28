@@ -244,56 +244,49 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Mini Painel de Variação Percentual</title>
+<title>Mini Dashboard de Variação Percentual</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
   }
 
-  /* Painel compacto fixo à direita, deslocado 20px para a esquerda */
+  /* Painel super compacto fixo à direita */
   #painel-direita {
     position: fixed;
     top: 50px;
     right: 20px; /* deslocamento para a esquerda */
-    width: 120px;
+    width: 100px; /* ainda menor */
     height: calc(100% - 50px);
-    background-color: #fff;
-    border-left: 1px solid #ccc;
-    z-index: 9999;
-    padding: 5px;
-    box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
+    background-color: transparent; /* sem cor de fundo */
+    padding: 0;
     overflow-y: auto;
-    font-size: 12px;
-  }
-
-  /* Esconde título */
-  #painel-direita h2 {
-    display: none;
+    font-size: 14px;
+    z-index: 9999;
   }
 
   /* Conteúdo principal */
   #conteudo {
-    margin-right: 160px; /* largura do painel + deslocamento */
+    margin-right: 140px; /* espaço suficiente para o painel */
     padding: 20px;
   }
 
   /* =======================
-     CSS para painel compacto só com variação %
+     CSS painel minimalista só com variação %
      ======================= */
   .tradingview-widget-container .tv-symbol-name,
   .tradingview-widget-container .tv-symbol-price-quote,
   .tradingview-widget-container .tv-symbol-group-name,
   .tradingview-widget-container .tv-widget-quote__logo {
-    display: none !important; /* esconde nome, preço, grupos e logos */
+    display: none !important;
   }
 
   .tradingview-widget-container .tv-widget-quote__change {
     display: block !important;
     font-weight: bold;
-    font-size: 16px; /* maior visibilidade */
+    font-size: 16px;
     text-align: right;
-    padding: 2px 0;
+    padding: 1px 0;
   }
 
   .tradingview-widget-container .tv-widget-quote__change.tv-positive {
@@ -312,7 +305,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     <!-- TradingView Market Quotes Widget -->
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
     {
-      "width": 120,
+      "width": 100,
       "height": "100%",
       "showSymbolLogo": false,
       "colorTheme": "light",
@@ -343,8 +336,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
 <div id="conteudo">
   <h1>Bem‑vindo ao seu site</h1>
-  <p>O painel à direita mostra **somente a variação percentual**, de forma compacta e clara, atualizado automaticamente via TradingView.</p>
-  <p>Você pode rolar a página normalmente e o painel fica fixo ao lado.</p>
+  <p>O painel à direita mostra **somente a variação percentual**, de forma minimalista e clara, atualizado automaticamente via TradingView.</p>
 </div>
 
 </body>
