@@ -244,35 +244,39 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Gráfico com Tabela de Variações</title>
+<title>Gráfico com Tabela de Cotações</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
+  }
+
+  /* Container principal: gráfico + tabela lateral */
+  #container-principal {
     display: flex;
-    height: 100vh; /* altura total da tela */
+    height: 500px; /* altura do gráfico */
   }
 
   /* Coluna do gráfico */
   #coluna-grafico {
-    flex: 3; /* ocupa 75% da largura */
+    flex: 3;
     padding: 10px;
     box-sizing: border-box;
   }
 
-  /* Coluna da tabela */
-  #coluna-tabela {
-    flex: 1; /* ocupa 25% da largura */
+  /* Coluna da tabela de cotações (lado direito do gráfico) */
+  #coluna-cotacoes {
+    flex: 1;
     padding: 10px;
     box-sizing: border-box;
     background-color: #fff;
+    font-size: 24px;
     overflow-y: auto;
-    font-size: 24px; /* tamanho grande para variações */
     box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   }
 
   /* =======================
-     CSS tabela TradingView só variação %
+     CSS para tabela de cotações: apenas variação %
      ======================= */
   .tradingview-widget-container .tv-symbol-name,
   .tradingview-widget-container .tv-symbol-price-quote,
@@ -296,62 +300,89 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   .tradingview-widget-container .tv-widget-quote__change.tv-negative {
     color: #FF0000 !important;
   }
+
+  /* Container de ativos de risco e segurança abaixo do gráfico */
+  #ativos-risco-seguranca {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
 </style>
 </head>
 <body>
 
-<!-- Coluna do gráfico -->
-<div id="coluna-grafico">
-  <!-- Exemplo: gráfico TradingView -->
-  <div class="tradingview-widget-container">
-    <div id="grafico-tradingview"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-    new TradingView.widget({
-      "width": "100%",
-      "height": "100%",
-      "symbol": "NASDAQ:AAPL",
-      "interval": "D",
-      "timezone": "America/Sao_Paulo",
-      "theme": "light",
-      "style": "1",
-      "locale": "pt",
-      "toolbar_bg": "#f1f3f6",
-      "enable_publishing": false,
-      "allow_symbol_change": true,
-      "container_id": "grafico-tradingview"
-    });
-    </script>
+<!-- Gráfico + tabela de cotações ao lado -->
+<div id="container-principal">
+  <div id="coluna-grafico">
+    <!-- Gráfico TradingView -->
+    <div class="tradingview-widget-container">
+      <div id="grafico-tradingview"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+      <script type="text/javascript">
+        new TradingView.widget({
+          "width": "100%",
+          "height": "100%",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "timezone": "America/Sao_Paulo",
+          "theme": "light",
+          "style": "1",
+          "locale": "pt",
+          "toolbar_bg": "#f1f3f6",
+          "enable_publishing": false,
+          "allow_symbol_change": true,
+          "container_id": "grafico-tradingview"
+        });
+      </script>
+    </div>
+  </div>
+
+  <div id="coluna-cotacoes">
+    <h2 style="text-align:center;">Variação %</h2>
+    <div class="tradingview-widget-container">
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
+      {
+        "width": "100%",
+        "height": "100%",
+        "showSymbolLogo": false,
+        "colorTheme": "light",
+        "locale": "pt",
+        "symbolsGroups": [
+          {
+            "name": "Cotações",
+            "symbols": [
+              { "name": "INDEX:SPX", "displayName": "S&P 500" },
+              { "name": "INDEX:NDX", "displayName": "Nasdaq" },
+              { "name": "INDEX:DJI", "displayName": "Dow Jones" },
+              { "name": "NYMEX:CL1!", "displayName": "WTI" }
+            ]
+          }
+        ]
+      }
+      </script>
+    </div>
   </div>
 </div>
 
-<!-- Coluna da tabela -->
-<div id="coluna-tabela">
-  <h2 style="text-align:center;">Variação %</h2>
+<!-- Ativos de risco e segurança abaixo -->
+<div id="ativos-risco-seguranca">
+  <h2>Ativos de Risco e Segurança</h2>
   <div class="tradingview-widget-container">
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
     {
       "width": "100%",
-      "height": "100%",
-      "showSymbolLogo": false,
+      "height": "200",
+      "showSymbolLogo": true,
       "colorTheme": "light",
       "locale": "pt",
       "symbolsGroups": [
         {
-          "name": "Índices & Commodities",
+          "name": "Risco & Segurança",
           "symbols": [
-            { "name": "INDEX:NIKK", "displayName": "Nikkei 225" },
-            { "name": "ICE:BRN1!", "displayName": "Brent" },
-            { "name": "NYMEX:CL1!", "displayName": "WTI" },
-            { "name": "FOREXCOM:DX1!", "displayName": "DXY" }
-          ]
-        },
-        {
-          "name": "Principais Índices EUA",
-          "symbols": [
-            { "name": "INDEX:SPX", "displayName": "S&P 500" },
-            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
-            { "name": "INDEX:DJI", "displayName": "Dow Jones" }
+            { "name": "FOREXCOM:EURUSD", "displayName": "EUR/USD" },
+            { "name": "FOREXCOM:USDJPY", "displayName": "USD/JPY" },
+            { "name": "INDEX:VIX", "displayName": "VIX" }
           ]
         }
       ]
