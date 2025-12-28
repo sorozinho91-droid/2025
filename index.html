@@ -244,12 +244,13 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Layout com Tabela de Variação no Topo</title>
+<title>Painel de Variação e Ativos</title>
 
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
+    background: #f5f5f5;
   }
 
   /* =======================
@@ -257,7 +258,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
      ======================= */
   #topo-variacao {
     width: 100%;
-    height: 180px;
+    height: 200px;
     background-color: #ffffff;
     padding: 10px;
     box-sizing: border-box;
@@ -267,21 +268,12 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   }
 
   /* =======================
-     ÁREA DO GRÁFICO (LIVRE)
-     ======================= */
-  #area-grafico {
-    height: 420px;
-    padding: 15px;
-    background: #f2f2f2;
-    box-sizing: border-box;
-  }
-
-  /* =======================
      ATIVOS DE RISCO / SEGURANÇA
      ======================= */
   #ativos-risco-seguranca {
+    margin-top: 10px;
     padding: 15px;
-    background-color: #fafafa;
+    background-color: #ffffff;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
   }
 
@@ -298,9 +290,9 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   .tradingview-widget-container .tv-widget-quote__change {
     display: block !important;
     font-weight: bold;
-    font-size: 28px;
+    font-size: 30px;
     text-align: center;
-    padding: 4px 0;
+    padding: 6px 0;
   }
 
   .tv-widget-quote__change.tv-positive {
@@ -342,18 +334,6 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     }
     </script>
   </div>
-</div>
-
-<!-- ÁREA DO GRÁFICO (SEM TRADINGVIEW) -->
-<div id="area-grafico">
-  <h2>Área do Gráfico</h2>
-  <p>
-    Aqui você pode inserir:
-    <br>• gráfico próprio
-    <br>• iframe
-    <br>• imagem
-    <br>• script externo
-  </p>
 </div>
 
 <!-- ATIVOS DE RISCO E SEGURANÇA -->
