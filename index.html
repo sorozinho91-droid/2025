@@ -244,54 +244,50 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Mini Dashboard Vertical de Variação Percentual</title>
+<title>Painel Vertical Máximo de Variação Percentual</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
   }
 
-  /* Painel vertical compacto fixo à direita */
+  /* Painel vertical máximo à direita */
   #painel-direita {
     position: fixed;
-    top: 50px;
-    right: 20px; /* deslocado para esquerda */
-    width: 80px; /* ainda mais estreito */
-    height: calc(100% - 50px);
-    background-color: transparent; /* sem fundo */
-    padding: 0;
+    top: 0; /* ocupa desde o topo */
+    right: 0;
+    width: 200px; /* largura máxima confortável para variações */
+    height: 100vh; /* altura máxima da tela */
+    background-color: #fff; /* fundo branco */
+    padding: 10px;
     overflow-y: auto;
-    font-size: 16px;
+    font-size: 20px; /* texto grande para máxima visibilidade */
     z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 2px; /* espaço mínimo entre as variações */
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
   }
 
   /* Conteúdo principal */
   #conteudo {
-    margin-right: 120px; /* espaço para o painel estreito */
+    margin-right: 220px; /* espaço para o painel maior */
     padding: 20px;
   }
 
   /* =======================
-     CSS painel minimalista só variação %
+     CSS para painel com variação %
      ======================= */
   .tradingview-widget-container .tv-symbol-name,
   .tradingview-widget-container .tv-symbol-price-quote,
   .tradingview-widget-container .tv-symbol-group-name,
   .tradingview-widget-container .tv-widget-quote__logo {
-    display: none !important;
+    display: none !important; /* esconde tudo que não é variação */
   }
 
   .tradingview-widget-container .tv-widget-quote__change {
     display: block !important;
     font-weight: bold;
-    font-size: 16px;
-    text-align: center; /* centralizado para coluna estreita */
-    padding: 0;
-    line-height: 1.2;
+    font-size: 24px; /* tamanho máximo confortável */
+    text-align: center;
+    padding: 2px 0;
   }
 
   .tradingview-widget-container .tv-widget-quote__change.tv-positive {
@@ -310,20 +306,11 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     <!-- TradingView Market Quotes Widget -->
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
     {
-      "width": 80,
+      "width": 200,
       "height": "100%",
       "showSymbolLogo": false,
       "colorTheme": "light",
       "locale": "pt",
       "symbolsGroups": [
         {
-          "name": "Índices & Commodities",
-          "symbols": [
-            { "name": "INDEX:NIKK", "displayName": "Nikkei 225" },
-            { "name": "ICE:BRN1!", "displayName": "Brent" },
-            { "name": "NYMEX:CL1!", "displayName": "WTI" },
-            { "name": "FOREXCOM:DX1!", "displayName": "DXY" }
-          ]
-        },
-        {
-          "name": "Principais Índices EUA",
+          "name": "Índices & Commodities
