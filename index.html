@@ -292,3 +292,194 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
   "height": "26"
 }
 </script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Macro | Risco x Segurança</title>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f6f8;
+}
+
+/* ===== PAINEL DE COTAÇÕES TOPO ===== */
+#painel-cotacoes{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:28px;
+  background:#fff;
+  border-bottom:1px solid #ccc;
+  z-index:10000;
+  font-size:12px;
+}
+
+/* ===== LAYOUT ===== */
+#conteudo{
+  display:flex;
+  margin-top:30px;
+  padding:10px;
+  gap:10px;
+}
+
+/* ===== GRÁFICO ===== */
+#grafico{
+  flex:3;
+  height:450px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+/* ===== PAINEL NEWS ===== */
+#painel-news{
+  flex:1;
+  background:#fff;
+  border-left:5px solid #2563eb;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  overflow:hidden;
+}
+
+.news-header{
+  padding:10px;
+  font-weight:bold;
+  background:#2563eb;
+  color:#fff;
+  text-align:center;
+}
+
+/* ===== BREAKING ===== */
+@keyframes pulse {
+  0% { box-shadow:0 0 0 rgba(220,38,38,0); }
+  50% { box-shadow:0 0 25px rgba(220,38,38,.9); }
+  100% { box-shadow:0 0 0 rgba(220,38,38,0); }
+}
+
+#painel-news.breaking{
+  animation:pulse 1s infinite;
+  border-left-color:#dc2626;
+}
+
+.news-header.breaking{
+  background:#b91c1c;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== SOM BREAKING ===== -->
+<audio id="breakingSound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
+<!-- ===== PAINEL SUPERIOR ===== -->
+<div id="painel-cotacoes">
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
+{
+  "symbols": [
+    { "title": "Nikkei 225", "proName": "INDEX:NIKK" },
+    { "title": "Hang Seng", "proName": "INDEX:HSI" },
+    { "title": "Shanghai", "proName": "INDEX:SHCOMP" },
+    { "title": "Kospi", "proName": "INDEX:KOSPI" },
+    { "title": "S&P 500", "proName": "INDEX:SPX" },
+    { "title": "Nasdaq", "proName": "INDEX:NDX" },
+    { "title": "DXY", "proName": "FOREXCOM:DX1!" }
+  ],
+  "colorTheme": "light",
+  "isTransparent": true,
+  "showSymbolLogo": false,
+  "locale": "pt",
+  "width": "100%",
+  "height": "28"
+}
+</script>
+</div>
+
+<!-- ===== CONTEÚDO ===== -->
+<div id="conteudo">
+
+  <div id="grafico"></div>
+
+  <div id="painel-news">
+    <div class="news-header">🚨 Macro | Geopolítica | Economia</div>
+    <script src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js">
+    {
+      "feedMode": "market",
+      "market": "global",
+      "colorTheme": "light",
+      "displayMode": "regular",
+      "width": "100%",
+      "height": "420",
+      "locale": "pt"
+    }
+    </script>
+  </div>
+
+</div>
+
+<script>
+/* ===== GRÁFICO ===== */
+let x=[], risco=[], seguro=[];
+let vr=100, vs=100;
+
+function atualizar(){
+  const d=new Date();
+  vr+=(Math.random()-.5)*2;
+  vs+=(Math.random()-.5)*1;
+  x.push(d); risco.push(vr); seguro.push(vs);
+  if(x.length>200){ x.shift(); risco.shift(); seguro.shift(); }
+
+  Plotly.react('grafico',[
+    {x,y:risco,name:'Risco',line:{color:'green'}},
+    {x,y:seguro,name:'Segurança',line:{color:'red'}}
+  ],{
+    title:'Linha do Tempo — Risco x Segurança',
+    margin:{t:40,l:40,r:20,b:40}
+  });
+}
+setInterval(atualizar,3000);
+
+/* ===== BREAKING + FILTRO ===== */
+const palavrasChave=[
+  'breaking','urgente',
+  'fed','cpi','juros','taxa',
+  'guerra','inflação',
+  'banco central','bc'
+];
+
+const painel=document.getElementById('painel-news');
+const header=painel.querySelector('.news-header');
+const som=document.getElementById('breakingSound');
+
+let ativo=false;
+
+const observer=new MutationObserver(()=>{
+  const texto=painel.innerText.toLowerCase();
+
+  if(palavrasChave.some(p=>texto.includes(p)) && !ativo){
+    ativo=true;
+    painel.classList.add('breaking');
+    header.classList.add('breaking');
+    som.play().catch(()=>{});
+
+    setTimeout(()=>{
+      painel.classList.remove('breaking');
+      header.classList.remove('breaking');
+      ativo=false;
+    },15000);
+  }
+});
+
+observer.observe(painel,{subtree:true,childList:true});
+</script>
+
+</body>
+</html>
