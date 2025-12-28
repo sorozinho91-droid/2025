@@ -244,7 +244,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Vertical de Cotações</title>
+<title>Painel Combinado de Cotações com Cores</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -252,60 +252,109 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     background-color: #f5f5f5;
   }
 
+  /* Painel horizontal fixo no topo */
+  #painel-topo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: calc(100% - 180px);
+    height: 32px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    z-index: 9999;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
   /* Painel vertical fixo à direita */
-  #painel-cotacoes {
+  #painel-direita {
     position: fixed;
     top: 50px;
     right: 0;
-    width: 180px; /* largura do painel */
-    height: 400px; /* altura do painel */
+    width: 180px;
+    height: calc(100% - 50px);
     background-color: #fff;
     border-left: 1px solid #ccc;
     z-index: 9999;
     padding: 10px;
     box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
-    overflow: hidden;
+    overflow-y: auto;
   }
+
+  /* Cada ticker */
+  .ticker {
+    margin-right: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-vertical {
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  .price {
+    margin-left: 4px;
+  }
+
+  .up { color: green; }
+  .down { color: red; }
 
   /* Conteúdo principal */
   #conteudo {
-    margin: 20px;
+    margin: 60px 200px 20px 20px;
+    padding: 20px;
   }
 </style>
 </head>
 <body>
 
-<!-- Painel vertical fixo com TradingView -->
-<div id="painel-cotacoes">
-  <div class="tradingview-widget-container">
-    <div id="tradingview_cotacoes"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
-    {
-      "symbols": [
-        {"title": "Nikkei 225", "proName": "INDEX:NIKK"},
-        {"title": "Brent", "proName": "ICE:BRN1!"},
-        {"title": "WTI", "proName": "NYMEX:CL1!"},
-        {"title": "DXY", "proName": "FOREXCOM:DX1!"},
-        {"title": "S&P 500", "proName": "INDEX:SPX"},
-        {"title": "Nasdaq", "proName": "INDEX:NDX"},
-        {"title": "Dow Jones", "proName": "INDEX:DJI"}
-      ],
-      "colorTheme": "light",
-      "isTransparent": true,
-      "showSymbolLogo": false,
-      "locale": "pt",
-      "width": "180",
-      "height": "400"
-    }
-    </script>
-  </div>
+<!-- Painel horizontal -->
+<div id="painel-topo">
+  <div class="ticker" id="nikkei-topo">Nikkei 225: <span class="price">33000</span></div>
+  <div class="ticker" id="brent-topo">Brent: <span class="price">85</span></div>
+  <div class="ticker" id="wti-topo">WTI: <span class="price">80</span></div>
 </div>
 
-<!-- Conteúdo principal -->
+<!-- Painel vertical -->
+<div id="painel-direita">
+  <div class="ticker-vertical" id="nikkei-vert">Nikkei 225: <span class="price">33000</span></div>
+  <div class="ticker-vertical" id="brent-vert">Brent: <span class="price">85</span></div>
+  <div class="ticker-vertical" id="wti-vert">WTI: <span class="price">80</span></div>
+</div>
+
 <div id="conteudo">
   <h1>Bem-vindo ao seu site</h1>
-  <p>O painel de cotações está fixo à direita e mostra preços reais atualizados automaticamente.</p>
+  <p>Painéis horizontal e vertical com cores indicando alta/baixa (simuladas).</p>
 </div>
+
+<script>
+const tickers = [
+  {idTopo:"nikkei-topo", idVert:"nikkei-vert", value:33000},
+  {idTopo:"brent-topo", idVert:"brent-vert", value:85},
+  {idTopo:"wti-topo", idVert:"wti-vert", value:80}
+];
+
+// Função que atualiza cores aleatórias simulando alta/baixa
+function atualizarCores() {
+  tickers.forEach(ticker=>{
+    const up = Math.random() > 0.5; // simula alta ou baixa
+    const classe = up ? "up" : "down";
+    document.querySelector(`#${ticker.idTopo} .price`).className = `price ${classe}`;
+    document.querySelector(`#${ticker.idVert} .price`).className = `price ${classe}`;
+  });
+}
+
+// Atualiza cores a cada 5 segundos (simulação)
+atualizarCores();
+setInterval(atualizarCores, 5000);
+</script>
 
 </body>
 </html>
