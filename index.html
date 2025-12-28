@@ -293,8 +293,94 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 }
 </script>
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Breaking News – Macro | Geopolítica | Economia</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+}
+
+/* ===== PAINEL FIXO À DIREITA ===== */
+#painel-news{
+  position:fixed;
+  top:0;
+  right:0;
+  width:340px;
+  height:100vh;
+  background:#ffffff;
+  border-left:5px solid #2563eb;
+  box-shadow:-2px 0 8px rgba(0,0,0,.15);
+  z-index:9999;
+  overflow-y:auto;
+}
+
+/* Cabeçalho */
+.news-header{
+  background:#2563eb;
+  color:#fff;
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+  position:sticky;
+  top:0;
+}
+
+/* Notícia */
+.news-item{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  font-size:14px;
+}
+
+.news-item a{
+  color:#2563eb;
+  font-size:13px;
+  text-decoration:none;
+}
+
+/* ===== BREAKING ===== */
+.news-item.breaking{
+  background:#ffe4e4;
+  border-left:4px solid #dc2626;
+}
+
+@keyframes pulse{
+  0%{box-shadow:0 0 0 rgba(220,38,38,0);}
+  50%{box-shadow:0 0 22px rgba(220,38,38,.9);}
+  100%{box-shadow:0 0 0 rgba(220,38,38,0);}
+}
+
+#painel-news.breaking{
+  animation:pulse 1s infinite;
+  border-left-color:#dc2626;
+}
+
+.news-header.breaking{
+  background:#b91c1c;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== SOM DO BREAKING ===== -->
+<audio id="alertSound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
+<!-- ===== PAINEL DE NOTÍCIAS ===== -->
+<div id="painel-news">
+  <div class="news-header">🚨 BREAKING NEWS — Macro | Geopolítica | Economia</div>
+  <div id="newsList"></div>
+</div>
 
 <script>
+/* ===== CONFIGURAÇÕES ===== */
 const palavrasChave = [
   "fed","cpi","juros","taxa",
   "guerra","war",
@@ -310,9 +396,9 @@ const som = document.getElementById("alertSound");
 let cache = {};
 let alertaAtivo = false;
 
-/* ===== BUSCAR SOMENTE BREAKING ===== */
-async function buscarNoticias() {
-  try {
+/* ===== BUSCAR SOMENTE BREAKING (GDELT RSS) ===== */
+async function buscarNoticias(){
+  try{
     const rssURL =
       "https://api.allorigins.win/raw?url=" +
       encodeURIComponent(
@@ -325,21 +411,21 @@ async function buscarNoticias() {
     const texto = await res.text();
 
     const parser = new DOMParser();
-    const xml = parser.parseFromString(texto, "text/xml");
+    const xml = parser.parseFromString(texto,"text/xml");
     const items = xml.querySelectorAll("item");
 
-    items.forEach(item => {
+    items.forEach(item=>{
       const titulo = item.querySelector("title")?.textContent || "";
       const link = item.querySelector("link")?.textContent || "";
       const data = item.querySelector("pubDate")?.textContent || "";
 
-      if (cache[link]) return;
+      if(cache[link]) return;
 
       const tituloLower = titulo.toLowerCase();
       const isBreaking = palavrasChave.some(p => tituloLower.includes(p));
 
       /* ❌ ignora notícias comuns */
-      if (!isBreaking) return;
+      if(!isBreaking) return;
 
       cache[link] = true;
 
@@ -354,27 +440,30 @@ async function buscarNoticias() {
 
       lista.prepend(div);
 
-      /* ===== ALERTA VISUAL + SOM ===== */
-      if (!alertaAtivo) {
+      /* ===== ALERTA ===== */
+      if(!alertaAtivo){
         alertaAtivo = true;
         painel.classList.add("breaking");
         header.classList.add("breaking");
         som.play().catch(()=>{});
 
-        setTimeout(() => {
+        setTimeout(()=>{
           painel.classList.remove("breaking");
           header.classList.remove("breaking");
           alertaAtivo = false;
-        }, 15000);
+        },15000);
       }
     });
 
-  } catch (e) {
+  }catch(e){
     console.error("Erro ao carregar breaking news:", e);
   }
 }
 
-/* ===== LOOP ===== */
+/* ===== LOOP (TEMPO REAL) ===== */
 buscarNoticias();
-setInterval(buscarNoticias, 30000);
+setInterval(buscarNoticias,30000); // a cada 30s
 </script>
+
+</body>
+</html>
