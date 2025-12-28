@@ -244,7 +244,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Horizontal de Cotações</title>
+<title>Painel Vertical de Cotações</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -252,48 +252,109 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     background-color: #f5f5f5;
   }
 
-  /* Painel horizontal fixo no topo */
-  #painel-topo {
+  /* Painel vertical fixo à direita */
+  #painel-direita {
     position: fixed;
-    top: 40px; /* afastado do topo para não ficar escondido */
-    left: 0;
-    width: 100%;
-    height: 32px;
+    top: 50px; /* afastado do topo */
+    right: 0;
+    width: 200px;
+    height: calc(100% - 50px);
     background-color: #fff;
-    border-bottom: 1px solid #ccc;
+    border-left: 1px solid #ccc;
     z-index: 9999;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    overflow-x: auto;
-    white-space: nowrap;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 10px;
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
+    overflow-y: auto;
   }
+
+  /* Tabela minimalista */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 4px 8px;
+  }
+
+  th {
+    border-bottom: 1px solid #ccc;
+    font-weight: bold;
+  }
+
+  .up { color: green; }
+  .down { color: red; }
 
   /* Conteúdo principal */
   #conteudo {
-    margin-top: 80px; /* espaço suficiente para o painel */
+    margin: 20px 220px 20px 20px; /* espaço para painel lateral */
     padding: 20px;
   }
 </style>
 </head>
 <body>
 
-<!-- Painel horizontal no topo -->
-<div id="painel-topo">
-  <div class="tradingview-widget-container" style="width:100%; height:32px;">
-    <div id="tradingview_topo"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
-    {
-      "symbols": [
-        {"title": "Nikkei 225", "proName": "INDEX:NIKK"},
-        {"title": "Brent", "proName": "ICE:BRN1!"},
-        {"title": "WTI", "proName": "NYMEX:CL1!"},
-        {"title": "DXY", "proName": "FOREXCOM:DX1!"},
-        {"title": "S&P 500", "proName": "INDEX:SPX"},
-        {"title": "Nasdaq", "proName": "INDEX:NDX"},
-        {"title": "Dow Jones", "proName": "INDEX:DJI"}
-      ],
-      "colorTheme": "light",
-      "isTransparent": true,
+<!-- Painel vertical à direita -->
+<div id="painel-direita">
+  <table>
+    <thead>
+      <tr>
+        <th>Ativo</th>
+        <th>Cotação</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-cotacoes">
+      <tr><td>Nikkei 225</td><td class="price">--</td></tr>
+      <tr><td>Brent</td><td class="price">--</td></tr>
+      <tr><td>WTI</td><td class="price">--</td></tr>
+      <tr><td>DXY</td><td class="price">--</td></tr>
+      <tr><td>S&P 500</td><td class="price">--</td></tr>
+      <tr><td>Nasdaq</td><td class="price">--</td></tr>
+      <tr><td>Dow Jones</td><td class="price">--</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Conteúdo principal -->
+<div id="conteudo">
+  <h1>Bem-vindo ao seu site</h1>
+  <p>O painel vertical mostra os ativos e suas cotações em uma tabela minimalista.</p>
+</div>
+
+<script>
+// Lista de ativos e valores simulados
+const ativos = [
+  {nome: "Nikkei 225", valor: 33000},
+  {nome: "Brent", valor: 85},
+  {nome: "WTI", valor: 80},
+  {nome: "DXY", valor: 105},
+  {nome: "S&P 500", valor: 4500},
+  {nome: "Nasdaq", valor: 13500},
+  {nome: "Dow Jones", valor: 35000}
+];
+
+function atualizarCotacoes() {
+  const linhas = document.querySelectorAll("#tabela-cotacoes tr");
+  linhas.forEach((linha, index) => {
+    if (index >= ativos.length) return;
+    const valorCell = linha.querySelector(".price");
+    const novoValor = ativos[index].valor + (Math.random() - 0.5) * 20; // simula variação
+    valorCell.textContent = novoValor.toFixed(2);
+
+    // Define cor verde/vermelha
+    if (novoValor > ativos[index].valor) valorCell.className = "price up";
+    else if (novoValor < ativos[index].valor) valorCell.className = "price down";
+    
+    ativos[index].valor = novoValor;
+  });
+}
+
+// Atualiza a cada 5 segundos (simulação)
+atualizarCotacoes();
+setInterval(atualizarCotacoes, 5000);
+</script>
+
+</body>
+</html>
