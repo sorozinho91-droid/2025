@@ -240,129 +240,78 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
+
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Variação e Ativos</title>
-
+<title>Painel Superior de Cotações</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     margin: 0;
-    background: #f5f5f5;
+    background-color: #f5f5f5;
   }
 
-  /* =======================
-     TABELA DE VARIAÇÃO (TOPO)
-     ======================= */
-  #topo-variacao {
+  /* Painel fixo no topo */
+  #painel-cotacoes {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 200px;
-    background-color: #ffffff;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 26px;
+    height: 24px; /* altura compacta */
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    z-index: 9999;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 
-  /* =======================
-     ATIVOS DE RISCO / SEGURANÇA
-     ======================= */
-  #ativos-risco-seguranca {
-    margin-top: 10px;
-    padding: 15px;
-    background-color: #ffffff;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-  }
-
-  /* =======================
-     TradingView – só variação %
-     ======================= */
-  .tradingview-widget-container .tv-symbol-name,
-  .tradingview-widget-container .tv-symbol-price-quote,
-  .tradingview-widget-container .tv-symbol-group-name,
-  .tradingview-widget-container .tv-widget-quote__logo {
-    display: none !important;
-  }
-
-  .tradingview-widget-container .tv-widget-quote__change {
-    display: block !important;
-    font-weight: bold;
-    font-size: 30px;
-    text-align: center;
-    padding: 6px 0;
-  }
-
-  .tv-widget-quote__change.tv-positive {
-    color: #008000 !important;
-  }
-
-  .tv-widget-quote__change.tv-negative {
-    color: #FF0000 !important;
+  /* Conteúdo abaixo do painel */
+  #conteudo {
+    margin-top: 26px; /* margem igual ou maior que altura do painel */
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 </style>
 </head>
-
 <body>
 
-<!-- TABELA DE VARIAÇÃO NO TOPO -->
-<div id="topo-variacao">
-  <h2 style="text-align:center; margin:0 0 10px;">Variação %</h2>
-
+<!-- Painel superior fixo -->
+<div id="painel-cotacoes">
   <div class="tradingview-widget-container">
-    <script type="text/javascript"
-      src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
-    {
-      "width": "100%",
-      "height": "100%",
-      "showSymbolLogo": false,
-      "colorTheme": "light",
-      "locale": "pt",
-      "symbolsGroups": [
-        {
-          "name": "Cotações",
-          "symbols": [
-            { "name": "INDEX:SPX", "displayName": "S&P 500" },
-            { "name": "INDEX:NDX", "displayName": "Nasdaq" },
-            { "name": "INDEX:DJI", "displayName": "Dow Jones" },
-            { "name": "NYMEX:CL1!", "displayName": "WTI" }
-          ]
-        }
-      ]
-    }
-    </script>
+    <div id="tradingview_cotacoes"></div>
   </div>
 </div>
 
-<!-- ATIVOS DE RISCO E SEGURANÇA -->
-<div id="ativos-risco-seguranca">
-  <h2>Ativos de Risco e Segurança</h2>
-
-  <div class="tradingview-widget-container">
-    <script type="text/javascript"
-      src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js">
-    {
-      "width": "100%",
-      "height": "220",
-      "showSymbolLogo": true,
-      "colorTheme": "light",
-      "locale": "pt",
-      "symbolsGroups": [
-        {
-          "name": "Risco & Segurança",
-          "symbols": [
-            { "name": "INDEX:VIX", "displayName": "VIX" },
-            { "name": "FOREXCOM:EURUSD", "displayName": "EUR/USD" },
-            { "name": "FOREXCOM:USDJPY", "displayName": "USD/JPY" }
-          ]
-        }
-      ]
-    }
-    </script>
-  </div>
+<!-- Conteúdo principal -->
+<div id="conteudo">
+  <!-- Coloque aqui seu gráfico ou outro conteúdo -->
 </div>
+
+<!-- TradingView Lightweight Widget -->
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" async>
+{
+  "symbols": [
+    { "title": "Ouro", "proName": "COMEX:GC1!" },
+    { "title": "Brent", "proName": "ICE:BRN1!" },
+    { "title": "WTI", "proName": "NYMEX:CL1!" },
+    { "title": "DXY", "proName": "FOREXCOM:DX1!" },
+    { "title": "S&P 500", "proName": "INDEX:SPX" },
+    { "title": "Nasdaq", "proName": "INDEX:NDX" },
+    { "title": "Dow Jones", "proName": "INDEX:DJI" }
+  ],
+  "colorTheme": "light",
+  "isTransparent": true,
+  "showSymbolLogo": false,
+  "locale": "pt",
+  "width": "100%",
+  "height": "24"
+}
+</script>
 
 </body>
 </html>
