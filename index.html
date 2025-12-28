@@ -244,7 +244,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel Superior Ultra-Compacto</title>
+<title>Painel Superior de Cotações</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -252,7 +252,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     background-color: #f5f5f5;
   }
 
-  /* Painel ultra-compacto no topo */
+  /* Painel fixo no topo da página */
   #painel-cotacoes {
     width: 100%;
     background-color: #fff;
@@ -268,7 +268,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 
   /* Espaço para o conteúdo abaixo do painel */
   #conteudo {
-    margin-top: 22px; /* espaço para o painel não sobrepor */
+    margin-top: 22px; /* altura do painel para não sobrepor */
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
@@ -277,16 +277,16 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </head>
 <body>
 
-<!-- Painel ultra-compacto superior -->
+<!-- Painel superior fixo -->
 <div id="painel-cotacoes">
   <div class="tradingview-widget-container">
     <div id="tradingview_cotacoes"></div>
   </div>
 </div>
 
-<!-- Área de conteúdo abaixo do painel (onde você coloca seu gráfico) -->
+<!-- Área de conteúdo abaixo do painel -->
 <div id="conteudo">
-  <!-- Seu gráfico ou outro conteúdo vai aqui -->
+  <!-- Coloque seu gráfico aqui -->
 </div>
 
 <!-- TradingView Lightweight Widget -->
