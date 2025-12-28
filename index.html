@@ -485,3 +485,99 @@ setInterval(buscarNoticias,30000);
 
 </body>
 </html>
+<!-- PAINEL ALERTA POLÍTICO-MERCADO -->
+<div id="alerta-mercado">
+  <div class="alerta-header">⚠️ ALERTA MERCADO</div>
+  <div id="alerta-conteudo">Aguardando notícias...</div>
+</div>
+
+<audio id="alerta-som">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
+<style>
+#alerta-mercado {
+  position: fixed;
+  top: 32px; /* ajuste se houver painel acima */
+  left: 8px;
+  width: 280px;
+  background: #ffffff;
+  border-left: 5px solid #c00000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  z-index: 9999;
+}
+
+.alerta-header {
+  background: #c00000;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  padding: 6px;
+  font-size: 11px;
+}
+
+#alerta-conteudo {
+  padding: 8px;
+  line-height: 1.3;
+}
+
+.piscar {
+  animation: pisca 1s infinite;
+}
+
+@keyframes pisca {
+  0% { background: #ffffff; }
+  50% { background: #ffe5e5; }
+  100% { background: #ffffff; }
+}
+</style>
+
+<script>
+const alertaConteudo = document.getElementById("alerta-conteudo");
+const alertaBox = document.getElementById("alerta-mercado");
+const som = document.getElementById("alerta-som");
+
+// RSS Google News (Presidentes + Mercado Financeiro)
+const rssUrl =
+  "https://news.google.com/rss/search?q=presidente+EUA+OR+presidente+Brasil+juros+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
+
+// Proxy público para evitar CORS
+const proxy = "https://api.allorigins.win/raw?url=";
+
+let ultimaNoticia = "";
+
+async function buscarNoticias() {
+  try {
+    const res = await fetch(proxy + encodeURIComponent(rssUrl));
+    const texto = await res.text();
+    const xml = new DOMParser().parseFromString(texto, "text/xml");
+    const item = xml.querySelector("item");
+    if (!item) return;
+
+    const titulo = item.querySelector("title").textContent;
+    const link = item.querySelector("link").textContent;
+
+    if (titulo !== ultimaNoticia) {
+      ultimaNoticia = titulo;
+
+      alertaConteudo.innerHTML =
+        '📰 <a href="' + link + '" target="_blank" style="color:#000;text-decoration:none;">' +
+        titulo +
+        '</a>';
+
+      alertaBox.classList.add("piscar");
+      som.play().catch(() => {});
+
+      setTimeout(() => alertaBox.classList.remove("piscar"), 15000);
+    }
+  } catch (e) {
+    console.log("Erro ao buscar notícias");
+  }
+}
+
+// Inicial + atualização contínua
+buscarNoticias();
+setInterval(buscarNoticias, 60000); // 1 minuto
+</script>
