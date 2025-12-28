@@ -244,13 +244,13 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Cotações Reais</title>
+<title>Painel de Cotações Reais com Gradiente</title>
 <style>
   #cotacoes {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 320px;
+    width: 360px;
     font-family: Arial, sans-serif;
     background-color: #fff;
     border: 1px solid #ccc;
@@ -268,7 +268,7 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
     border-collapse: collapse;
   }
   #cotacoes th, #cotacoes td {
-    padding: 4px;
+    padding: 6px;
   }
   #cotacoes th:first-child, #cotacoes td:first-child {
     text-align: left;
@@ -298,7 +298,6 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80"; 
 const API_BASE = "https://finnhub.io/api/v1/quote?symbol=";
 
-// Lista de ativos com símbolos compatíveis
 const ativos = [
   { nome: "Ouro", symbol: "XAUUSD" },
   { nome: "Brent", symbol: "CO1:COM" },
@@ -312,6 +311,17 @@ const ativos = [
   { nome: "Shanghai", symbol: "000001.SS" }
 ];
 
+// Função para transformar a variação percentual em intensidade de cor
+function getCorFundo(perc) {
+  const maxIntensidade = 0.5; // máximo de opacidade para gradiente
+  const intensidade = Math.min(Math.abs(perc) / 5, 1) * maxIntensidade; // varia entre 0 e maxIntensidade
+  if (perc >= 0) {
+    return `rgba(0, 200, 0, ${intensidade})`; // verde
+  } else {
+    return `rgba(200, 0, 0, ${intensidade})`; // vermelho
+  }
+}
+
 async function atualizarCotacoes() {
   const tabela = document.getElementById("tabela-cotacoes");
   tabela.innerHTML = "";
@@ -322,20 +332,21 @@ async function atualizarCotacoes() {
       const data = await res.json();
 
       let preco = data.c?.toFixed(2) ?? "-";
-      let perc = data.dp?.toFixed(2) ?? "-";
-      let cor = parseFloat(perc) >= 0 ? "green" : "red";
-      let icon = parseFloat(perc) >= 0 ? "▲" : "▼";
+      let perc = parseFloat(data.dp?.toFixed(2)) || 0;
+      let corFundo = getCorFundo(perc);
+      let corTexto = perc >= 0 ? "green" : "red";
+      let icon = perc >= 0 ? "▲" : "▼";
 
       tabela.innerHTML += `
-        <tr>
+        <tr style="background-color:${corFundo}">
           <td>${ativo.nome}</td>
           <td style="text-align:right;">${preco}</td>
-          <td style="text-align:right; color:${cor};">${icon} ${perc}%</td>
+          <td style="text-align:right; color:${corTexto};">${icon} ${perc}%</td>
         </tr>
       `;
     } catch (err) {
       tabela.innerHTML += `
-        <tr>
+        <tr style="background-color:#eee;">
           <td>${ativo.nome}</td>
           <td style="text-align:right; color:gray;">-</td>
           <td style="text-align:right; color:gray;">Erro</td>
