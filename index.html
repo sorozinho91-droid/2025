@@ -242,33 +242,37 @@ window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
 <div id="cotacoes" style="
     float: right;
-    width: 300px;
+    width: 340px;
     font-family: Arial, sans-serif;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255,255,255,0.95);
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 10px;
+    padding: 12px;
 ">
-  <h3 style="text-align: center; margin: 0 0 10px 0;">Cotações</h3>
+  <h3 style="text-align: center; margin: 0 0 12px 0;">Cotações</h3>
   <table cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
     <thead>
-      <tr style="background-color: #f0f0f0; border-bottom: 1px solid #ccc;">
+      <tr style="background-color: #f0f0f0;">
         <th style="text-align: left;">Ativo</th>
-        <th style="text-align: right;">Variação (%)</th>
+        <th style="text-align: right;">Preço</th>
+        <th style="text-align: right;">Δ %</th>
       </tr>
     </thead>
     <tbody id="tabela-cotacoes">
-      <!-- Linhas preenchidas pelo JS -->
+      <!-- preenchido pelo JS -->
     </tbody>
   </table>
 </div>
 
 <script>
+const API_KEY = "YOUR_API_KEY"; // Substitua pela sua chave Finnhub
+const API_BASE = "https://finnhub.io/api/v1/quote?symbol=";
+
 const ativos = [
-  { nome: "Ouro", symbol: "GC=F" },
+  { nome: "Ouro", symbol: "XAUUSD" },
   { nome: "VIX", symbol: "^VIX" },
-  { nome: "Brent", symbol: "BZ=F" },
-  { nome: "WTI", symbol: "CL=F" },
+  { nome: "Brent", symbol: "CO1:COM" },
+  { nome: "WTI", symbol: "CL1:COM" },
   { nome: "DXY", symbol: "DX-Y.NYB" },
   { nome: "S&P 500", symbol: "^GSPC" },
   { nome: "Nasdaq", symbol: "^IXIC" },
@@ -283,36 +287,37 @@ async function atualizarCotacoes() {
   tabela.innerHTML = "";
 
   for (let ativo of ativos) {
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ativo.symbol}`;
     try {
-      const res = await fetch(url);
+      const res = await fetch(`${API_BASE}${ativo.symbol}&token=${API_KEY}`);
       const data = await res.json();
-      const quote = data.quoteResponse.result[0];
 
-      let perc = "0.00";
-      if (quote?.regularMarketChangePercent != null) {
-        perc = quote.regularMarketChangePercent.toFixed(2);
-      }
+      let preco = data.c?.toFixed(2) ?? "-";
+      let perc = data.dp?.toFixed(2) ?? "0.00";
 
-      tabela.innerHTML += `
-        <tr>
-          <td style="padding: 4px;">${ativo.nome}</td>
-          <td style="padding: 4px; text-align: right; color: ${perc >= 0 ? 'green' : 'red'};">${perc}%</td>
-        </tr>
-      `;
-    } catch (error) {
-      console.error("Erro ao buscar cotação:", error);
+      // Ícone de subida/descida
+      let icon = perc >= 0 ? "▲" : "▼";
+      let cor = perc >= 0 ? "green" : "red";
+
       tabela.innerHTML += `
         <tr>
           <td>${ativo.nome}</td>
-          <td style="color: gray; text-align: right;">Erro</td>
+          <td style="text-align: right;">${preco}</td>
+          <td style="text-align: right; color: ${cor};">${icon} ${perc}%</td>
+        </tr>
+      `;
+    } catch (error) {
+      tabela.innerHTML += `
+        <tr>
+          <td>${ativo.nome}</td>
+          <td style="text-align: right; color: gray;">-</td>
+          <td style="text-align: right; color: gray;">Erro</td>
         </tr>
       `;
     }
   }
 }
 
-// Atualiza a cada 30 segundos
+// Atualiza automaticamente a cada 30 segundos
 atualizarCotacoes();
 setInterval(atualizarCotacoes, 30000);
 </script>
