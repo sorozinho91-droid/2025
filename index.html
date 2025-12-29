@@ -78,7 +78,8 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 .alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
 #alerta-conteudo { padding: 8px; line-height: 1.3; }
 .piscar { animation:pisca 1s infinite; }
-@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; } }
+@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; }
+}
 
 /* Gradiente para variação na tabela */
 td.variacao { color:white; font-weight:bold; }
@@ -142,21 +143,40 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ===== Ativos =====
+// ===== Ativos Atualizados =====
 const ativosRisco = [
   {nome:"S&P 500", proName:"INDEX:SPX"},
   {nome:"Nasdaq", proName:"INDEX:NDX"},
   {nome:"Dow Jones", proName:"INDEX:DJI"},
   {nome:"FTSE 100", proName:"INDEX:UKX"},
   {nome:"DAX", proName:"INDEX:DAX"},
-  {nome:"CAC 40", proName:"INDEX:CAC"}
+  {nome:"CAC 40", proName:"INDEX:CAC"},
+  {nome:"Nikkei 225", proName:"INDEX:N225"},
+  {nome:"Hang Seng", proName:"INDEX:HSI"},
+  {nome:"Ouro", proName:"COMEX:GC1!"},
+  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"},
+  {nome:"Petróleo Brent", proName:"ICE:BRN1!"},
+  {nome:"Cobre", proName:"COMEX:HG1!"},
+  {nome:"Soja", proName:"CBOT:ZS1!"},
+  {nome:"Minério de Ferro", proName:"TVC:IO62!"}
 ];
+
 const ativosSeguro = [
   {nome:"DXY - Índice Dólar", proName:"FOREXCOM:DX1!"},
   {nome:"VIX - Volatilidade", proName:"CBOE:VIX"},
-  {nome:"Ouro", proName:"COMEX:GC1!"}
+  {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"},
+  {nome:"Tesouro EUA 2y", proName:"CURRENCY:US02Y"},
+  {nome:"Ouro Físico", proName:"COMEX:GC1!"},
+  {nome:"Franco Suíço", proName:"FOREXCOM:CHFUSD"},
+  {nome:"Iene Japonês", proName:"FOREXCOM:JPYUSD"},
+  {nome:"Títulos Alemães 10y", proName:"TVC:DE10Y"},
+  {nome:"Títulos Japoneses 10y", proName:"TVC:JP10Y"},
+  {nome:"Yuan Chinês", proName:"FOREXCOM:CNYUSD"},
+  {nome:"Libra Esterlina", proName:"FOREXCOM:GBPUSD"},
+  {nome:"Euro", proName:"FOREXCOM:EURUSD"}
 ];
 
+// Histórico interno para tendência
 let historicoRisco = [], historicoSeguro = [];
 let ultimaTendencia = "";
 
@@ -170,12 +190,13 @@ async function fetchTradingViewPrice(symbol){
     }catch(e){ return 0; }
 }
 
-// Atualizar tabela e barra
+// ===== Atualizar Sentimento e Tendência com Gradiente na tabela =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
     let somaRisco=0, somaSeguro=0;
     function variacaoSafe(novo, antigo){ return (!novo||!antigo)?0:((novo-antigo)/antigo*100).toFixed(2); }
+
     function corVariacao(variacao){
         const v = Math.max(-5, Math.min(5, parseFloat(variacao)));
         return `background: linear-gradient(to right, red ${50-v*10}%, green ${50+v*10}%);`;
@@ -187,7 +208,7 @@ async function atualizarSentimento(){
         a.ultimoValor = valor;
         somaRisco += parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td class="variacao" style="${corVariacao(variacao)}">${parseFloat(variacao).toFixed(2)}%</td>`;
+        tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td class="variacao" style="${corVariacao(variacao)}">${variacao}%</td>`;
         tbody.appendChild(tr);
     }
 
@@ -197,24 +218,29 @@ async function atualizarSentimento(){
         a.ultimoValor = valor;
         somaSeguro += parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td class="variacao" style="${corVariacao(variacao)}">${parseFloat(variacao).toFixed(2)}%</td>`;
+        tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td class="variacao" style="${corVariacao(variacao)}">${variacao}%</td>`;
         tbody.appendChild(tr);
     }
 
-    historicoRisco.push(somaRisco); historicoSeguro.push(somaSeguro);
+    historicoRisco.push(somaRisco);
+    historicoSeguro.push(somaSeguro);
     if(historicoRisco.length>5){ historicoRisco.shift(); historicoSeguro.shift(); }
+
     const mediaRisco = historicoRisco.reduce((a,b)=>a+b,0)/historicoRisco.length;
     const mediaSeguro = historicoSeguro.reduce((a,b)=>a+b,0)/historicoSeguro.length;
-    const total = mediaRisco+mediaSeguro || 1;
-    let riscoPercent = Math.round((mediaRisco+total)/(2*total)*100);
+
+    const total = mediaRisco + mediaSeguro || 1;
+    let riscoPercent = Math.round((mediaRisco + total)/(2*total)*100);
     riscoPercent = Math.max(0, Math.min(100, riscoPercent));
-    const tendencia = mediaRisco>mediaSeguro ? "📈 Mercado Tendência Alta" : "📉 Mercado Tendência Baixa";
+
+    const tendencia = mediaRisco > mediaSeguro ? "📈 Mercado Tendência Alta" : "📉 Mercado Tendência Baixa";
 
     const bar = document.getElementById("sentimentoBar");
     bar.style.width = riscoPercent + "%";
     bar.textContent = `${riscoPercent}% ${tendencia}`;
 
-    if(ultimaTendencia && ultimaTendencia!==tendencia){
+    // ALERTA DE MUDANÇA DE TENDÊNCIA
+    if(ultimaTendencia && ultimaTendencia !== tendencia){
         bar.classList.add("pisca");
         document.getElementById("alerta-tendencia").play().catch(()=>{});
         setTimeout(()=>bar.classList.remove("pisca"),12000);
@@ -255,14 +281,20 @@ async function buscarNoticias(){
         lista.prepend(div);
         if(!alertaAtivo){
             alertaAtivo=true;
-            painel.classList.add("breaking"); header.classList.add("breaking");
+            painel.classList.add("breaking"); 
+            header.classList.add("breaking");
             som.play().catch(()=>{});
-            setTimeout(()=>{painel.classList.remove("breaking"); header.classList.remove("breaking"); alertaAtivo=false;},12000);
+            setTimeout(()=>{
+              painel.classList.remove("breaking"); 
+              header.classList.remove("breaking"); 
+              alertaAtivo=false;
+            },12000);
         }
     });
   }catch(e){console.error("Erro news:",e);}
 }
-buscarNoticias(); setInterval(buscarNoticias,30000);
+buscarNoticias(); 
+setInterval(buscarNoticias,30000);
 
 // ===== ALERTA MERCADO =====
 const alertaConteudo = document.getElementById("alerta-conteudo");
@@ -283,12 +315,14 @@ async function buscarNoticiasAlerta(){
         if(titulo!==ultimaNoticia){
             ultimaNoticia=titulo;
             alertaConteudo.innerHTML='📰 <a href="'+link+'" target="_blank" style="color:#000;text-decoration:none;">'+titulo+'</a>';
-            alertaBox.classList.add("piscar"); alertaSom.play().catch(()=>{});
+            alertaBox.classList.add("piscar"); 
+            alertaSom.play().catch(()=>{});
             setTimeout(()=>alertaBox.classList.remove("piscar"),15000);
         }
     }catch(e){console.log("Erro ao buscar notícias alerta");}
 }
-buscarNoticiasAlerta(); setInterval(buscarNoticiasAlerta,60000);
+buscarNoticiasAlerta(); 
+setInterval(buscarNoticiasAlerta,60000);
 </script>
 
 </body>
