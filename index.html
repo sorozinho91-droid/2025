@@ -581,3 +581,47 @@ async function buscarNoticias() {
 buscarNoticias();
 setInterval(buscarNoticias, 60000); // 1 minuto
 </script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Risco x Segurança</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+
+<div id="grafico" style="width:90%;height:400px;margin:auto;"></div>
+
+<script>
+let risco = [];
+let seguro = [];
+let datas = [];
+
+let vRisco = 100;
+let vSeguro = 100;
+
+// cria o gráfico uma vez
+Plotly.newPlot('grafico', [
+  { x: datas, y: risco, mode:'lines', name:'Risco', line:{color:'green'} },
+  { x: datas, y: seguro, mode:'lines', name:'Segurança', line:{color:'red'} }
+]);
+
+// atualiza automaticamente
+setInterval(() => {
+  let agora = new Date();
+
+  vRisco += (Math.random() - 0.5) * 2;
+  vSeguro += (Math.random() - 0.5);
+
+  Plotly.extendTraces('grafico', {
+    x: [[agora],[agora]],
+    y: [[vRisco],[vSeguro]]
+  }, [0,1], 200);
+
+}, 15000); // 15 segundos
+</script>
+<div id="grafico"></div>
+
+</body>
+</html>
