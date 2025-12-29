@@ -2,25 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Completo – Risco x Segurança + Cotações + Notícias</title>
+<title>Dashboard Risco x Segurança – Tempo Real</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
 header { background:#1f2937; color:white; padding:15px; text-align:center; }
-#controls, #compareDates { text-align:center; padding:10px; }
-button { margin:5px; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#e5e7eb; }
-button.active { background:#2563eb; color:white; }
 #grafico { width:90%; max-width:1200px; height:400px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-table { width:90%; max-width:1200px; margin:20px auto; border-collapse: collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
-th, td { padding:8px; border:1px solid #ccc; text-align:center; font-size:14px;}
-thead th { background:#2563eb; color:white;}
-.risco { color:green; } 
-.seguro { color:red; } 
-.positivo { color:green; }
-.negativo { color:red; }
-
-#painel-cotacoes-topo { width:100%; height:28px; }
-
 #painel-news{
   position:fixed; top:28px; right:10px; width:360px;
   background:#111827; color:white; border-radius:6px;
@@ -51,51 +38,9 @@ thead th { background:#2563eb; color:white;}
 <h2>Risco x Segurança – Linha do Tempo (Tempo Real)</h2>
 </header>
 
-<div id="controls">
-<button onclick="setTimeframe(60,this)" class="active">60s</button>
-<button onclick="setTimeframe(1,this)">1m</button>
-<button onclick="setTimeframe(5,this)">5m</button>
-</div>
-
-<div id="compareDates">
-<label>Início: <input type="datetime-local" id="startDate"></label>
-<label>Fim: <input type="datetime-local" id="endDate"></label>
-<button onclick="filtrarPorData()">Comparar</button>
-<button onclick="resetGrafico()">Resetar</button>
-</div>
-
 <div id="grafico"></div>
 
-<table id="tabelaRisco">
-<thead><tr><th>Ativo de Risco</th><th>Valor Atual</th><th>Variação (%)</th></tr></thead>
-<tbody></tbody>
-</table>
-
-<table id="tabelaSeguro">
-<thead><tr><th>Ativo de Segurança</th><th>Valor Atual</th><th>Variação (%)</th></tr></thead>
-<tbody></tbody>
-</table>
-
-<div id="painel-cotacoes-topo">
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
-{
-  "symbols": [
-    { "title": "Brent", "proName": "ICE:BRN1!" },
-    { "title": "WTI", "proName": "NYMEX:CL1!" },
-    { "title": "DXY", "proName": "FOREXCOM:DX1!" },
-    { "title": "S&P 500", "proName": "INDEX:SPX" },
-    { "title": "Dow Jones", "proName": "INDEX:DJI" }
-  ],
-  "colorTheme": "light",
-  "isTransparent": true,
-  "showSymbolLogo": false,
-  "locale": "pt",
-  "width": "100%",
-  "height": "28"
-}
-</script>
-</div>
-
+<!-- BREAKING NEWS -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
   <div id="newsList"><div id="aguardando" class="news-item">Aguardando notícias...</div></div>
@@ -103,6 +48,7 @@ thead th { background:#2563eb; color:white;}
 
 <audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
 
+<!-- ALERTA MERCADO -->
 <div id="alerta-mercado">
   <div class="alerta-header">⚠️ ALERTA MERCADO</div>
   <div id="alerta-conteudo">Aguardando notícias...</div>
@@ -110,7 +56,7 @@ thead th { background:#2563eb; color:white;}
 <audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// ===== Horário Brasília =====
+// ===== HORÁRIO BRASÍLIA =====
 function agoraBrasilia(){
     const agora = new Date();
     const offset = -3;
@@ -118,163 +64,98 @@ function agoraBrasilia(){
     return new Date(utc + (3600000*offset));
 }
 
-// ===== Variáveis =====
-let datas=[], risco=[], seguro=[];
-let valorRisco=100, valorSeguro=100;
-let timer=null, filtered=false, filteredStart, filteredEnd;
-let timeframe=60;
-
-// ===== Ativos Yahoo Finance =====
-let ativosRiscoYahoo = [
-  {nome: "Ouro Futuros", simbolo: "GC=F"},
-  {nome: "Cobre Futuros", simbolo: "HG=F"},
-  {nome: "Petróleo WTI", simbolo: "CL=F"},
-  {nome: "Vale SA ADR", simbolo: "VALE"},
-  {nome: "Petrobras ADR", simbolo: "PBR"}
+// ===== Ativos reais via Yahoo Finance =====
+let ativosRisco = [
+  {nome:"Ouro Futuros", simbolo:"GC=F", valor:0},
+  {nome:"Petróleo WTI", simbolo:"CL=F", valor:0},
+  {nome:"Vale SA ADR", simbolo:"VALE", valor:0},
+  {nome:"Petrobras ADR", simbolo:"PBR", valor:0},
+  {nome:"Cobre Futuros", simbolo:"HG=F", valor:0}
+];
+let ativosSeguranca = [
+  {nome:"DXY - Índice Dólar", simbolo:"DX-Y.NYB", valor:0},
+  {nome:"EUR/BRL", simbolo:"EURBRL=X", valor:0},
+  {nome:"S&P 500 VIX", simbolo:"^VIX", valor:0},
+  {nome:"USD/MXN", simbolo:"USDMXN=X", valor:0},
+  {nome:"USD/NOK", simbolo:"USDNOK=X", valor:0}
 ];
 
-let ativosSegurancaYahoo = [
-  {nome: "DXY - Índice Dólar", simbolo: "DX-Y.NYB"},
-  {nome: "EUR/BRL", simbolo: "EURBRL=X"},
-  {nome: "S&P 500 VIX Futuros", simbolo: "^VIX"}
-];
+// ===== Histórico =====
+let datas=[], riscoHist=[], seguroHist=[];
 
-// ===== Histórico inicial =====
-function gerarHistorico(){
-  const agora = agoraBrasilia();
-  const start = new Date(agora.getTime() - 30*24*60*60*1000);
-  datas=[], risco=[], seguro=[];
-  let valR=valorRisco, valS=valorSeguro;
-  for(let d=new Date(start); d<=agora; d.setHours(d.getHours()+1)){
-    valR += (Math.random()-0.5)*2;
-    valS += (Math.random()-0.5)*1;
-    datas.push(new Date(d));
-    risco.push(valR);
-    seguro.push(valS);
-  }
-}
-
-// ===== Plotar gráfico =====
-function plotGrafico(x,yR,yS){
-  Plotly.react('grafico',[
-    {x:x, y:yR, mode:'lines+markers', name:'Risco', line:{color:'green'}},
-    {x:x, y:yS, mode:'lines+markers', name:'Segurança', line:{color:'red'}}
-  ],{
-    title:'Linha do Tempo Risco x Segurança',
-    xaxis:{title:'Data', type:'date', rangeslider:{visible:false}},
-    yaxis:{title:'Valor'},
-    margin:{t:40,l:50,r:50,b:50},
-    legend:{x:1,xanchor:'right',y:1}
-  });
-}
-
-// ===== Atualizar tabelas =====
-function atualizarTabelas(){
-  const tbodyR = document.querySelector("#tabelaRisco tbody"); tbodyR.innerHTML="";
-  ativosRiscoYahoo.forEach(a=>{
-    let variacao = a.variacao?.toFixed(2)??0;
-    let tr = document.createElement("tr");
-    tr.innerHTML=`<td class="risco">${a.nome}</td>
-                  <td>${a.valor?.toFixed(2)||"-"}</td>
-                  <td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>`;
-    tbodyR.appendChild(tr);
-  });
-  const tbodyS = document.querySelector("#tabelaSeguro tbody"); tbodyS.innerHTML="";
-  ativosSegurancaYahoo.forEach(a=>{
-    let variacao = a.variacao?.toFixed(2)??0;
-    let tr = document.createElement("tr");
-    tr.innerHTML=`<td class="seguro">${a.nome}</td>
-                  <td>${a.valor?.toFixed(2)||"-"}</td>
-                  <td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>`;
-    tbodyS.appendChild(tr);
-  });
-}
-
-// ===== Atualizar gráfico =====
-function atualizarGrafico(){
-  const agora = agoraBrasilia();
-  valorRisco += (Math.random()-0.5)*2;
-  valorSeguro += (Math.random()-0.5)*1;
-  datas.push(agora);
-  risco.push(valorRisco);
-  seguro.push(valorSeguro);
-  if(datas.length>1000){ datas.shift(); risco.shift(); seguro.shift(); }
-
-  if(filtered){
-    const newD=[], newR=[], newS=[];
-    for(let i=0;i<datas.length;i++){
-      if(datas[i]>=filteredStart && datas[i]<=filteredEnd){
-        newD.push(datas[i]); newR.push(risco[i]); newS.push(seguro[i]);
-      }
-    }
-    plotGrafico(newD,newR,newS);
-  } else { plotGrafico(datas,risco,seguro); }
-}
-
-// ===== Filtrar e resetar =====
-function filtrarPorData(){
-  filteredStart = new Date(document.getElementById('startDate').value);
-  filteredEnd = new Date(document.getElementById('endDate').value);
-  if(isNaN(filteredStart)||isNaN(filteredEnd)){alert("Selecione datas válidas"); return;}
-  if(filteredStart>filteredEnd){alert("A data de início deve ser anterior à data de fim."); return;}
-  filtered = true; atualizarGrafico();
-}
-function resetGrafico(){ filtered=false; plotGrafico(datas,risco,seguro); }
-
-// ===== Alterar timeframe =====
-function setTimeframe(segundos, botao){
-  timeframe=segundos;
-  document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
-  botao.classList.add('active');
-  if(timer) clearInterval(timer);
-  timer=setInterval(()=>{
-    atualizarGrafico();
-    atualizarCotacoesReais(); // Atualiza cotações reais
-  }, timeframe*1000);
-}
-
-// ===== Atualizar cotações reais =====
+// ===== Atualiza cotações reais =====
 async function atualizarCotacoesReais(){
-  const symbols = [...ativosRiscoYahoo,...ativosSegurancaYahoo].map(a=>a.simbolo).join(",");
-  const url = `https://yfapi.net/v6/finance/quote?symbols=${symbols}`;
-  try{
-    const res = await fetch(url,{
-      method:"GET",
-      headers:{"X-API-KEY":"SUA_CHAVE_RAPIDAPI_AQUI"} // substitua pela sua chave RapidAPI
-    });
-    const data = await res.json();
+    const symbols = [...ativosRisco,...ativosSeguranca].map(a=>a.simbolo).join(",");
+    const url = `https://yfapi.net/v6/finance/quote?symbols=${symbols}`;
+    try{
+        const res = await fetch(url,{
+            method:"GET",
+            headers:{"X-API-KEY":"SUA_CHAVE_RAPIDAPI_AQUI"} // Substitua pela sua chave
+        });
+        const data = await res.json();
 
-    ativosRiscoYahoo.forEach(a=>{
-      const info = data.quoteResponse.result.find(q=>q.symbol===a.simbolo);
-      if(info){
-        let antigo = a.valor||info.regularMarketPrice;
-        a.valor = info.regularMarketPrice;
-        a.variacao = ((a.valor-antigo)/antigo)*100;
-      }
-    });
-    ativosSegurancaYahoo.forEach(a=>{
-      const info = data.quoteResponse.result.find(q=>q.symbol===a.simbolo);
-      if(info){
-        let antigo = a.valor||info.regularMarketPrice;
-        a.valor = info.regularMarketPrice;
-        a.variacao = ((a.valor-antigo)/antigo)*100;
-      }
-    });
+        ativosRisco.forEach(a=>{
+            const info = data.quoteResponse.result.find(q=>q.symbol===a.simbolo);
+            if(info){
+                let antigo = a.valor || info.regularMarketPrice;
+                a.valor = info.regularMarketPrice;
+                a.variacao = ((a.valor-antigo)/antigo)*100;
+            }
+        });
 
-    atualizarTabelas();
-    atualizarGrafico();
+        ativosSeguranca.forEach(a=>{
+            const info = data.quoteResponse.result.find(q=>q.symbol===a.simbolo);
+            if(info){
+                let antigo = a.valor || info.regularMarketPrice;
+                a.valor = info.regularMarketPrice;
+                a.variacao = ((a.valor-antigo)/antigo)*100;
+            }
+        });
 
-  }catch(e){ console.error("Erro ao atualizar cotações reais:", e); }
+        atualizarGrafico();
+    }catch(e){ console.error("Erro ao atualizar cotações:", e); }
+}
+
+// ===== Inicializa gráfico =====
+function atualizarGrafico(){
+    const agora = agoraBrasilia();
+    datas.push(agora);
+
+    let valR = ativosRisco.reduce((acc,a)=>acc+a.valor,0)/ativosRisco.length;
+    let valS = ativosSeguranca.reduce((acc,a)=>acc+a.valor,0)/ativosSeguranca.length;
+
+    riscoHist.push(valR);
+    seguroHist.push(valS);
+
+    if(datas.length>100){ datas.shift(); riscoHist.shift(); seguroHist.shift(); }
+
+    Plotly.react('grafico',[
+        {x:datas, y:riscoHist, mode:'lines+markers', name:'Risco', line:{color:'green'}},
+        {x:datas, y:seguroHist, mode:'lines+markers', name:'Segurança', line:{color:'red'}}
+    ],{
+        title:'Linha do Tempo Risco x Segurança',
+        xaxis:{title:'Horário (BR)', type:'date', rangeslider:{visible:false}},
+        yaxis:{title:'Valor'},
+        margin:{t:40,l:50,r:50,b:50},
+        legend:{x:1,xanchor:'right',y:1}
+    });
 }
 
 // ===== Inicialização =====
-gerarHistorico();
-plotGrafico(datas,risco,seguro);
-atualizarTabelas();
-timer=setInterval(()=>{
-  atualizarGrafico();
-  atualizarCotacoesReais();
-}, timeframe*1000);
+async function iniciarDashboard(){
+    // Preenche histórico inicial com os últimos 12 pontos (12h simuladas)
+    const agora = agoraBrasilia();
+    datas=[]; riscoHist=[]; seguroHist=[];
+    for(let i=12;i>0;i--){
+        let past = new Date(agora.getTime() - i*60*60*1000);
+        datas.push(past);
+        riscoHist.push(0);
+        seguroHist.push(0);
+    }
+    await atualizarCotacoesReais();
+    setInterval(atualizarCotacoesReais, 60000); // Atualiza a cada 60s
+}
+iniciarDashboard();
 window.addEventListener('resize',()=>{ Plotly.Plots.resize('grafico'); });
 
 // ===== BREAKING NEWS =====
@@ -344,4 +225,3 @@ buscarNoticiasAlerta(); setInterval(buscarNoticiasAlerta,60000);
 </script>
 </body>
 </html>
-Atualização de cotações reais usando APIs (ex.: Yahoo Finance ou TradingView).
