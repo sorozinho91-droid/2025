@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento e Tendência do Mercado Global</title>
+<title>Sentimento e Tendência do Mercado Global com Alertas</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-height:100vh; }
 header { background:#1f2937; color:white; padding:10px; text-align:center; width:100%; }
@@ -44,7 +44,15 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
     line-height:30px;
     color:white;
     font-weight:bold;
-    transition: width 0.5s;
+    transition: width 0.5s, background 0.5s;
+}
+#sentimentoBar.pisca {
+    animation: piscarBarra 1s infinite;
+}
+@keyframes piscarBarra {
+    0% { background-color: #f87171; }
+    50% { background-color: #34d399; }
+    100% { background-color: #f87171; }
 }
 
 /* BREAKING NEWS */
@@ -64,7 +72,6 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 .news-item{ padding:8px; border-bottom:1px solid #374151; }
 .news-item a{ color:#93c5fd; text-decoration:none; }
 .breaking{ animation:piscar 1s infinite; }
-@keyframes piscar{ 0%{background:#7f1d1d;} 50%{background:#dc2626;} 100%{background:#7f1d1d;} }
 
 /* ALERTA MERCADO */
 #alerta-mercado { position: fixed; top:32px; left:10px; width:280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index:9999; }
@@ -77,7 +84,7 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 <body>
 
 <header>
-<h2>Sentimento e Tendência do Mercado Global</h2>
+<h2>Sentimento e Tendência do Mercado Global com Alertas</h2>
 </header>
 
 <div id="relogio"></div>
@@ -110,6 +117,7 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
   <div id="alerta-conteudo">Aguardando notícias...</div>
 </div>
 <audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="alerta-tendencia" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 // ===== Horário de Brasília =====
@@ -154,6 +162,7 @@ const ativosSeguro = [
 
 // Histórico interno para tendência
 let historicoRisco = [], historicoSeguro = [];
+let ultimaTendencia = "";
 
 // Fetch TradingView
 async function fetchTradingViewPrice(symbol){
@@ -165,7 +174,7 @@ async function fetchTradingViewPrice(symbol){
     }catch(e){ return 0; }
 }
 
-// ===== Atualizar Sentimento e Tendência =====
+// ===== Atualizar Sentimento e Tendência com Alerta =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
@@ -196,22 +205,28 @@ async function atualizarSentimento(){
     historicoSeguro.push(somaSeguro);
     if(historicoRisco.length>5){ historicoRisco.shift(); historicoSeguro.shift(); }
 
-    // Média das últimas variações
     const mediaRisco = historicoRisco.reduce((a,b)=>a+b,0)/historicoRisco.length;
     const mediaSeguro = historicoSeguro.reduce((a,b)=>a+b,0)/historicoSeguro.length;
 
-    // Indicador de Sentimento
     const total = mediaRisco + mediaSeguro || 1;
     let riscoPercent = Math.round((mediaRisco + total)/(2*total)*100);
     riscoPercent = Math.max(0, Math.min(100, riscoPercent));
 
-    // Tendência
     const tendencia = mediaRisco > mediaSeguro ? "📈 Bullish" : "📉 Bearish";
 
     const bar = document.getElementById("sentimentoBar");
     bar.style.width = riscoPercent + "%";
     bar.textContent = `${riscoPercent}% ${tendencia}`;
+
+    // ALERTA DE MUDANÇA DE TENDÊNCIA
+    if(ultimaTendencia && ultimaTendencia !== tendencia){
+        bar.classList.add("pisca");
+        document.getElementById("alerta-tendencia").play().catch(()=>{});
+        setTimeout(()=>bar.classList.remove("pisca"),12000);
+    }
+    ultimaTendencia = tendencia;
 }
+
 atualizarSentimento();
 setInterval(atualizarSentimento,60000);
 
