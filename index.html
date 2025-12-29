@@ -622,6 +622,40 @@ setInterval(() => {
 }, 15000); // 15 segundos
 </script>
 <div id="grafico"></div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+let datas = [];
+let risco = [];
+let seguro = [];
+
+let vRisco = 100;
+let vSeguro = 100;
+
+// cria o gráfico UMA VEZ
+Plotly.newPlot('grafico', [
+  { x: datas, y: risco, mode:'lines', name:'Risco', line:{color:'green'} },
+  { x: datas, y: seguro, mode:'lines', name:'Segurança', line:{color:'red'} }
+]);
+
+// FUNÇÃO DE ATUALIZAÇÃO
+function atualizar() {
+  const agora = new Date();
+
+  vRisco += (Math.random() - 0.5) * 2;
+  vSeguro += (Math.random() - 0.5);
+
+  Plotly.extendTraces('grafico', {
+    x: [[agora],[agora]],
+    y: [[vRisco],[vSeguro]]
+  }, [0,1], 200);
+
+  console.log("Atualizado:", agora.toLocaleTimeString());
+}
+
+// ⏱ AUTOMÁTICO A CADA 15s
+setInterval(atualizar, 15000);
+</script>
 
 </body>
 </html>
