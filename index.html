@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento do Mercado</title>
+<title>Sentimento do Mercado Global</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-height:100vh; }
 header { background:#1f2937; color:white; padding:10px; text-align:center; width:100%; }
@@ -10,12 +10,12 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 
 /* Tabela centralizada */
 #tabelaSentimento {
-    width:500px;
+    width:550px;
     font-size:14px;
     background:#fff;
     border-collapse:collapse;
     box-shadow:0 2px 6px rgba(0,0,0,0.1);
-    margin-top:40px;
+    margin-top:20px;
 }
 #tabelaSentimento th, #tabelaSentimento td {
     padding:6px;
@@ -25,7 +25,27 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 #tabelaSentimento thead th { background:#2563eb; color:white; }
 .risco { color:green; font-weight:bold; }
 .seguro { color:red; font-weight:bold; }
-.sentimento { font-weight:bold; color:white; transition: background 0.5s; }
+
+/* Barra de Sentimento */
+#sentimentoBarContainer {
+    width:550px;
+    height:30px;
+    background:#e5e7eb;
+    border-radius:6px;
+    margin:20px 0;
+    overflow:hidden;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+#sentimentoBar {
+    height:100%;
+    width:50%;
+    background: linear-gradient(to right, red, green);
+    text-align:center;
+    line-height:30px;
+    color:white;
+    font-weight:bold;
+    transition: width 0.5s;
+}
 
 /* BREAKING NEWS */
 #painel-news{
@@ -72,6 +92,11 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 </tbody>
 </table>
 
+<!-- Barra de Sentimento -->
+<div id="sentimentoBarContainer">
+    <div id="sentimentoBar">50% Apetite ao Risco</div>
+</div>
+
 <!-- BREAKING NEWS -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
@@ -106,15 +131,16 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ===== Ativos de Risco e Segurança =====
+// ===== Ativos Reais =====
 const ativosRisco = [
   {nome:"S&P 500", proName:"INDEX:SPX"},
   {nome:"Nasdaq", proName:"INDEX:NDX"},
-  {nome:"Ouro", proName:"COMEX:GC1!"},
-  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"},
-  {nome:"Minério de Ferro", proName:"TVC:IOFER"},
   {nome:"Dow Jones", proName:"INDEX:DJI"},
-  {nome:"FTSE 100", proName:"INDEX:UKX"}
+  {nome:"FTSE 100", proName:"INDEX:UKX"},
+  {nome:"DAX", proName:"INDEX:DAX"},
+  {nome:"Hang Seng", proName:"INDEX:HSI"},
+  {nome:"Ouro", proName:"COMEX:GC1!"},
+  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"}
 ];
 const ativosSeguro = [
   {nome:"DXY", proName:"FOREXCOM:DX1!"},
@@ -122,10 +148,11 @@ const ativosSeguro = [
   {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"},
   {nome:"Ouro Físico", proName:"COMEX:GC1!"},
   {nome:"Franco Suíço", proName:"FOREXCOM:CHFUSD"},
-  {nome:"Títulos Alemães 10y", proName:"TVC:DE10Y"}
+  {nome:"Títulos Alemães 10y", proName:"TVC:DE10Y"},
+  {nome:"Iene Japonês", proName:"FOREXCOM:JPYUSD"}
 ];
 
-// Função fetch de preços
+// Fetch TradingView
 async function fetchTradingViewPrice(symbol){
     const url = `https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
     try{
@@ -162,16 +189,13 @@ async function atualizarSentimento(){
         tbody.appendChild(tr);
     }
 
-    // ===== Indicador de Sentimento Real =====
+    // Barra de Sentimento com gradiente
     const total = somaRisco+somaSeguro||1;
-    const intensidade = Math.min(Math.abs(somaRisco-somaSeguro)/total,1);
-    const sentimentoGeral = somaRisco>somaSeguro?"Apetite ao Risco":"Busca por Segurança";
-    const cor = somaRisco>somaSeguro ? `rgba(0,128,0,${0.3 + intensidade*0.7})` : `rgba(255,0,0,${0.3 + intensidade*0.7})`;
-    const trSent = document.createElement("tr");
-    trSent.innerHTML = `<td colspan="3" class="sentimento" style="background:${cor}; font-size:16px;">Sentimento Real: ${sentimentoGeral}</td>`;
-    tbody.appendChild(trSent);
+    const riscoPercent = Math.round((somaRisco+total)/(2*total)*100); // 0-100%
+    const bar = document.getElementById("sentimentoBar");
+    bar.style.width = riscoPercent + "%";
+    bar.textContent = `${riscoPercent}% ${riscoPercent>50?"Apetite ao Risco":"Busca por Segurança"}`;
 }
-
 atualizarSentimento();
 setInterval(atualizarSentimento,60000);
 
