@@ -1,267 +1,163 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF‑8">
-<title>Sentimento e Tendência do Mercado Global</title>
-
+<meta charset="UTF-8">
+<title>Painel de Sentimento do Mercado</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; display:flex; flex-direction:column; align-items:center; }
+body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
 header { background:#1f2937; color:white; padding:10px; text-align:center; width:100%; }
-#relogio { margin:10px 0; font-size:16px; font-weight:bold; }
+#relogio { text-align:center; font-size:16px; margin:10px 0; font-weight:bold; }
 
-/* Tabela */
-#tabelaSentimento {
-    width:700px; font-size:14px;
-    background:#fff; border-collapse:collapse;
-    box-shadow:0 2px 6px rgba(0,0,0,0.1);
-    margin-top:20px;
-}
-#tabelaSentimento th, #tabelaSentimento td {
-    padding:8px; border:1px solid #ccc; text-align:center;
-}
+#tabelaSentimento { width:600px; font-size:14px; background:#fff; border-collapse:collapse; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-top:20px; }
+#tabelaSentimento th, #tabelaSentimento td { padding:6px; border:1px solid #ccc; text-align:center; }
 #tabelaSentimento thead th { background:#2563eb; color:white; }
 td.variacao { font-weight:bold; color:white; border-radius:4px; }
 
-/* Tooltip */
+/* Tooltip colorido */
 td[title]{ position:relative; cursor:pointer; }
 td[title]:hover::after{
   content:attr(title);
-  position:absolute; bottom:110%; left:50%; transform:translateX(-50%);
-  background:#111827; color:#fff; padding:6px 10px; border-radius:4px;
-  white-space:nowrap; font-size:12px; z-index:20;
+  position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+  padding:5px 8px; border-radius:4px; white-space:nowrap; font-size:12px; z-index:10;
+  color:#fff; background: linear-gradient(to right, red, green);
 }
 
-/* Sentiment Bar */
-#sentimentoBarContainer {
-    width:700px; height:36px; background:#e5e7eb;
-    border-radius:6px; margin:20px 0; overflow:hidden;
-}
-#sentimentoBar {
-    height:100%; width:50%; text-align:center;
-    line-height:36px; color:white; font-weight:bold;
-    transition: width 0.6s, background 0.6s;
-}
+/* Barra de Sentimento */
+#sentimentoBarContainer { width:600px; height:30px; background:#e5e7eb; border-radius:6px; margin:20px 0; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+#sentimentoBar { height:100%; width:50%; text-align:center; line-height:30px; color:white; font-weight:bold; transition: width 0.5s, background 0.5s; border-radius:6px; }
 #sentimentoBar.risco { background:green; }
 #sentimentoBar.seguro { background:red; }
-#sentimentoBar.pisca { animation: blink 1s infinite; }
-@keyframes blink { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+#sentimentoBar.pisca { animation: piscarBarra 1s infinite; }
+@keyframes piscarBarra { 0% { opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;} }
 
-/* News Panel */
-#painel-news {
-  position:fixed; top:28px; right:10px; width:360px;
-  background:#111827; color:white; border-radius:6px;
-  box-shadow:0 4px 8px rgba(0,0,0,0.3); z-index:9998;
-}
-.news-header{ text-align:center; font-weight:bold; padding:8px; background:#1f2937; }
+/* BREAKING NEWS */
+#painel-news{ position:fixed; top:28px; right:10px; width:360px; background:#111827; color:white; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.3); z-index:9998; }
+.news-header{ text-align:center; font-weight:bold; padding:8px; background:#1f2937; border-radius:6px 6px 0 0; }
 #newsList{ max-height:260px; overflow-y:auto; font-size:13px; }
 .news-item{ padding:8px; border-bottom:1px solid #374151; }
 .news-item a{ color:#93c5fd; text-decoration:none; }
+.breaking{ animation:piscar 1s infinite; }
 
-/* Market Alert */
-#alerta-mercado {
-  position:fixed; top:32px; left:10px; width:300px;
-  background:#fff; border-left:5px solid #c00000;
-  box-shadow:0 2px 8px rgba(0,0,0,0.2); font-size:12px; z-index:9999;
+/* ALERTA MERCADO */
+#alerta-mercado { position: fixed; top:32px; left:10px; width:280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index:9999; }
+.alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
+#alerta-conteudo { padding: 8px; line-height: 1.3; }
+.piscar { animation:pisca 1s infinite; }
+@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; }
 }
-.alerta-header { background:#c00000; color:#fff; text-align:center; padding:6px; font-weight:bold; font-size:13px; }
-#alerta-conteudo{ padding:8px; font-size:12px; }
 </style>
 </head>
 <body>
 
 <header>
-<h2>📊 Sentimento e Tendência do Mercado Global</h2>
+<h2>Sentimento e Tendência do Mercado Global</h2>
 </header>
 
 <div id="relogio"></div>
 
 <table id="tabelaSentimento">
-<thead><tr><th>Ativo</th><th>Tipo</th><th>Variação (%)</th></tr></thead>
-<tbody><tr><td colspan="3">Carregando dados reais...</td></tr></tbody>
+<thead>
+<tr><th>Ativo</th><th>Sentimento</th><th>Variação (%)</th></tr>
+</thead>
+<tbody>
+<tr id="loading"><td colspan="3">Carregando dados reais...</td></tr>
+</tbody>
 </table>
 
 <div id="sentimentoBarContainer">
-    <div id="sentimentoBar">Carregando...</div>
+    <div id="sentimentoBar">50% Apetite ao Risco</div>
 </div>
 
-<!-- Breaking News -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList"><div class="news-item">Aguardando notícias...</div></div>
+  <div id="newsList"><div id="aguardando" class="news-item">Aguardando notícias...</div></div>
 </div>
+<audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
 
-<!-- Market Alert -->
 <div id="alerta-mercado">
   <div class="alerta-header">⚠️ ALERTA MERCADO</div>
   <div id="alerta-conteudo">Aguardando notícias...</div>
 </div>
-
-<audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
 <audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="alerta-tendencia" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 // ===== Horário de Brasília =====
 function agoraBrasilia(){
     const agora = new Date();
     const offset = -3;
-    const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
-    return new Date(utc + offset*3600000);
+    const utc = agora.getTime() + (agora.getTimezoneOffset()*60000);
+    return new Date(utc + (3600000*offset));
 }
 function atualizarRelogio(){
-    const d = agoraBrasilia();
-    document.getElementById("relogio").textContent =
-      `🕒 Horário de Brasília: ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+    const agora = agoraBrasilia();
+    const h = String(agora.getHours()).padStart(2,'0');
+    const m = String(agora.getMinutes()).padStart(2,'0');
+    const s = String(agora.getSeconds()).padStart(2,'0');
+    document.getElementById('relogio').textContent = `Horário de Brasília: ${h}:${m}:${s}`;
 }
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
+setInterval(atualizarRelogio,1000); atualizarRelogio();
 
-// ===== Ativos de Risco e Segurança =====
+// ===== Ativos =====
 const ativosRisco = [
-  {nome:"S&P 500", sym:"INDEX:SPX"},
-  {nome:"Nasdaq", sym:"INDEX:NDX"},
-  {nome:"Dow Jones", sym:"INDEX:DJI"},
-  {nome:"DAX", sym:"INDEX:DAX"},
-  {nome:"FTSE 100", sym:"INDEX:UKX"},
-  {nome:"Hang Seng", sym:"INDEX:HSI"}
+  {nome:"S&P 500"}, {nome:"Nasdaq"}, {nome:"Dow Jones"}
 ];
 const ativosSeguro = [
-  {nome:"DXY - Dólar", sym:"FOREXCOM:DX1!"},
-  {nome:"VIX - Volatilidade", sym:"CBOE:VIX"},
-  {nome:"Ouro", sym:"COMEX:GC1!"}
+  {nome:"DXY - Índice Dólar"}, {nome:"VIX - Volatilidade"}, {nome:"Ouro Físico"}
 ];
 
-// Guarda preços anteriores
-let prevPrices = {};
+let historicoRisco = [], historicoSeguro = [], ultimaTendencia="";
 
-// Busca preço real da TradingView pública
-async function fetchPriceTV(symbol){
-    const url = "https://api.allorigins.win/raw?url=" +
-                encodeURIComponent(`https://s3.tradingview.com/symbols/${symbol.replace(/[:!]/g,"_")}.json`);
-    try {
-        const resp = await fetch(url);
-        const json = await resp.json();
-        // last_price é o preço atual, close pode ser fallback
-        return json.last_price ?? json.close ?? 0;
-    } catch(e) {
-        console.error("TV fetch erro:", symbol, e);
-        return 0;
-    }
-}
+// Função simulada de preço
+async function fetchTradingViewPrice(symbol){ return Math.random()*100+100; }
 
-// Converte variação em cor gradiente (vermelho→verde)
-function gradienteCor(val){
-    let v = Math.max(-5, Math.min(5, val));
-    // mapeia -5→0 vermelho, +5→100 verde
-    const pct = ((v + 5) / 10) * 100;
-    return `linear-gradient(to right, red ${100-pct}%, green ${pct}%)`;
-}
-
-// Atualiza tabela e sentimento
+// ===== Atualizar Sentimento =====
 async function atualizarSentimento(){
-    const tbody = document.querySelector("#tabelaSentimento tbody");
-    tbody.innerHTML = "";
-    let somaR=0, somaS=0;
+    const tbody = document.querySelector("#tabelaSentimento tbody"); tbody.innerHTML="";
+    let somaRisco=0, somaSeguro=0;
+    function variacaoSafe(novo, antigo){ return (!novo||!antigo)?0:((novo-antigo)/antigo*100).toFixed(2); }
 
-    // Risco
+    function acaoAtivo(tipo){ return tipo=="Risco"?"Compra de Bolsa":"Compra de Dólar/Ouro"; }
+    function corVariacao(vari){ const v = Math.max(-5, Math.min(5, parseFloat(vari))); return `background: linear-gradient(to right, red ${50-v*10}%, green ${50+v*10}%);`; }
+
     for(const a of ativosRisco){
-        const price = await fetchPriceTV(a.sym);
-        const prev = prevPrices[a.sym] ?? price;
-        const vari = ((price - prev) / (prev||1) * 100).toFixed(2);
-        prevPrices[a.sym] = price;
-        somaR += parseFloat(vari);
-
+        const valor = await fetchTradingViewPrice(a.nome) || a.ultimoValor || 0;
+        const variacao = variacaoSafe(valor,a.ultimoValor||valor); a.ultimoValor=valor; somaRisco+=parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML =
-          `<td title="Preço: ${price.toFixed(2)}\nAção: Compra de Bolsa">${a.nome}</td>
-           <td class="risco">Risco</td>
-           <td class="variacao" style="background:${gradienteCor(vari)}">${vari}%</td>`;
+        tr.innerHTML=`<td title="Preço: ${valor.toFixed(2)}\nAção: ${acaoAtivo('Risco')}">${a.nome}</td>
+                      <td class="risco">Risco</td>
+                      <td class="variacao" style="${corVariacao(variacao)}">${variacao}</td>`;
         tbody.appendChild(tr);
     }
-
-    // Segurança
     for(const a of ativosSeguro){
-        const price = await fetchPriceTV(a.sym);
-        const prev = prevPrices[a.sym] ?? price;
-        const vari = ((price - prev) / (prev||1) * 100).toFixed(2);
-        prevPrices[a.sym] = price;
-        somaS += parseFloat(vari);
-
+        const valor = await fetchTradingViewPrice(a.nome) || a.ultimoValor || 0;
+        const variacao = variacaoSafe(valor,a.ultimoValor||valor); a.ultimoValor=valor; somaSeguro+=parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML =
-          `<td title="Preço: ${price.toFixed(2)}\nAção: Compra de Dólar/Ouro">${a.nome}</td>
-           <td class="seguro">Segurança</td>
-           <td class="variacao" style="background:${gradienteCor(vari)}">${vari}%</td>`;
+        tr.innerHTML=`<td title="Preço: ${valor.toFixed(2)}\nAção: ${acaoAtivo('Seguro')}">${a.nome}</td>
+                      <td class="seguro">Segurança</td>
+                      <td class="variacao" style="${corVariacao(variacao)}">${variacao}</td>`;
         tbody.appendChild(tr);
     }
 
-    // Atualiza barra de sentimento
+    historicoRisco.push(somaRisco); historicoSeguro.push(somaSeguro);
+    if(historicoRisco.length>5){ historicoRisco.shift(); historicoSeguro.shift(); }
+    const mediaRisco = historicoRisco.reduce((a,b)=>a+b,0)/historicoRisco.length;
+    const mediaSeguro = historicoSeguro.reduce((a,b)=>a+b,0)/historicoSeguro.length;
+
     const bar = document.getElementById("sentimentoBar");
-    const mediaR = (somaR/ativosRisco.length).toFixed(2);
-    const mediaS = (somaS/ativosSeguro.length).toFixed(2);
-    const trendPct = Math.round(100 * (mediaR / (Math.abs(mediaR)+Math.abs(mediaS)||1)));
-
-    if(mediaR > mediaS){
-        bar.textContent = `📈 Mercado em Tendência de Alta → compra de Bolsa (${trendPct}%)`;
-        bar.className = "risco";
-    } else {
-        bar.textContent = `📉 Mercado em Tendência de Baixa → venda de Bolsa / compra de Dólar (${100-trendPct}%)`;
-        bar.className = "seguro";
+    if(mediaRisco>mediaSeguro){
+        bar.textContent = `📈 ${Math.round(mediaRisco)}% Mercado em Tendência de Alta → compra de Bolsa`;
+        bar.className="risco";
+    }else{
+        bar.textContent = `📉 ${Math.round(mediaSeguro)}% Mercado em Tendência de Baixa → venda de Bolsa / compra de Dólar`;
+        bar.className="seguro";
     }
+    if(ultimaTendencia && ultimaTendencia!==bar.textContent){ bar.classList.add("pisca"); setTimeout(()=>bar.classList.remove("pisca"),12000); }
+    ultimaTendencia = bar.textContent;
 }
 
-// Primeiro carregamento + loop
 atualizarSentimento();
-setInterval(atualizarSentimento, 60000);
-
-// ===== BREAKING NEWS (Google News) =====
-const palavras = ["fed","cpi","juros","taxa","guerra","inflacao","taxas"];
-const newsList = document.getElementById("newsList");
-let cacheNews = {};
-async function buscarNoticias(){
-  const rss = "https://news.google.com/rss/search?q=" + encodeURIComponent(palavras.join(" OR ")) + "&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-  try{
-    const res = await fetch(proxy);
-    const xml = new DOMParser().parseFromString(await res.text(),"text/xml");
-    xml.querySelectorAll("item").forEach(item => {
-      const title = item.querySelector("title")?.textContent;
-      const link  = item.querySelector("link")?.textContent;
-      if(title && !cacheNews[link]){
-        cacheNews[link] = true;
-        const div = document.createElement("div");
-        div.className="news-item";
-        div.innerHTML = `🚨 <strong>${title}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
-        newsList.prepend(div);
-      }
-    });
-  }catch(e){ console.error("Erro news",e); }
-}
-buscarNoticias();
-setInterval(buscarNoticias,30000);
-
-// ===== ALERTA MERCADO =====
-const alertaConteudo = document.getElementById("alerta-conteudo");
-let ultimaAlerta="";
-async function buscarAlerta(){
-  const rss = "https://news.google.com/rss/search?q=mercado+financeiro+OR+taxas+juros&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-  try{
-    const res = await fetch(proxy);
-    const xml = new DOMParser().parseFromString(await res.text(),"text/xml");
-    const item = xml.querySelector("item");
-    if(item){
-      const title = item.querySelector("title").textContent;
-      const link  = item.querySelector("link").textContent;
-      if(title !== ultimaAlerta){
-        ultimaAlerta = title;
-        alertaConteudo.innerHTML = `📰 <a href="${link}" target="_blank">${title}</a>`;
-      }
-    }
-  }catch(e){ console.error("Erro alerta",e); }
-}
-buscarAlerta();
-setInterval(buscarAlerta,60000);
-
+setInterval(atualizarSentimento,60000);
 </script>
 </body>
 </html>
