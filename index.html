@@ -5,15 +5,30 @@
 <title>Sentimento Real do Mercado</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
-header { background:#1f2937; color:white; padding:15px; text-align:center; }
-#relogio { text-align:center; font-size:18px; margin:10px 0; font-weight:bold; }
-table { width:90%; max-width:800px; margin:20px auto; border-collapse: collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-th, td { padding:8px; border:1px solid #ccc; text-align:center; font-size:14px;}
-thead th { background:#2563eb; color:white;}
+header { background:#1f2937; color:white; padding:10px; text-align:center; }
+#relogio { text-align:center; font-size:16px; margin:5px 0; font-weight:bold; }
+
+/* Tabela compacta de Sentimento */
+#tabelaSentimento {
+    width:350px;
+    font-size:12px;
+    position:fixed;
+    top:70px;
+    left:10px;
+    background:#fff;
+    border-collapse:collapse;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    z-index:1000;
+}
+#tabelaSentimento th, #tabelaSentimento td {
+    padding:4px;
+    border:1px solid #ccc;
+    text-align:center;
+    font-size:12px;
+}
+#tabelaSentimento thead th { background:#2563eb; color:white; }
 .risco { color:green; font-weight:bold; }
 .seguro { color:red; font-weight:bold; }
-
-/* cores de fundo para sentimento geral */
 .sentimento { font-weight:bold; color:white; transition: background 0.5s; }
 
 /* BREAKING NEWS */
@@ -36,7 +51,7 @@ thead th { background:#2563eb; color:white;}
 @keyframes piscar{ 0%{background:#7f1d1d;} 50%{background:#dc2626;} 100%{background:#7f1d1d;} }
 
 /* ALERTA MERCADO */
-#alerta-mercado { position: fixed; top: 32px; left: 8px; width: 280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index: 9999; }
+#alerta-mercado { position: fixed; top: 32px; left: 380px; width:280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index: 9999; }
 .alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
 #alerta-conteudo { padding: 8px; line-height: 1.3; }
 .piscar { animation:pisca 1s infinite; }
@@ -51,12 +66,14 @@ thead th { background:#2563eb; color:white;}
 
 <div id="relogio"></div>
 
-<!-- Tabela de Sentimento -->
+<!-- Tabela compacta de Sentimento -->
 <table id="tabelaSentimento">
 <thead>
-<tr><th>Ativo / Mercado</th><th>Sentimento Atual</th><th>Variação (%)</th></tr>
+<tr><th>Ativo</th><th>Sentimento</th><th>Variação</th></tr>
 </thead>
-<tbody></tbody>
+<tbody>
+<tr id="loading"><td colspan="3">Carregando dados reais...</td></tr>
+</tbody>
 </table>
 
 <!-- BREAKING NEWS -->
@@ -85,10 +102,10 @@ function agoraBrasilia(){
 // ===== Relógio =====
 function atualizarRelogio(){
     const agora = agoraBrasilia();
-    const horas = String(agora.getHours()).padStart(2,'0');
-    const minutos = String(agora.getMinutes()).padStart(2,'0');
-    const segundos = String(agora.getSeconds()).padStart(2,'0');
-    document.getElementById('relogio').textContent = `Horário de Brasília: ${horas}:${minutos}:${segundos}`;
+    const h = String(agora.getHours()).padStart(2,'0');
+    const m = String(agora.getMinutes()).padStart(2,'0');
+    const s = String(agora.getSeconds()).padStart(2,'0');
+    document.getElementById('relogio').textContent = `Horário de Brasília: ${h}:${m}:${s}`;
 }
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
@@ -97,40 +114,35 @@ atualizarRelogio();
 const ativosRisco = [
   {nome:"S&P 500", proName:"INDEX:SPX"},
   {nome:"Nasdaq", proName:"INDEX:NDX"},
-  {nome:"Commodities (Ouro)", proName:"COMEX:GC1!"},
+  {nome:"Ouro", proName:"COMEX:GC1!"},
   {nome:"Petróleo WTI", proName:"NYMEX:CL1!"}
 ];
-
 const ativosSeguro = [
-  {nome:"DXY - Índice Dólar", proName:"FOREXCOM:DX1!"},
+  {nome:"DXY", proName:"FOREXCOM:DX1!"},
   {nome:"VIX", proName:"CBOE:VIX"},
-  {nome:"Títulos Tesouro EUA 10y", proName:"CURRENCY:US10Y"}
+  {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"}
 ];
 
-// ===== Função para buscar preços via TradingView Widget API =====
+// ===== Função para buscar preços via TradingView =====
 async function fetchTradingViewPrice(symbol){
     const url = `https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
     try{
         const res = await fetch(url);
         const json = await res.json();
         return json.last_price || json.close || 0;
-    }catch(e){
-        console.error("Erro fetchTradingViewPrice",symbol,e);
-        return 0;
-    }
+    }catch(e){ return 0; }
 }
 
 // ===== Atualizar Sentimento =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
-
     let somaRisco=0, somaSeguro=0;
-    // Risco
+    function variacaoSafe(novo, antigo){ return (!novo||!antigo)?0:((novo-antigo)/antigo*100).toFixed(2); }
+
     for(const a of ativosRisco){
-        const valor = await fetchTradingViewPrice(a.proName);
-        a.ultimoValor = a.ultimoValor || valor;
-        const variacao = ((valor - a.ultimoValor)/a.ultimoValor*100).toFixed(2);
+        const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
+        const variacao = variacaoSafe(valor, a.ultimoValor || valor);
         a.ultimoValor = valor;
         somaRisco += parseFloat(variacao);
         const tr = document.createElement("tr");
@@ -138,11 +150,9 @@ async function atualizarSentimento(){
         tbody.appendChild(tr);
     }
 
-    // Segurança
     for(const a of ativosSeguro){
-        const valor = await fetchTradingViewPrice(a.proName);
-        a.ultimoValor = a.ultimoValor || valor;
-        const variacao = ((valor - a.ultimoValor)/a.ultimoValor*100).toFixed(2);
+        const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
+        const variacao = variacaoSafe(valor, a.ultimoValor || valor);
         a.ultimoValor = valor;
         somaSeguro += parseFloat(variacao);
         const tr = document.createElement("tr");
@@ -150,16 +160,14 @@ async function atualizarSentimento(){
         tbody.appendChild(tr);
     }
 
-    // Sentimento geral
-    const total = somaRisco + somaSeguro;
+    // Sentimento Geral
+    const total = somaRisco + somaSeguro || 1;
     const intensidade = Math.min(Math.abs(somaRisco - somaSeguro)/total,1);
-    const sentimentoGeral = somaRisco>somaSeguro ? "Risco" : "Segurança";
-    const cor = somaRisco>somaSeguro ? `rgba(0,128,0,${intensidade})` : `rgba(255,0,0,${intensidade})`;
-
-    // Linha de sentimento geral
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="3" class="sentimento" style="background:${cor};">Sentimento Geral: ${sentimentoGeral}</td>`;
-    tbody.appendChild(tr);
+    const sentimentoGeral = somaRisco>somaSeguro?"Risco":"Segurança";
+    const cor = somaRisco>somaSeguro ? `rgba(0,128,0,${0.3 + intensidade*0.7})` : `rgba(255,0,0,${0.3 + intensidade*0.7})`;
+    const trSent = document.createElement("tr");
+    trSent.innerHTML = `<td colspan="3" class="sentimento" style="background:${cor};">Sentimento Geral: ${sentimentoGeral}</td>`;
+    tbody.appendChild(trSent);
 }
 
 atualizarSentimento();
@@ -171,8 +179,7 @@ const lista = document.getElementById("newsList");
 const painel = document.getElementById("painel-news");
 const header = document.querySelector(".news-header");
 const som = document.getElementById("alertSound");
-let cache = {}; 
-let alertaAtivo=false;
+let cache = {}; let alertaAtivo=false;
 
 async function buscarNoticias(){
   const query = palavras.join(" OR ");
