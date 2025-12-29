@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Responsivo Risco x Segurança</title>
+<title>Dashboard Funcional Risco x Segurança</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
@@ -27,7 +27,7 @@ header { background:#1f2937; color:white; padding:15px; text-align:center; }
 <body>
 
 <header>
-<h2>Dashboard Responsivo – Risco x Segurança</h2>
+<h2>Dashboard Funcional – Risco x Segurança</h2>
 </header>
 
 <div id="ativosControle"></div>
@@ -56,20 +56,20 @@ function agoraBrasilia(){
     return new Date(utc + (3600000*offset));
 }
 
-// ===== Ativos reais =====
+// ===== Ativos simulados =====
 let ativosRisco = [
-  {nome:"Ouro Futuros", simbolo:"GC=F", valor:0, selected:true},
-  {nome:"Petróleo WTI", simbolo:"CL=F", valor:0, selected:true},
-  {nome:"Vale SA ADR", simbolo:"VALE", valor:0, selected:true},
-  {nome:"Petrobras ADR", simbolo:"PBR", valor:0, selected:true},
-  {nome:"Cobre Futuros", simbolo:"HG=F", valor:0, selected:true}
+  {nome:"Ouro Futuros", valor:1800, selected:true},
+  {nome:"Petróleo WTI", valor:70, selected:true},
+  {nome:"Vale SA ADR", valor:10, selected:true},
+  {nome:"Petrobras ADR", valor:15, selected:true},
+  {nome:"Cobre Futuros", valor:4, selected:true}
 ];
 let ativosSeguranca = [
-  {nome:"DXY - Índice Dólar", simbolo:"DX-Y.NYB", valor:0, selected:true},
-  {nome:"EUR/BRL", simbolo:"EURBRL=X", valor:0, selected:true},
-  {nome:"S&P 500 VIX", simbolo:"^VIX", valor:0, selected:true},
-  {nome:"USD/MXN", simbolo:"USDMXN=X", valor:0, selected:true},
-  {nome:"USD/NOK", simbolo:"USDNOK=X", valor:0, selected:true}
+  {nome:"DXY - Índice Dólar", valor:107, selected:true},
+  {nome:"EUR/BRL", valor:6.1, selected:true},
+  {nome:"S&P 500 VIX", valor:17, selected:true},
+  {nome:"USD/MXN", valor:20.6, selected:true},
+  {nome:"USD/NOK", valor:11.2, selected:true}
 ];
 
 // ===== Histórico =====
@@ -90,43 +90,31 @@ function criarCheckboxes(){
     });
 }
 
-// ===== Atualiza cotações reais via Yahoo Finance API =====
-async function atualizarCotacoesReais(){
-    const symbols = [...ativosRisco,...ativosSeguranca].map(a=>a.simbolo).join(",");
-    const url = `https://yfapi.net/v6/finance/quote?symbols=${symbols}`;
-    try{
-        const res = await fetch(url,{
-            method:"GET",
-            headers:{"X-API-KEY":"d58a789r01qptoar8c7gd58a789r01qptoar8c80"}
-        });
-        const data = await res.json();
-        const agora = agoraBrasilia();
-        datas.push(agora);
+// ===== Atualiza dados simulados =====
+function atualizarSimulado(){
+    const agora = agoraBrasilia();
+    datas.push(agora);
 
-        [...ativosRisco,...ativosSeguranca].forEach(a=>{
-            const info = data.quoteResponse.result.find(q=>q.symbol===a.simbolo);
-            if(info){
-                let antigo = a.valor || info.regularMarketPrice;
-                a.valor = info.regularMarketPrice;
-                a.variacao = ((a.valor-antigo)/antigo)*100;
+    [...ativosRisco, ...ativosSeguranca].forEach(a=>{
+        // pequena variação aleatória
+        let variacao = (Math.random()-0.5) * (a.nome.includes("VIX")?0.5:1);
+        a.valor += variacao;
 
-                if(!historico[a.simbolo]) historico[a.simbolo]=[];
-                historico[a.simbolo].push(a.valor);
-                if(historico[a.simbolo].length>1440) historico[a.simbolo].shift(); // guarda até 24h (1 ponto/minuto)
-            }
-        });
+        if(!historico[a.nome]) historico[a.nome]=[];
+        historico[a.nome].push(a.valor);
+        if(historico[a.nome].length>1440) historico[a.nome].shift();
+    });
 
-        if(datas.length>1440) datas.shift();
-        plotGrafico();
-    }catch(e){ console.error("Erro ao atualizar cotações:", e);}
+    if(datas.length>1440) datas.shift();
+    plotGrafico();
 }
 
 // ===== Plotar gráfico responsivo =====
 function plotGrafico(){
     let traces=[];
     [...ativosRisco,...ativosSeguranca].forEach(a=>{
-        if(a.selected && historico[a.simbolo]){
-            traces.push({x:datas, y:historico[a.simbolo], mode:'lines+markers', name:a.nome});
+        if(a.selected && historico[a.nome]){
+            traces.push({x:datas, y:historico[a.nome], mode:'lines+markers', name:a.nome});
         }
     });
     Plotly.react('grafico', traces,{
@@ -141,8 +129,8 @@ function plotGrafico(){
 // ===== Inicialização =====
 function iniciarDashboard(){
     criarCheckboxes();
-    setInterval(atualizarCotacoesReais,60000); // atualiza a cada 60s
-    atualizarCotacoesReais();
+    setInterval(atualizarSimulado,60000); // atualiza a cada 60s
+    atualizarSimulado(); // primeira atualização
 }
 iniciarDashboard();
 window.addEventListener('resize',()=>{ Plotly.Plots.resize('grafico'); });
