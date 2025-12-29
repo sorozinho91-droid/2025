@@ -124,6 +124,7 @@ let ativosSeguranca = [
     {nome:"USD/CNY", valor:7.2509}
 ];
 
+// ==== Funções ====
 function gerarHistorico(){
     const agora = new Date();
     const start = new Date(agora.getTime() - 30*24*60*60*1000);
@@ -137,19 +138,6 @@ function gerarHistorico(){
         risco.push(valR);
         seguro.push(valS);
     }
-}
-
-function plotGrafico(x, yR, yS){
-    Plotly.react('grafico',[
-        {x:x, y:yR, mode:'lines+markers', name:'Risco', line:{color:'green'}},
-        {x:x, y:yS, mode:'lines+markers', name:'Segurança', line:{color:'red'}}
-    ],{
-        title:'Linha do Tempo Risco x Segurança',
-        xaxis:{title:'Data', type:'date', rangeslider:{visible:false}},
-        yaxis:{title:'Valor'},
-        margin:{t:40,l:50,r:50,b:50},
-        legend:{x:1,xanchor:'right',y:1}
-    });
 }
 
 function atualizarTabelas(){
@@ -175,7 +163,23 @@ function atualizarTabelas(){
     });
 }
 
-function atualizarGrafico(){
+// ==== Inicialização do gráfico ====
+gerarHistorico();
+Plotly.newPlot('grafico', [
+    { x: datas, y: risco, mode: 'lines+markers', name: 'Risco', line:{color:'green'} },
+    { x: datas, y: seguro, mode: 'lines+markers', name: 'Segurança', line:{color:'red'} }
+], {
+    title:'Linha do Tempo Risco x Segurança',
+    xaxis:{title:'Data', type:'date', rangeslider:{visible:false}},
+    yaxis:{title:'Valor'},
+    margin:{t:40,l:50,r:50,b:50},
+    legend:{x:1,xanchor:'right',y:1}
+});
+
+atualizarTabelas();
+
+// ==== Atualização em tempo real ====
+function atualizarGrafico() {
     const agora = new Date();
     valorRisco += (Math.random()-0.5)*2;
     valorSeguro += (Math.random()-0.5)*1;
@@ -183,7 +187,11 @@ function atualizarGrafico(){
     risco.push(valorRisco);
     seguro.push(valorSeguro);
 
-    if(datas.length>1000){ datas.shift(); risco.shift(); seguro.shift(); }
+    if(datas.length>1000){ 
+        datas.shift(); 
+        risco.shift(); 
+        seguro.shift(); 
+    }
 
     if(filtered){
         const newD=[], newR=[], newS=[];
@@ -194,9 +202,21 @@ function atualizarGrafico(){
                 newS.push(seguro[i]);
             }
         }
-        plotGrafico(newD,newR,newS);
-    } else { plotGrafico(datas,risco,seguro); }
+        Plotly.react('grafico',[
+            {x:newD, y:newR, mode:'lines+markers', name:'Risco', line:{color:'green'}},
+            {x:newD, y:newS, mode:'lines+markers', name:'Segurança', line:{color:'red'}}
+        ]);
+    } else {
+        Plotly.extendTraces('grafico', {
+            x: [[agora],[agora]],
+            y: [[valorRisco],[valorSeguro]]
+        }, [0,1]);
 
+        const minX = datas.length>50 ? datas[datas.length-50] : datas[0];
+        Plotly.relayout('grafico', {'xaxis.range':[minX, agora]});
+    }
+
+    // Atualiza tabelas
     ativosRisco.forEach(a=>{
         let novo = a.valor + (Math.random()-0.5)*2;
         a.variacao = ((novo-a.valor)/a.valor)*100;
@@ -207,10 +227,10 @@ function atualizarGrafico(){
         a.variacao = ((novo-a.valor)/a.valor)*100;
         a.valor = novo;
     });
-
     atualizarTabelas();
 }
 
+// ==== Filtros e controle ====
 function filtrarPorData(){
     filteredStart = new Date(document.getElementById('startDate').value);
     filteredEnd = new Date(document.getElementById('endDate').value);
@@ -222,7 +242,10 @@ function filtrarPorData(){
 
 function resetGrafico(){
     filtered = false;
-    plotGrafico(datas,risco,seguro);
+    Plotly.react('grafico', [
+        { x: datas, y: risco, mode: 'lines+markers', name: 'Risco', line:{color:'green'} },
+        { x: datas, y: seguro, mode: 'lines+markers', name: 'Segurança', line:{color:'red'} }
+    ]);
 }
 
 function setTimeframe(segundos, botao){
@@ -233,23 +256,15 @@ function setTimeframe(segundos, botao){
     timer = setInterval(atualizarGrafico, timeframe*1000);
 }
 
-// ==== INICIALIZAÇÃO ====
-gerarHistorico();
-if(datas.length===0){
-    const agora = new Date();
-    datas.push(agora); risco.push(valorRisco); seguro.push(valorSeguro);
-}
-plotGrafico(datas,risco,seguro);
-atualizarTabelas();
-
-// ==== ATUALIZAÇÃO AUTOMÁTICA ====
+// ==== Inicializa atualização automática ====
 function iniciarAtualizacaoAutomatica() {
     if(timer) clearInterval(timer);
-    atualizarGrafico(); // Atualiza imediatamente
-    timer = setInterval(atualizarGrafico, timeframe*1000); // Atualiza continuamente
+    atualizarGrafico(); 
+    timer = setInterval(atualizarGrafico, timeframe*1000);
 }
-window.addEventListener('load', () => { iniciarAtualizacaoAutomatica(); });
 
-// Redimensionamento responsivo
+window.addEventListener('load', () => { iniciarAtualizacaoAutomatica(); });
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
+</body>
+</html>
