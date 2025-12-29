@@ -10,7 +10,7 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 
 /* Tabela centralizada */
 #tabelaSentimento {
-    width:400px;
+    width:500px;
     font-size:14px;
     background:#fff;
     border-collapse:collapse;
@@ -106,17 +106,23 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ===== Ativos =====
+// ===== Ativos de Risco e Segurança =====
 const ativosRisco = [
   {nome:"S&P 500", proName:"INDEX:SPX"},
   {nome:"Nasdaq", proName:"INDEX:NDX"},
   {nome:"Ouro", proName:"COMEX:GC1!"},
-  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"}
+  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"},
+  {nome:"Minério de Ferro", proName:"TVC:IOFER"},
+  {nome:"Dow Jones", proName:"INDEX:DJI"},
+  {nome:"FTSE 100", proName:"INDEX:UKX"}
 ];
 const ativosSeguro = [
   {nome:"DXY", proName:"FOREXCOM:DX1!"},
   {nome:"VIX", proName:"CBOE:VIX"},
-  {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"}
+  {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"},
+  {nome:"Ouro Físico", proName:"COMEX:GC1!"},
+  {nome:"Franco Suíço", proName:"FOREXCOM:CHFUSD"},
+  {nome:"Títulos Alemães 10y", proName:"TVC:DE10Y"}
 ];
 
 // Função fetch de preços
@@ -129,7 +135,7 @@ async function fetchTradingViewPrice(symbol){
     }catch(e){ return 0; }
 }
 
-// Atualizar Tabela Sentimento
+// ===== Atualizar Sentimento =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
@@ -156,12 +162,13 @@ async function atualizarSentimento(){
         tbody.appendChild(tr);
     }
 
+    // ===== Indicador de Sentimento Real =====
     const total = somaRisco+somaSeguro||1;
     const intensidade = Math.min(Math.abs(somaRisco-somaSeguro)/total,1);
-    const sentimentoGeral = somaRisco>somaSeguro?"Risco":"Segurança";
+    const sentimentoGeral = somaRisco>somaSeguro?"Apetite ao Risco":"Busca por Segurança";
     const cor = somaRisco>somaSeguro ? `rgba(0,128,0,${0.3 + intensidade*0.7})` : `rgba(255,0,0,${0.3 + intensidade*0.7})`;
     const trSent = document.createElement("tr");
-    trSent.innerHTML = `<td colspan="3" class="sentimento" style="background:${cor};">Sentimento Geral: ${sentimentoGeral}</td>`;
+    trSent.innerHTML = `<td colspan="3" class="sentimento" style="background:${cor}; font-size:16px;">Sentimento Real: ${sentimentoGeral}</td>`;
     tbody.appendChild(trSent);
 }
 
