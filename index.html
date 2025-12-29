@@ -262,6 +262,52 @@ timer = setInterval(atualizarGrafico, timeframe*1000);
 // Redimensionamento responsivo
 window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
+<script>
+// === Atualização automática do gráfico Risco x Segurança ===
+let timerGrafico = null;
+
+// Função para atualizar o gráfico
+function atualizarGraficoAutomático() {
+    const agora = new Date();
+
+    // Atualiza valores simulados
+    valorRisco += (Math.random()-0.5)*2;
+    valorSeguro += (Math.random()-0.5)*1;
+
+    // Adiciona ao histórico
+    datas.push(agora);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+
+    // Limita histórico a 1000 pontos
+    if(datas.length > 1000){
+        datas.shift();
+        risco.shift();
+        seguro.shift();
+    }
+
+    // Plota gráfico
+    plotGrafico(datas, risco, seguro);
+
+    // Atualiza valores e variações das tabelas
+    ativosRisco.forEach(a=>{
+        let novo = a.valor + (Math.random()-0.5)*2;
+        a.variacao = ((novo-a.valor)/a.valor)*100;
+        a.valor = novo;
+    });
+    ativosSeguranca.forEach(a=>{
+        let novo = a.valor + (Math.random()-0.5)*1;
+        a.variacao = ((novo-a.valor)/a.valor)*100;
+        a.valor = novo;
+    });
+
+    atualizarTabelas();
+}
+
+// Limpa timer antigo e inicia atualização automática
+if(timerGrafico) clearInterval(timerGrafico);
+timerGrafico = setInterval(atualizarGraficoAutomático, 15000); // 15 segundos
+</script>
 
 </body>
 </html>
