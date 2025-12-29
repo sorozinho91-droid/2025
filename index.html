@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Avançado Risco x Segurança</title>
+<title>Dashboard Responsivo Risco x Segurança</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
 header { background:#1f2937; color:white; padding:15px; text-align:center; }
-#grafico { width:90%; max-width:1200px; height:500px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+#grafico { width:100%; max-width:1200px; height:500px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 #ativosControle { width:90%; max-width:1200px; margin:0 auto; padding:10px; text-align:center; }
 #painel-news{ position:fixed; top:28px; right:10px; width:360px; background:#111827; color:white; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.3); z-index:9998;}
 .news-header{ text-align:center; font-weight:bold; padding:8px; background:#1f2937; border-radius:6px 6px 0 0; }
@@ -20,14 +20,14 @@ header { background:#1f2937; color:white; padding:15px; text-align:center; }
 #alerta-mercado { position: fixed; top: 32px; left: 8px; width: 280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index: 9999; }
 .alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
 #alerta-conteudo { padding: 8px; line-height: 1.3; }
-.piscar { animation: pisca 1s infinite; }
+.piscar { animation:pisca 1s infinite; }
 @keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; } }
 </style>
 </head>
 <body>
 
 <header>
-<h2>Dashboard Avançado – Risco x Segurança</h2>
+<h2>Dashboard Responsivo – Risco x Segurança</h2>
 </header>
 
 <div id="ativosControle"></div>
@@ -75,7 +75,7 @@ let ativosSeguranca = [
 // ===== Histórico =====
 let datas=[], historico={};
 
-// ===== Criar checkboxes para selecionar ativos =====
+// ===== Criar checkboxes =====
 function criarCheckboxes(){
     const container = document.getElementById("ativosControle");
     container.innerHTML = "<strong>Selecione ativos:</strong> ";
@@ -112,16 +112,16 @@ async function atualizarCotacoesReais(){
 
                 if(!historico[a.simbolo]) historico[a.simbolo]=[];
                 historico[a.simbolo].push(a.valor);
-                if(historico[a.simbolo].length>100) historico[a.simbolo].shift();
+                if(historico[a.simbolo].length>1440) historico[a.simbolo].shift(); // guarda até 24h (1 ponto/minuto)
             }
         });
 
-        if(datas.length>100) datas.shift();
+        if(datas.length>1440) datas.shift();
         plotGrafico();
     }catch(e){ console.error("Erro ao atualizar cotações:", e);}
 }
 
-// ===== Plotar gráfico =====
+// ===== Plotar gráfico responsivo =====
 function plotGrafico(){
     let traces=[];
     [...ativosRisco,...ativosSeguranca].forEach(a=>{
@@ -131,7 +131,7 @@ function plotGrafico(){
     });
     Plotly.react('grafico', traces,{
         title:'Linha do Tempo Risco x Segurança',
-        xaxis:{title:'Horário (BR)', type:'date', rangeslider:{visible:false}},
+        xaxis:{title:'Horário (BR)', type:'date', rangeslider:{visible:true}},
         yaxis:{title:'Valor'},
         margin:{t:40,l:50,r:50,b:50},
         legend:{x:1,xanchor:'right',y:1}
@@ -141,7 +141,7 @@ function plotGrafico(){
 // ===== Inicialização =====
 function iniciarDashboard(){
     criarCheckboxes();
-    setInterval(atualizarCotacoesReais,60000);
+    setInterval(atualizarCotacoesReais,60000); // atualiza a cada 60s
     atualizarCotacoesReais();
 }
 iniciarDashboard();
