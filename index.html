@@ -2,18 +2,32 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento Real do Mercado</title>
+<title>Sentimento e Gráfico do Mercado</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
 header { background:#1f2937; color:white; padding:10px; text-align:center; }
 #relogio { text-align:center; font-size:16px; margin:5px 0; font-weight:bold; }
+
+/* Gráfico */
+#grafico {
+    width:350px;
+    height:200px;
+    position:fixed;
+    top:10px;
+    left:10px;
+    background:#fff;
+    border-radius:6px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    z-index:1000;
+}
 
 /* Tabela compacta de Sentimento */
 #tabelaSentimento {
     width:350px;
     font-size:12px;
     position:fixed;
-    top:70px;
+    top:220px;
     left:10px;
     background:#fff;
     border-collapse:collapse;
@@ -66,6 +80,9 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; }
 
 <div id="relogio"></div>
 
+<!-- Gráfico de Risco x Segurança -->
+<div id="grafico"></div>
+
 <!-- Tabela compacta de Sentimento -->
 <table id="tabelaSentimento">
 <thead>
@@ -110,7 +127,7 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ===== Lista de Ativos Reais =====
+// ===== Ativos =====
 const ativosRisco = [
   {nome:"S&P 500", proName:"INDEX:SPX"},
   {nome:"Nasdaq", proName:"INDEX:NDX"},
@@ -123,7 +140,10 @@ const ativosSeguro = [
   {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"}
 ];
 
-// ===== Função para buscar preços via TradingView =====
+// Histórico do gráfico
+let datas = [], risco = [], seguro = [];
+
+// Função fetch de preços
 async function fetchTradingViewPrice(symbol){
     const url = `https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
     try{
@@ -133,7 +153,38 @@ async function fetchTradingViewPrice(symbol){
     }catch(e){ return 0; }
 }
 
-// ===== Atualizar Sentimento =====
+// Atualizar gráfico
+async function atualizarGrafico(){
+    const agora = agoraBrasilia();
+    datas.push(agora);
+    let somaR=0, somaS=0;
+    for(const a of ativosRisco){
+        const v = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
+        a.ultimoValor = v;
+        somaR += v;
+    }
+    for(const a of ativosSeguro){
+        const v = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
+        a.ultimoValor = v;
+        somaS += v;
+    }
+    risco.push(somaR); seguro.push(somaS);
+
+    if(datas.length>100) { datas.shift(); risco.shift(); seguro.shift(); }
+
+    Plotly.react('grafico',[
+        {x:datas, y:risco, mode:'lines+markers', name:'Risco', line:{color:'green'}},
+        {x:datas, y:seguro, mode:'lines+markers', name:'Segurança', line:{color:'red'}}
+    ],{
+        title:'Risco x Segurança',
+        xaxis:{title:'Horário Brasília', type:'date'},
+        yaxis:{title:'Valor'},
+        margin:{t:40,l:50,r:30,b:50},
+        legend:{x:1,xanchor:'right',y:1}
+    });
+}
+
+// ===== Atualizar Tabela Sentimento =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
@@ -141,9 +192,8 @@ async function atualizarSentimento(){
     function variacaoSafe(novo, antigo){ return (!novo||!antigo)?0:((novo-antigo)/antigo*100).toFixed(2); }
 
     for(const a of ativosRisco){
-        const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
+        const valor = a.ultimoValor || 0;
         const variacao = variacaoSafe(valor, a.ultimoValor || valor);
-        a.ultimoValor = valor;
         somaRisco += parseFloat(variacao);
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td>${variacao}%</td>`;
@@ -151,18 +201,16 @@ async function atualizarSentimento(){
     }
 
     for(const a of ativosSeguro){
-        const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
+        const valor = a.ultimoValor || 0;
         const variacao = variacaoSafe(valor, a.ultimoValor || valor);
-        a.ultimoValor = valor;
         somaSeguro += parseFloat(variacao);
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td>${variacao}%</td>`;
         tbody.appendChild(tr);
     }
 
-    // Sentimento Geral
-    const total = somaRisco + somaSeguro || 1;
-    const intensidade = Math.min(Math.abs(somaRisco - somaSeguro)/total,1);
+    const total = somaRisco+somaSeguro||1;
+    const intensidade = Math.min(Math.abs(somaRisco-somaSeguro)/total,1);
     const sentimentoGeral = somaRisco>somaSeguro?"Risco":"Segurança";
     const cor = somaRisco>somaSeguro ? `rgba(0,128,0,${0.3 + intensidade*0.7})` : `rgba(255,0,0,${0.3 + intensidade*0.7})`;
     const trSent = document.createElement("tr");
@@ -170,8 +218,13 @@ async function atualizarSentimento(){
     tbody.appendChild(trSent);
 }
 
-atualizarSentimento();
-setInterval(atualizarSentimento,60000);
+// ===== Loop de atualização =====
+async function atualizarTudo(){
+    await atualizarGrafico();
+    await atualizarSentimento();
+}
+atualizarTudo();
+setInterval(atualizarTudo,60000);
 
 // ===== BREAKING NEWS =====
 const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"];
@@ -180,7 +233,6 @@ const painel = document.getElementById("painel-news");
 const header = document.querySelector(".news-header");
 const som = document.getElementById("alertSound");
 let cache = {}; let alertaAtivo=false;
-
 async function buscarNoticias(){
   const query = palavras.join(" OR ");
   const rss = "https://news.google.com/rss/search?q=" + encodeURIComponent(query) + "&hl=pt-BR&gl=BR&ceid=BR:pt";
@@ -246,6 +298,9 @@ async function buscarNoticiasAlerta(){
 }
 buscarNoticiasAlerta(); 
 setInterval(buscarNoticiasAlerta,60000);
+
+// ===== Resize gráfico =====
+window.addEventListener('resize',()=>{ Plotly.Plots.resize('grafico'); });
 </script>
 
 </body>
