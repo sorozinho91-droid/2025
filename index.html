@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento do Mercado Global</title>
+<title>Sentimento e Tendência do Mercado Global</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-height:100vh; }
 header { background:#1f2937; color:white; padding:10px; text-align:center; width:100%; }
@@ -77,7 +77,7 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 <body>
 
 <header>
-<h2>Sentimento Real do Mercado Global</h2>
+<h2>Sentimento e Tendência do Mercado Global</h2>
 </header>
 
 <div id="relogio"></div>
@@ -92,7 +92,7 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 </tbody>
 </table>
 
-<!-- Barra de Sentimento -->
+<!-- Barra de Sentimento com Tendência -->
 <div id="sentimentoBarContainer">
     <div id="sentimentoBar">50% Apetite ao Risco</div>
 </div>
@@ -131,7 +131,7 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ===== Ativos Reais =====
+// ===== Ativos =====
 const ativosRisco = [
   {nome:"S&P 500", proName:"INDEX:SPX"},
   {nome:"Nasdaq", proName:"INDEX:NDX"},
@@ -152,6 +152,9 @@ const ativosSeguro = [
   {nome:"Iene Japonês", proName:"FOREXCOM:JPYUSD"}
 ];
 
+// Histórico interno para tendência
+let historicoRisco = [], historicoSeguro = [];
+
 // Fetch TradingView
 async function fetchTradingViewPrice(symbol){
     const url = `https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
@@ -162,7 +165,7 @@ async function fetchTradingViewPrice(symbol){
     }catch(e){ return 0; }
 }
 
-// ===== Atualizar Sentimento =====
+// ===== Atualizar Sentimento e Tendência =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
@@ -189,12 +192,25 @@ async function atualizarSentimento(){
         tbody.appendChild(tr);
     }
 
-    // Barra de Sentimento com gradiente
-    const total = somaRisco+somaSeguro||1;
-    const riscoPercent = Math.round((somaRisco+total)/(2*total)*100); // 0-100%
+    historicoRisco.push(somaRisco);
+    historicoSeguro.push(somaSeguro);
+    if(historicoRisco.length>5){ historicoRisco.shift(); historicoSeguro.shift(); }
+
+    // Média das últimas variações
+    const mediaRisco = historicoRisco.reduce((a,b)=>a+b,0)/historicoRisco.length;
+    const mediaSeguro = historicoSeguro.reduce((a,b)=>a+b,0)/historicoSeguro.length;
+
+    // Indicador de Sentimento
+    const total = mediaRisco + mediaSeguro || 1;
+    let riscoPercent = Math.round((mediaRisco + total)/(2*total)*100);
+    riscoPercent = Math.max(0, Math.min(100, riscoPercent));
+
+    // Tendência
+    const tendencia = mediaRisco > mediaSeguro ? "📈 Bullish" : "📉 Bearish";
+
     const bar = document.getElementById("sentimentoBar");
     bar.style.width = riscoPercent + "%";
-    bar.textContent = `${riscoPercent}% ${riscoPercent>50?"Apetite ao Risco":"Busca por Segurança"}`;
+    bar.textContent = `${riscoPercent}% ${tendencia}`;
 }
 atualizarSentimento();
 setInterval(atualizarSentimento,60000);
