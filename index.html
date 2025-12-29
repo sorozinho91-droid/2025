@@ -2,53 +2,26 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Funcional Risco x Segurança</title>
+<title>Risco x Segurança – Gráfico Simulado</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
 header { background:#1f2937; color:white; padding:15px; text-align:center; }
 #grafico { width:100%; max-width:1200px; height:500px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 #ativosControle { width:90%; max-width:1200px; margin:0 auto; padding:10px; text-align:center; }
-#painel-news{ position:fixed; top:28px; right:10px; width:360px; background:#111827; color:white; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.3); z-index:9998;}
-.news-header{ text-align:center; font-weight:bold; padding:8px; background:#1f2937; border-radius:6px 6px 0 0; }
-#newsList{ max-height:260px; overflow-y:auto; font-size:13px; }
-.news-item{ padding:8px; border-bottom:1px solid #374151; }
-.news-item a{ color:#93c5fd; text-decoration:none; }
-.breaking{ animation:piscar 1s infinite; }
-@keyframes piscar{ 0%{background:#7f1d1d;} 50%{background:#dc2626;} 100%{background:#7f1d1d;} }
-
-#alerta-mercado { position: fixed; top: 32px; left: 8px; width: 280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index: 9999; }
-.alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
-#alerta-conteudo { padding: 8px; line-height: 1.3; }
-.piscar { animation:pisca 1s infinite; }
-@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; } }
 </style>
 </head>
 <body>
 
 <header>
-<h2>Dashboard Funcional – Risco x Segurança</h2>
+<h2>Dashboard – Risco x Segurança (Simulado)</h2>
 </header>
 
 <div id="ativosControle"></div>
 <div id="grafico"></div>
 
-<!-- BREAKING NEWS -->
-<div id="painel-news">
-  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList"><div id="aguardando" class="news-item">Aguardando notícias...</div></div>
-</div>
-<audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
-
-<!-- ALERTA MERCADO -->
-<div id="alerta-mercado">
-  <div class="alerta-header">⚠️ ALERTA MERCADO</div>
-  <div id="alerta-conteudo">Aguardando notícias...</div>
-</div>
-<audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
 <script>
-// ===== HORÁRIO BRASÍLIA =====
+// ===== Horário de Brasília =====
 function agoraBrasilia(){
     const agora = new Date();
     const offset = -3;
@@ -96,29 +69,28 @@ function atualizarSimulado(){
     datas.push(agora);
 
     [...ativosRisco, ...ativosSeguranca].forEach(a=>{
-        // pequena variação aleatória
         let variacao = (Math.random()-0.5) * (a.nome.includes("VIX")?0.5:1);
         a.valor += variacao;
 
         if(!historico[a.nome]) historico[a.nome]=[];
         historico[a.nome].push(a.valor);
-        if(historico[a.nome].length>1440) historico[a.nome].shift();
+        if(historico[a.nome].length>1440) historico[a.nome].shift(); // até 24h
     });
 
     if(datas.length>1440) datas.shift();
     plotGrafico();
 }
 
-// ===== Plotar gráfico responsivo =====
+// ===== Plotar gráfico =====
 function plotGrafico(){
     let traces=[];
-    [...ativosRisco,...ativosSeguranca].forEach(a=>{
+    [...ativosRisco, ...ativosSeguranca].forEach(a=>{
         if(a.selected && historico[a.nome]){
             traces.push({x:datas, y:historico[a.nome], mode:'lines+markers', name:a.nome});
         }
     });
     Plotly.react('grafico', traces,{
-        title:'Linha do Tempo Risco x Segurança',
+        title:'Linha do Tempo – Risco x Segurança',
         xaxis:{title:'Horário (BR)', type:'date', rangeslider:{visible:true}},
         yaxis:{title:'Valor'},
         margin:{t:40,l:50,r:50,b:50},
@@ -134,71 +106,6 @@ function iniciarDashboard(){
 }
 iniciarDashboard();
 window.addEventListener('resize',()=>{ Plotly.Plots.resize('grafico'); });
-
-// ===== BREAKING NEWS =====
-const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"];
-const lista = document.getElementById("newsList");
-const painel = document.getElementById("painel-news");
-const header = document.querySelector(".news-header");
-const som = document.getElementById("alertSound");
-let cache = {}; let alertaAtivo=false;
-
-async function buscarNoticias(){
-  const query = palavras.join(" OR ");
-  const rss = "https://news.google.com/rss/search?q=" + encodeURIComponent(query) + "&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-  try{
-    const res = await fetch(url); const text = await res.text();
-    const xml = new DOMParser().parseFromString(text,"text/xml");
-    const items = xml.querySelectorAll("item");
-    items.forEach(item=>{
-        const titulo=item.querySelector("title")?.textContent||"";
-        const link=item.querySelector("link")?.textContent||"";
-        if(!titulo || cache[link]) return;
-        const t=titulo.toLowerCase();
-        if(!palavras.some(p=>t.includes(p))) return;
-        cache[link]=true;
-        document.getElementById("aguardando")?.remove();
-        const div=document.createElement("div");
-        div.className="news-item";
-        div.innerHTML=`<strong>🚨 ${titulo}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
-        lista.prepend(div);
-        if(!alertaAtivo){
-            alertaAtivo=true;
-            painel.classList.add("breaking"); header.classList.add("breaking");
-            som.play().catch(()=>{});
-            setTimeout(()=>{painel.classList.remove("breaking"); header.classList.remove("breaking"); alertaAtivo=false;},12000);
-        }
-    });
-  }catch(e){console.error("Erro news:",e);}
-}
-buscarNoticias(); setInterval(buscarNoticias,30000);
-
-// ===== ALERTA MERCADO =====
-const alertaConteudo = document.getElementById("alerta-conteudo");
-const alertaBox = document.getElementById("alerta-mercado");
-const alertaSom = document.getElementById("alerta-som");
-const rssUrl = "https://news.google.com/rss/search?q=presidente+EUA+OR+presidente+Brasil+juros+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
-const proxy = "https://api.allorigins.win/raw?url=";
-let ultimaNoticia = "";
-async function buscarNoticiasAlerta(){
-    try{
-        const res = await fetch(proxy + encodeURIComponent(rssUrl));
-        const texto = await res.text();
-        const xml = new DOMParser().parseFromString(texto,"text/xml");
-        const item = xml.querySelector("item");
-        if(!item) return;
-        const titulo=item.querySelector("title").textContent;
-        const link=item.querySelector("link").textContent;
-        if(titulo!==ultimaNoticia){
-            ultimaNoticia=titulo;
-            alertaConteudo.innerHTML='📰 <a href="'+link+'" target="_blank" style="color:#000;text-decoration:none;">'+titulo+'</a>';
-            alertaBox.classList.add("piscar"); alertaSom.play().catch(()=>{});
-            setTimeout(()=>alertaBox.classList.remove("piscar"),15000);
-        }
-    }catch(e){console.log("Erro ao buscar notícias alerta");}
-}
-buscarNoticiasAlerta(); setInterval(buscarNoticiasAlerta,60000);
 </script>
 
 </body>
