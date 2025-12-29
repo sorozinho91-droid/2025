@@ -78,7 +78,11 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 .alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
 #alerta-conteudo { padding: 8px; line-height: 1.3; }
 .piscar { animation:pisca 1s infinite; }
-@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; } }
+@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; }
+}
+
+/* Gradiente para variação na tabela */
+td.variacao { color:white; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -92,7 +96,7 @@ header { background:#1f2937; color:white; padding:10px; text-align:center; width
 <!-- Tabela centralizada -->
 <table id="tabelaSentimento">
 <thead>
-<tr><th>Ativo</th><th>Sentimento</th><th>Variação</th></tr>
+<tr><th>Ativo</th><th>Sentimento</th><th>Variação (%)</th></tr>
 </thead>
 <tbody>
 <tr id="loading"><td colspan="3">Carregando dados reais...</td></tr>
@@ -186,12 +190,17 @@ async function fetchTradingViewPrice(symbol){
     }catch(e){ return 0; }
 }
 
-// ===== Atualizar Sentimento e Tendência com Alerta =====
+// ===== Atualizar Sentimento e Tendência com Gradiente na tabela =====
 async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
     let somaRisco=0, somaSeguro=0;
     function variacaoSafe(novo, antigo){ return (!novo||!antigo)?0:((novo-antigo)/antigo*100).toFixed(2); }
+
+    function corVariacao(variacao){
+        const v = Math.max(-5, Math.min(5, parseFloat(variacao)));
+        return `background: linear-gradient(to right, red ${50-v*10}%, green ${50+v*10}%);`;
+    }
 
     for(const a of ativosRisco){
         const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
@@ -199,7 +208,7 @@ async function atualizarSentimento(){
         a.ultimoValor = valor;
         somaRisco += parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td>${variacao}%</td>`;
+        tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td class="variacao" style="${corVariacao(variacao)}">${variacao}%</td>`;
         tbody.appendChild(tr);
     }
 
@@ -209,7 +218,7 @@ async function atualizarSentimento(){
         a.ultimoValor = valor;
         somaSeguro += parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td>${variacao}%</td>`;
+        tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td class="variacao" style="${corVariacao(variacao)}">${variacao}%</td>`;
         tbody.appendChild(tr);
     }
 
@@ -224,7 +233,7 @@ async function atualizarSentimento(){
     let riscoPercent = Math.round((mediaRisco + total)/(2*total)*100);
     riscoPercent = Math.max(0, Math.min(100, riscoPercent));
 
-    const tendencia = mediaRisco > mediaSeguro ? "📈 Bullish" : "📉 Bearish";
+    const tendencia = mediaRisco > mediaSeguro ? "📈 Mercado Tendência Alta" : "📉 Mercado Tendência Baixa";
 
     const bar = document.getElementById("sentimentoBar");
     bar.style.width = riscoPercent + "%";
