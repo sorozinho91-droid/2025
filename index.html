@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard – Sentimento do Mercado</title>
+<title>Sentimento Real do Mercado</title>
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
 header { background:#1f2937; color:white; padding:15px; text-align:center; }
@@ -43,7 +43,7 @@ thead th { background:#2563eb; color:white;}
 <body>
 
 <header>
-<h2>Sentimento do Mercado Global</h2>
+<h2>Sentimento Real do Mercado Global</h2>
 </header>
 
 <div id="relogio"></div>
@@ -51,7 +51,7 @@ thead th { background:#2563eb; color:white;}
 <!-- Tabela de Sentimento -->
 <table id="tabelaSentimento">
 <thead>
-<tr><th>Ativo / Mercado</th><th>Sentimento Atual</th></tr>
+<tr><th>Ativo / Mercado</th><th>Sentimento Atual</th><th>Variação (%)</th></tr>
 </thead>
 <tbody></tbody>
 </table>
@@ -69,6 +69,11 @@ thead th { background:#2563eb; color:white;}
   <div id="alerta-conteudo">Aguardando notícias...</div>
 </div>
 <audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<!-- TradingView Widget (visível apenas para pegar dados) -->
+<div style="display:none;">
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+</div>
 
 <script>
 // ===== Horário de Brasília =====
@@ -90,29 +95,70 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ===== Sentimento do Mercado (simulado) =====
-let mercados = [
-    {nome:"Mercado Global", tipo:"global"},
-    {nome:"S&P 500", tipo:"risco"},
-    {nome:"Índice Dólar (DXY)", tipo:"seguro"},
-    {nome:"Commodities", tipo:"risco"},
-    {nome:"Títulos do Tesouro EUA", tipo:"seguro"}
+// ===== Lista de Ativos Reais =====
+const ativosRisco = [
+  {nome:"S&P 500", proName:"INDEX:SPX"},
+  {nome:"Nasdaq", proName:"INDEX:NDX"},
+  {nome:"Commodities (Ouro)", proName:"COMEX:GC1!"},
+  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"}
 ];
 
-function atualizarSentimento(){
+const ativosSeguro = [
+  {nome:"DXY - Índice Dólar", proName:"FOREXCOM:DX1!"},
+  {nome:"VIX", proName:"CBOE:VIX"},
+  {nome:"Títulos Tesouro EUA 10y", proName:"CURRENCY:US10Y"}
+];
+
+// ===== Função para buscar preços via TradingView Widget API =====
+async function fetchTradingViewPrice(symbol){
+    const url = `https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
+    try{
+        const res = await fetch(url);
+        const json = await res.json();
+        return json.last_price || json.close || 0;
+    }catch(e){
+        console.error("Erro fetchTradingViewPrice",symbol,e);
+        return 0;
+    }
+}
+
+// ===== Atualizar Sentimento =====
+async function atualizarSentimento(){
     const tbody = document.querySelector("#tabelaSentimento tbody");
     tbody.innerHTML = "";
-    mercados.forEach(m=>{
-        // Simula sentimento: Risco ou Segurança
-        const sentimento = Math.random()>0.5 ? "Risco" : "Segurança";
+
+    // Calcula variação de cada ativo
+    let somaRisco=0, somaSeguro=0;
+    for(const a of ativosRisco){
+        const valor = await fetchTradingViewPrice(a.proName);
+        a.ultimoValor = a.ultimoValor || valor;
+        const variacao = ((valor - a.ultimoValor)/a.ultimoValor*100).toFixed(2);
+        a.ultimoValor = valor;
+        somaRisco += parseFloat(variacao);
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${m.nome}</td>
-                        <td class="${sentimento==='Risco'?'risco':'seguro'}">${sentimento}</td>`;
+        tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td>${variacao}%</td>`;
         tbody.appendChild(tr);
-    });
+    }
+
+    for(const a of ativosSeguro){
+        const valor = await fetchTradingViewPrice(a.proName);
+        a.ultimoValor = a.ultimoValor || valor;
+        const variacao = ((valor - a.ultimoValor)/a.ultimoValor*100).toFixed(2);
+        a.ultimoValor = valor;
+        somaSeguro += parseFloat(variacao);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td>${variacao}%</td>`;
+        tbody.appendChild(tr);
+    }
+
+    // Pontuação agregada
+    let sentimentoGeral = somaRisco>somaSeguro?"Risco":"Segurança";
+    console.log(`Sentimento do Mercado: ${sentimentoGeral}`);
 }
-setInterval(atualizarSentimento,60000); // atualiza a cada 60s
+
+// Atualiza a cada 60s
 atualizarSentimento();
+setInterval(atualizarSentimento,60000);
 
 // ===== BREAKING NEWS =====
 const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"];
