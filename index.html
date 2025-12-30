@@ -8,31 +8,33 @@
 body{font-family:Arial;margin:0;background:#f4f6f8}
 header{background:#020617;color:#fff;padding:12px;text-align:center}
 #relogio{text-align:center;margin:18px 0;font-size:18px;font-weight:bold}
-#conteudo{width:700px;margin:0 auto}
+#conteudo{width:720px;margin:0 auto}
 
 /* ===== DIREÇÃO MACRO ===== */
 #macroBox{
- background:linear-gradient(135deg,#fff,#f1f5f9);
- padding:24px;border-radius:12px;
- box-shadow:0 6px 18px rgba(0,0,0,.2);
- text-align:center;margin-bottom:16px
+ padding:26px;border-radius:14px;
+ box-shadow:0 8px 22px rgba(0,0,0,.25);
+ text-align:center;margin-bottom:18px;
+ transition:all .4s;
 }
-.titulo{font-size:13px;letter-spacing:1px;opacity:.6}
-.direcao{font-size:40px;font-weight:bold;margin:12px 0}
+.titulo{font-size:13px;letter-spacing:1px;opacity:.7}
+.direcao{font-size:42px;font-weight:bold;margin:12px 0}
 .acao{font-size:16px;font-weight:bold}
-.verde{border-left:8px solid #16a34a;color:#065f46}
-.vermelho{border-left:8px solid #dc2626;color:#7f1d1d}
-.neutro{border-left:8px solid #ca8a04;color:#713f12}
+
+.verde{background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#065f46}
+.vermelho{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#7f1d1d}
+.neutro{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#713f12}
+
 .piscar{animation:pisc 1s infinite}
 @keyframes pisc{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
 
 /* ===== NOTÍCIAS MACRO ===== */
-#newsMacro{background:#0f172a;color:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
-#newsMacro h3{margin:0;padding:12px;background:#020617;text-align:center;border-radius:10px 10px 0 0}
+#newsMacro{background:#0f172a;color:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+#newsMacro h3{margin:0;padding:12px;background:#020617;text-align:center;border-radius:12px 12px 0 0}
 .newsItem{padding:12px;border-bottom:1px solid #1e293b;font-size:13px}
 .newsItem a{color:#93c5fd;text-decoration:none}
 
-/* ===== BREAKING NEWS (INALTERADO) ===== */
+/* ===== BREAKING NEWS (NÃO ALTERADO) ===== */
 #painel-news{
  position:fixed;top:28px;right:10px;width:360px;
  background:#111827;color:white;border-radius:6px;
@@ -47,24 +49,33 @@ header{background:#020617;color:#fff;padding:12px;text-align:center}
 
 <body>
 
-<header><h2>Direção Macro do Mercado – Mini Índice (WIN)</h2></header>
+<header>
+  <h2>Direção Macro do Mercado – Mini Índice (WIN)</h2>
+</header>
+
 <div id="relogio"></div>
 
 <div id="conteudo">
 
-  <div id="macroBox" class="neutro">Carregando dados macro...</div>
+  <div id="macroBox" class="neutro">
+    Carregando leitura macro...
+  </div>
 
   <div id="newsMacro">
     <h3>📰 Notícias Macro Relevantes</h3>
-    <div id="newsMacroList"><div class="newsItem">Aguardando...</div></div>
+    <div id="newsMacroList">
+      <div class="newsItem">Aguardando notícias...</div>
+    </div>
   </div>
 
 </div>
 
-<!-- BREAKING NEWS NÃO MEXIDO -->
+<!-- BREAKING NEWS INTACTO -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList"><div class="news-item">Aguardando notícias...</div></div>
+  <div id="newsList">
+    <div class="news-item">Aguardando notícias...</div>
+  </div>
 </div>
 
 <audio id="somMacro" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
@@ -76,7 +87,7 @@ setInterval(()=>{
  relogio.innerText="⏰ Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
 },1000);
 
-// ===== BUSCAR PREÇOS (TradingView JSON) =====
+// ===== BUSCAR PREÇOS (TradingView) =====
 async function tvPrice(symbol){
  const url=`https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
  try{
@@ -86,44 +97,55 @@ async function tvPrice(symbol){
  }catch(e){return 0;}
 }
 
-let prev={sp:0,vix:0,dxy:0},ultimo="";
+let prev={sp:0,vix:0,dxy:0,di:0},ultimo="";
 
-// ===== DIREÇÃO MACRO REAL =====
+// ===== DIREÇÃO MACRO GLOBAL + BRASIL =====
 async function atualizarMacro(){
- const sp=await tvPrice("INDEX:SPX");
- const vix=await tvPrice("CBOE:VIX");
- const dxy=await tvPrice("FOREXCOM:DX1!");
+ const sp=await tvPrice("INDEX:SPX");        // S&P 500
+ const vix=await tvPrice("CBOE:VIX");        // Volatilidade
+ const dxy=await tvPrice("FOREXCOM:DX1!");   // Dólar
+ const di=await tvPrice("BMFBOVESPA:DI1!");  // DI Futuro Brasil
 
- if(!sp||!vix||!dxy) return;
+ if(!sp||!vix||!dxy||!di) return;
 
  const spVar=(sp-prev.sp)/prev.sp||0;
  const vixVar=(vix-prev.vix)/prev.vix||0;
  const dxyVar=(dxy-prev.dxy)/prev.dxy||0;
+ const diVar=(di-prev.di)/prev.di||0;
 
- prev={sp,vix,dxy};
+ prev={sp,vix,dxy,di};
 
  let estado="NEUTRO",acao="Aguardar",classe="neutro";
 
- if(spVar>0 && vixVar<0){
-   estado="ALTA";acao="Risco ON → Priorizar COMPRAS no WIN";classe="verde";
+ const riscoOn = spVar>0 && vixVar<0 && diVar<0;
+ const riscoOff = spVar<0 && vixVar>0 && diVar>0;
+
+ if(riscoOn){
+   estado="ALTA";
+   acao="Global + Brasil favoráveis → Priorizar COMPRAS no WIN";
+   classe="verde";
  }
- if(spVar<0 && vixVar>0){
-   estado="BAIXA";acao="Risco OFF → Priorizar VENDAS no WIN";classe="vermelho";
+ else if(riscoOff){
+   estado="BAIXA";
+   acao="Aversão ao risco + Juros abrindo → Priorizar VENDAS no WIN";
+   classe="vermelho";
  }
- if(Math.abs(dxyVar)>0.002){
-   estado="NEUTRO";acao="Dólar forte → Reduzir risco";
+ else{
+   estado="NEUTRO";
+   acao="Conflito macro → Defesa / Reduzir exposição";
+   classe="neutro";
  }
 
  if(ultimo && ultimo!==estado){
    somMacro.play().catch(()=>{});
    macroBox.classList.add("piscar");
-   setTimeout(()=>macroBox.classList.remove("piscar"),8000);
+   setTimeout(()=>macroBox.classList.remove("piscar"),9000);
  }
  ultimo=estado;
 
  macroBox.className=classe;
  macroBox.innerHTML=`
-  <div class="titulo">Direção Macro (SP500 + VIX + DXY)</div>
+  <div class="titulo">Direção Macro (SP500 • VIX • DXY • DI Futuro)</div>
   <div class="direcao">${estado}</div>
   <div class="acao">${acao}</div>
  `;
