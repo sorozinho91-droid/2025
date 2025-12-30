@@ -47,8 +47,31 @@ header{
   padding:12px;
   text-align:center;
 }
+
+/* TABELA ATIVOS DE RISCO x SEGURANÇA */
+#ativos-risco{
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:12px;
+  font-size:14px;
+}
+#ativos-risco th{
+  background:#1f2937;
+  color:#fff;
+  padding:8px;
+}
+#ativos-risco td{
+  padding:6px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:center;
+  font-weight:bold;
+}
+.alta{ background:#dcfce7; color:#065f46; }
+.baixa{ background:#fee2e2; color:#7f1d1d; }
+.neutra{ background:#fef9c3; color:#78350f; }
+
 #direcao{
-  font-size:22px;
+  font-size:20px;
   font-weight:bold;
   padding:12px;
   margin-top:10px;
@@ -143,6 +166,7 @@ header{
 }
 </style>
 </head>
+
 <body>
 
 <header>📊 Direção Macro do Mercado – Mini Índice (WIN)</header>
@@ -151,8 +175,22 @@ header{
 <div id="layout">
   <!-- TABELA CENTRAL -->
   <div id="macro">
+    <!-- TABELA ATIVOS DE RISCO x SEGURANÇA -->
+    <table id="ativos-risco">
+      <thead>
+        <tr><th>Ativo</th><th>Leitura</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>S&P 500</td><td class="alta">ALTA</td></tr>
+        <tr><td>VIX</td><td class="baixa">BAIXA</td></tr>
+        <tr><td>DXY</td><td class="neutra">NEUTRO</td></tr>
+        <tr><td>DI Futuro</td><td class="baixa">BAIXA</td></tr>
+      </tbody>
+    </table>
+
     <div id="direcao" data-macro="NEUTRO">🟡 NEUTRO</div>
     <div id="iconeDirecao"></div>
+    <div id="variacao" style="margin-top:8px;font-weight:bold;font-size:16px;"></div>
   </div>
 
   <!-- PAINEL DIREITO -->
@@ -179,7 +217,7 @@ header{
 const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
 const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
 
-// FUNÇÃO RELÓGIO BRASÍLIA
+// RELÓGIO BRASÍLIA
 function atualizarRelogio(){
   const agora = new Date();
   const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
@@ -189,21 +227,24 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// ATUALIZA DIREÇÃO
-function atualizarDirecao(){
+// FUNÇÃO ATUALIZA DIREÇÃO E VARIAÇÃO
+function atualizarDirecao(price, open){
   const bloco = document.getElementById("direcao");
   const icone = document.getElementById("iconeDirecao");
-  const direcao = bloco.dataset.macro;
+  const variacao = document.getElementById("variacao");
   icone.innerHTML = "";
-  if(direcao==="ALTA"){
+  const pct = ((price - open)/open*100).toFixed(2);
+  variacao.innerHTML = `Variação: ${pct}%`;
+
+  if(price > open){
     bloco.style.background="#dcfce7";
     bloco.style.color="#065f46";
-    bloco.innerHTML = "🟢 ALTA - Priorizar COMPRAS";
+    bloco.innerHTML = `🟢 ALTA - Priorizar COMPRAS`;
     icone.innerHTML = `<span class="pulsar">${svgTouro}</span>`;
-  } else if(direcao==="BAIXA"){
+  } else if(price < open){
     bloco.style.background="#fee2e2";
     bloco.style.color="#7f1d1d";
-    bloco.innerHTML = "🔴 BAIXA - Priorizar VENDAS";
+    bloco.innerHTML = `🔴 BAIXA - Priorizar VENDAS`;
     icone.innerHTML = `<span class="pulsar">${svgUrso}</span>`;
   } else{
     bloco.style.background="#fef9c3";
@@ -212,27 +253,22 @@ function atualizarDirecao(){
   }
 }
 
-// FUNÇÃO PARA BUSCAR DIREÇÃO AUTOMÁTICA DO MINI ÍNDICE
-async function atualizarDirecaoMini(){
+// BUSCA DADOS DO MINI ÍNDICE
+async function atualizarMiniIndice(){
   const chave = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
   const url = `https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=WIN`;
   try{
     const res = await fetch(url);
     const data = await res.json();
     const price = data.results.WIN.price;
-    const open  = data.results.WIN.open_price;
-    let direcao;
-    if(price > open) direcao="ALTA";
-    else if(price < open) direcao="BAIXA";
-    else direcao="NEUTRO";
-    document.getElementById("direcao").dataset.macro = direcao;
-    atualizarDirecao();
+    const open = data.results.WIN.open_price;
+    atualizarDirecao(price, open);
   }catch(err){
     console.log("Erro ao buscar dados do Mini Índice:", err);
   }
 }
-atualizarDirecaoMini();
-setInterval(atualizarDirecaoMini,5000);
+atualizarMiniIndice();
+setInterval(atualizarMiniIndice,5000);
 
 // BREAKING NEWS
 const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
