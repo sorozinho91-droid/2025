@@ -88,14 +88,16 @@ td{
 #imagemDirecao img{
   width:60px;
   height:60px;
-  transition: transform 0.5s ease;
+  transition: transform 0.3s ease;
 }
-.pulsar{
-  animation: pulseIcon 1s infinite;
+
+/* Animação de pulsar + zoom */
+.pulsarZoom{
+  animation: pulseZoom 0.8s ease;
 }
-@keyframes pulseIcon{
+@keyframes pulseZoom{
   0% {transform: scale(1);}
-  50% {transform: scale(1.3);}
+  50% {transform: scale(1.6);}
   100% {transform: scale(1);}
 }
 
@@ -266,13 +268,13 @@ function atualizarRelogio(){
     relogio.style.color = "#fff";
     blocoDirecao.style.background = "#dcfce7";
     blocoDirecao.style.color = "#065f46";
-    imagemDirecao.innerHTML = `<img src="${iconeTouro}" alt="Touro" class="pulsar">`;
+    imagemDirecao.innerHTML = `<img src="${iconeTouro}" alt="Touro" class="pulsarZoom">`;
   } else if(direcao === "BAIXA"){
     relogio.style.background = "#dc2626";
     relogio.style.color = "#fff";
     blocoDirecao.style.background = "#fee2e2";
     blocoDirecao.style.color = "#7f1d1d";
-    imagemDirecao.innerHTML = `<img src="${iconeUrso}" alt="Urso" class="pulsar">`;
+    imagemDirecao.innerHTML = `<img src="${iconeUrso}" alt="Urso" class="pulsarZoom">`;
   } else {
     relogio.style.background = "#facc15";
     relogio.style.color = "#000";
