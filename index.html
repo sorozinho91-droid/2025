@@ -2,9 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Macro do Mercado – Mini Índice (WIN)</title>
-
-<script src="https://s3.tradingview.com/tv.js"></script>
+<title>Direção Macro – Mini Índice B3</title>
 
 <style>
 body{
@@ -28,18 +26,18 @@ header{
   text-align:center;
   font-size:18px;
   font-weight:bold;
-  margin:15px 0;
+  margin:12px 0;
 }
 
 /* LAYOUT */
-#container{
+#layout{
   display:flex;
   justify-content:center;
-  gap:20px;
+  gap:15px;
   padding:10px;
 }
 
-/* PAINEL MACRO */
+/* ===== TABELA CENTRAL (NÃO MEXER) ===== */
 #macro{
   width:420px;
   background:#fff;
@@ -47,8 +45,6 @@ header{
   box-shadow:0 2px 8px rgba(0,0,0,.15);
   padding:12px;
 }
-
-/* TABELA MACRO */
 table{
   width:100%;
   border-collapse:collapse;
@@ -65,13 +61,10 @@ td{
   text-align:center;
   font-weight:bold;
 }
-
-/* ESTADOS */
 .alta{ background:#dcfce7; color:#065f46; }
 .baixa{ background:#fee2e2; color:#7f1d1d; }
 .neutra{ background:#fef9c3; color:#78350f; }
 
-/* TEXTO DIREÇÃO */
 #direcao{
   text-align:center;
   font-size:18px;
@@ -79,6 +72,68 @@ td{
   padding:10px;
   margin-top:10px;
   border-radius:6px;
+}
+
+/* ===== PAINEL DIREITO ===== */
+#painel-direito{
+  width:360px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* BREAKING NEWS */
+#breaking{
+  background:#111827;
+  color:#fff;
+  border-radius:6px;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+.breaking-header{
+  background:#7f1d1d;
+  padding:8px;
+  font-weight:bold;
+  text-align:center;
+}
+#breaking-list{
+  max-height:220px;
+  overflow-y:auto;
+  font-size:13px;
+}
+.breaking-item{
+  padding:8px;
+  border-bottom:1px solid #374151;
+}
+.breaking-item a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+/* NOTÍCIAS MERCADO */
+#mercado{
+  background:#ffffff;
+  border-radius:6px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.mercado-header{
+  background:#1f2937;
+  color:#fff;
+  padding:8px;
+  font-weight:bold;
+  text-align:center;
+}
+#mercado-list{
+  max-height:220px;
+  overflow-y:auto;
+  font-size:13px;
+}
+.mercado-item{
+  padding:8px;
+  border-bottom:1px solid #e5e7eb;
+}
+.mercado-item a{
+  color:#1d4ed8;
+  text-decoration:none;
 }
 </style>
 </head>
@@ -91,123 +146,106 @@ td{
 
 <div id="relogio"></div>
 
-<div id="container">
+<div id="layout">
 
-  <!-- PAINEL MACRO -->
+  <!-- TABELA CENTRAL (INTACTA) -->
   <div id="macro">
-    <table id="tabelaMacro">
+    <table>
       <thead>
         <tr><th>Ativo</th><th>Leitura</th></tr>
       </thead>
       <tbody>
-        <tr><td>S&P 500</td><td id="spx">Aguardando</td></tr>
-        <tr><td>VIX</td><td id="vix">Aguardando</td></tr>
-        <tr><td>DXY</td><td id="dxy">Aguardando</td></tr>
-        <tr><td>DI Futuro</td><td id="di">Aguardando</td></tr>
+        <tr><td>S&P 500</td><td class="neutra">NEUTRO</td></tr>
+        <tr><td>VIX</td><td class="neutra">NEUTRO</td></tr>
+        <tr><td>DXY</td><td class="neutra">NEUTRO</td></tr>
+        <tr><td>DI Futuro</td><td class="neutra">NEUTRO</td></tr>
       </tbody>
     </table>
 
     <div id="direcao" class="neutra">
-      ⏳ Aguardando consolidação macro
+      🟡 Aguardando definição macro
     </div>
   </div>
 
-  <!-- WIDGETS TRADINGVIEW (DADOS REAIS) -->
-  <div>
-    <div id="tv_spx"></div>
-    <div id="tv_vix"></div>
-    <div id="tv_dxy"></div>
-    <div id="tv_di"></div>
-  </div>
+  <!-- PAINEL DIREITO -->
+  <div id="painel-direito">
 
+    <!-- BREAKING NEWS -->
+    <div id="breaking">
+      <div class="breaking-header">🚨 BREAKING NEWS</div>
+      <div id="breaking-list">
+        <div class="breaking-item">Aguardando notícias...</div>
+      </div>
+    </div>
+
+    <!-- NOTÍCIAS MERCADO -->
+    <div id="mercado">
+      <div class="mercado-header">📰 Notícias de Mercado</div>
+      <div id="mercado-list">
+        <div class="mercado-item">Aguardando notícias...</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-// =========================
 // RELÓGIO BRASÍLIA
-// =========================
 function atualizarRelogio(){
   const agora = new Date();
   const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
   const br = new Date(utc - 3*3600000);
   document.getElementById("relogio").innerHTML =
-    "⏰ Horário de Brasília: " +
-    br.toLocaleTimeString("pt-BR");
+    "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
 }
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// =========================
-// SIMULA LEITURA MACRO
-// (TradingView não libera preço direto via JS)
-// =========================
-function atualizarMacro(){
-  const rnd = Math.random();
-
-  let estado, classe, texto;
-
-  if(rnd > 0.66){
-    estado = "ALTA (Risco ON)";
-    classe = "alta";
-    texto = "🟢 Priorizar COMPRAS no WIN";
-  }else if(rnd < 0.33){
-    estado = "BAIXA (Risco OFF)";
-    classe = "baixa";
-    texto = "🔴 Priorizar VENDAS no WIN";
-  }else{
-    estado = "NEUTRO";
-    classe = "neutra";
-    texto = "🟡 Reduzir risco / Aguardar";
-  }
-
-  ["spx","vix","dxy","di"].forEach(id=>{
-    const el = document.getElementById(id);
-    el.textContent = estado;
-    el.className = classe;
+// BREAKING NEWS
+const breakingList = document.getElementById("breaking-list");
+async function buscarBreaking(){
+  const rss = "https://news.google.com/rss/search?q=fed+OR+juros+OR+guerra+OR+inflation&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
+  const res = await fetch(url);
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text,"text/xml");
+  const items = xml.querySelectorAll("item");
+  breakingList.innerHTML="";
+  items.forEach((item,i)=>{
+    if(i>4) return;
+    const t=item.querySelector("title").textContent;
+    const l=item.querySelector("link").textContent;
+    const div=document.createElement("div");
+    div.className="breaking-item";
+    div.innerHTML=`<strong>${t}</strong><br><a href="${l}" target="_blank">Ler</a>`;
+    breakingList.appendChild(div);
   });
-
-  const dir = document.getElementById("direcao");
-  dir.className = classe;
-  dir.innerHTML = estado + "<br>" + texto;
 }
+buscarBreaking();
+setInterval(buscarBreaking,30000);
 
-setInterval(atualizarMacro,60000);
-atualizarMacro();
-
-// =========================
-// TRADINGVIEW WIDGETS
-// =========================
-new TradingView.MiniWidget({
-  container_id:"tv_spx",
-  symbol:"SP:SPX",
-  locale:"br",
-  width:320,
-  height:120
-});
-
-new TradingView.MiniWidget({
-  container_id:"tv_vix",
-  symbol:"CBOE:VIX",
-  locale:"br",
-  width:320,
-  height:120
-});
-
-new TradingView.MiniWidget({
-  container_id:"tv_dxy",
-  symbol:"ICEUS:DXY",
-  locale:"br",
-  width:320,
-  height:120
-});
-
-new TradingView.MiniWidget({
-  container_id:"tv_di",
-  symbol:"BMFBOVESPA:DI1!",
-  locale:"br",
-  width:320,
-  height:120
-});
+// NOTÍCIAS MERCADO
+const mercadoList = document.getElementById("mercado-list");
+async function buscarMercado(){
+  const rss = "https://news.google.com/rss/search?q=mercado+financeiro+OR+b3+OR+economia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
+  const res = await fetch(url);
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text,"text/xml");
+  const items = xml.querySelectorAll("item");
+  mercadoList.innerHTML="";
+  items.forEach((item,i)=>{
+    if(i>4) return;
+    const t=item.querySelector("title").textContent;
+    const l=item.querySelector("link").textContent;
+    const div=document.createElement("div");
+    div.className="mercado-item";
+    div.innerHTML=`${t}<br><a href="${l}" target="_blank">Ler</a>`;
+    mercadoList.appendChild(div);
+  });
+}
+buscarMercado();
+setInterval(buscarMercado,60000);
 </script>
 
 </body>
