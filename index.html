@@ -24,8 +24,6 @@ header{
   gap:15px;
   padding:10px;
 }
-
-/* ===== RELÓGIO CENTRAL ===== */
 #relogio{
   display:flex;
   align-items:center;
@@ -39,8 +37,6 @@ header{
   padding:6px;
   transition: background 0.5s ease, color 0.5s ease;
 }
-
-/* ===== TABELA CENTRAL ===== */
 #macro{
   width:420px;
   background:#fff;
@@ -67,8 +63,6 @@ td{
 .alta{ background:#dcfce7; color:#065f46; }
 .baixa{ background:#fee2e2; color:#7f1d1d; }
 .neutra{ background:#fef9c3; color:#78350f; }
-
-/* BLOCO DIREÇÃO COM TRANSIÇÃO */
 #direcao{
   text-align:center;
   font-size:18px;
@@ -78,20 +72,16 @@ td{
   border-radius:6px;
   transition: background 0.5s ease, color 0.5s ease;
 }
-
-/* IMAGEM TOURO/URSO */
 #imagemDirecao{
   display:flex;
   justify-content:center;
   margin-top:10px;
 }
-#imagemDirecao img{
+#imagemDirecao svg{
   width:60px;
   height:60px;
   transition: transform 0.3s ease;
 }
-
-/* Animação de pulsar + zoom */
 .pulsarZoom{
   animation: pulseZoom 0.8s ease;
 }
@@ -100,16 +90,12 @@ td{
   50% {transform: scale(1.6);}
   100% {transform: scale(1);}
 }
-
-/* ===== PAINEL DIREITO ===== */
 #painel-direito{
   width:360px;
   display:flex;
   flex-direction:column;
   gap:12px;
 }
-
-/* BREAKING NEWS */
 #breaking{
   background:#111827;
   color:#fff;
@@ -135,8 +121,6 @@ td{
   color:#93c5fd;
   text-decoration:none;
 }
-
-/* NOTÍCIAS MERCADO */
 #mercado{
   background:#ffffff;
   border-radius:6px;
@@ -162,8 +146,6 @@ td{
   color:#1d4ed8;
   text-decoration:none;
 }
-
-/* ALERTA VISUAL */
 .alerta-contrario{
   animation:pulse 1s infinite;
 }
@@ -174,7 +156,6 @@ td{
 }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -182,104 +163,68 @@ td{
 </header>
 
 <div id="layout">
-
-  <!-- TABELA CENTRAL -->
   <div id="macro">
     <div id="relogio"><span>⏰</span></div>
-
     <table>
       <thead>
         <tr><th>Leitura Macro (WIN)</th><th>Condição</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Futuros EUA (Pré)</td>
-          <td class="alta">POSITIVO</td>
-        </tr>
-        <tr>
-          <td>Volatilidade (VIX)</td>
-          <td class="baixa">CONTROLADA</td>
-        </tr>
-        <tr>
-          <td>Fluxo Institucional</td>
-          <td class="alta">COMPRADOR</td>
-        </tr>
-        <tr>
-          <td>Juros / Risco Brasil</td>
-          <td class="baixa">ALÍVIO</td>
-        </tr>
+        <tr><td>Futuros EUA (Pré)</td><td class="alta">POSITIVO</td></tr>
+        <tr><td>Volatilidade (VIX)</td><td class="baixa">CONTROLADA</td></tr>
+        <tr><td>Fluxo Institucional</td><td class="alta">COMPRADOR</td></tr>
+        <tr><td>Juros / Risco Brasil</td><td class="baixa">ALÍVIO</td></tr>
       </tbody>
     </table>
-
     <div id="direcao" class="alta" data-macro="ALTA">
       🟢 VIÉS DIRECIONAL DE ALTA<br>Buscar COMPRAS no WIN ao longo do dia
     </div>
-
-    <!-- IMAGEM TOURO/URSO ABAIXO -->
     <div id="imagemDirecao"></div>
   </div>
 
-  <!-- PAINEL DIREITO -->
   <div id="painel-direito">
-
-    <!-- NOTÍCIAS MERCADO -->
     <div id="mercado">
       <div class="mercado-header">📰 Notícias de Mercado</div>
       <div id="mercado-list">
         <div class="mercado-item">Aguardando notícias...</div>
       </div>
     </div>
-
-    <!-- BREAKING NEWS -->
     <div id="breaking">
       <div class="breaking-header">🚨 BREAKING NEWS</div>
       <div id="breaking-list">
         <div class="breaking-item">Aguardando notícias...</div>
       </div>
     </div>
-
   </div>
 </div>
 
 <audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// URLs das imagens
-const iconeTouro = "https://i.imgur.com/6b0FhB9.png";
-const iconeUrso = "https://i.imgur.com/uzYFyfI.png";
+const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
+const svgUrso = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
 
-// Atualiza relógio e cores
 function atualizarRelogio(){
   const agora = new Date();
-  const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
-  const br = new Date(utc - 3*3600000);
-  const relogio = document.getElementById("relogio");
-  relogio.innerHTML = "⏰ " + br.toLocaleTimeString("pt-BR");
+  const br = new Date(agora.getTime() + (agora.getTimezoneOffset()*60000) - 3*3600000);
+  document.getElementById("relogio").innerHTML = "⏰ " + br.toLocaleTimeString("pt-BR");
 
   const direcao = document.getElementById("direcao").dataset.macro;
   const blocoDirecao = document.getElementById("direcao");
   const imagemDirecao = document.getElementById("imagemDirecao");
-
-  // limpa imagem anterior
   imagemDirecao.innerHTML = "";
 
   if(direcao === "ALTA"){
-    relogio.style.background = "#16a34a";
-    relogio.style.color = "#fff";
-    blocoDirecao.style.background = "#dcfce7";
-    blocoDirecao.style.color = "#065f46";
-    imagemDirecao.innerHTML = `<img src="${iconeTouro}" alt="Touro" class="pulsarZoom">`;
+    blocoDirecao.style.background="#dcfce7";
+    blocoDirecao.style.color="#065f46";
+    imagemDirecao.innerHTML = `<span class="pulsarZoom">${svgTouro}</span>`;
   } else if(direcao === "BAIXA"){
-    relogio.style.background = "#dc2626";
-    relogio.style.color = "#fff";
-    blocoDirecao.style.background = "#fee2e2";
-    blocoDirecao.style.color = "#7f1d1d";
-    imagemDirecao.innerHTML = `<img src="${iconeUrso}" alt="Urso" class="pulsarZoom">`;
+    blocoDirecao.style.background="#fee2e2";
+    blocoDirecao.style.color="#7f1d1d";
+    imagemDirecao.innerHTML = `<span class="pulsarZoom">${svgUrso}</span>`;
   } else {
-    relogio.style.background = "#facc15";
-    relogio.style.color = "#000";
-    blocoDirecao.style.background = "#fef9c3";
-    blocoDirecao.style.color = "#78350f";
+    blocoDirecao.style.background="#fef9c3";
+    blocoDirecao.style.color="#78350f";
   }
 }
 
@@ -289,9 +234,6 @@ atualizarRelogio();
 // PALAVRAS NEGATIVAS
 const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
 
-const breakingList = document.getElementById("breaking-list");
-const som = document.getElementById("somAlerta");
-
 async function buscarBreaking(){
   const rss = "https://news.google.com/rss/search?q=fed+OR+juros+OR+guerra+OR+inflação&hl=pt-BR&gl=BR&ceid=BR:pt";
   const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
@@ -299,36 +241,30 @@ async function buscarBreaking(){
   const text = await res.text();
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
-
+  const breakingList = document.getElementById("breaking-list");
+  const som = document.getElementById("somAlerta");
   breakingList.innerHTML="";
 
   items.forEach((item,i)=>{
     if(i>4) return;
     const titulo=item.querySelector("title").textContent;
     const link=item.querySelector("link").textContent;
-
     const div=document.createElement("div");
     div.className="breaking-item";
     div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
     breakingList.appendChild(div);
 
     const macro = document.getElementById("direcao").dataset.macro;
-    const textoItem = titulo.toLowerCase();
-
-    if(macro !== "NEUTRO" && negativas.some(p=>textoItem.includes(p))){
+    if(macro !== "NEUTRO" && negativas.some(p=>titulo.toLowerCase().includes(p))){
       document.getElementById("breaking").classList.add("alerta-contrario");
       som.play().catch(()=>{});
-      setTimeout(()=>{
-        document.getElementById("breaking").classList.remove("alerta-contrario");
-      },15000);
+      setTimeout(()=>{document.getElementById("breaking").classList.remove("alerta-contrario");},15000);
     }
   });
 }
 buscarBreaking();
 setInterval(buscarBreaking,30000);
 
-// NOTÍCIAS MERCADO
-const mercadoList = document.getElementById("mercado-list");
 async function buscarMercado(){
   const rss = "https://news.google.com/rss/search?q=mercado+financeiro+OR+b3+OR+economia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt";
   const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
@@ -336,7 +272,7 @@ async function buscarMercado(){
   const text = await res.text();
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
-
+  const mercadoList = document.getElementById("mercado-list");
   mercadoList.innerHTML="";
   items.forEach((item,i)=>{
     if(i>4) return;
@@ -351,6 +287,5 @@ async function buscarMercado(){
 buscarMercado();
 setInterval(buscarMercado,60000);
 </script>
-
 </body>
 </html>
