@@ -173,7 +173,6 @@ header{
 <div id="relogio">⏰ --:--:--</div>
 
 <div id="layout">
-  <!-- TABELA CENTRAL -->
   <div id="macro">
     <!-- TABELA ATIVOS DE RISCO x SEGURANÇA -->
     <table id="ativos-risco">
@@ -181,10 +180,10 @@ header{
         <tr><th>Ativo</th><th>Leitura</th></tr>
       </thead>
       <tbody>
-        <tr><td>S&P 500</td><td class="alta">ALTA</td></tr>
-        <tr><td>VIX</td><td class="baixa">BAIXA</td></tr>
-        <tr><td>DXY</td><td class="neutra">NEUTRO</td></tr>
-        <tr><td>DI Futuro</td><td class="baixa">BAIXA</td></tr>
+        <tr><td>S&P 500</td><td id="sp500" class="neutra">NEUTRO</td></tr>
+        <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
+        <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
+        <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
       </tbody>
     </table>
 
@@ -193,7 +192,6 @@ header{
     <div id="variacao" style="margin-top:8px;font-weight:bold;font-size:16px;"></div>
   </div>
 
-  <!-- PAINEL DIREITO -->
   <div id="painel-direito">
     <div id="mercado">
       <div class="mercado-header">📰 Notícias de Mercado</div>
@@ -227,8 +225,14 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// FUNÇÃO ATUALIZA DIREÇÃO E VARIAÇÃO
-function atualizarDirecao(price, open){
+// FUNÇÃO DIREÇÃO + SCORE
+function atualizarDirecaoScore(price, open, ativos){
+  let score = 0; // Pontuação de direção
+  ativos.forEach(a=>{
+    if(a.tipo==="risco" && a.status==="ALTA") score++;
+    if(a.tipo==="seguranca" && a.status==="ALTA") score--;
+  });
+
   const bloco = document.getElementById("direcao");
   const icone = document.getElementById("iconeDirecao");
   const variacao = document.getElementById("variacao");
@@ -236,15 +240,15 @@ function atualizarDirecao(price, open){
   const pct = ((price - open)/open*100).toFixed(2);
   variacao.innerHTML = `Variação: ${pct}%`;
 
-  if(price > open){
+  if(score>0){
     bloco.style.background="#dcfce7";
     bloco.style.color="#065f46";
-    bloco.innerHTML = `🟢 ALTA - Priorizar COMPRAS`;
+    bloco.innerHTML = `🟢 ALTA - Score: ${score}`;
     icone.innerHTML = `<span class="pulsar">${svgTouro}</span>`;
-  } else if(price < open){
+  } else if(score<0){
     bloco.style.background="#fee2e2";
     bloco.style.color="#7f1d1d";
-    bloco.innerHTML = `🔴 BAIXA - Priorizar VENDAS`;
+    bloco.innerHTML = `🔴 BAIXA - Score: ${score}`;
     icone.innerHTML = `<span class="pulsar">${svgUrso}</span>`;
   } else{
     bloco.style.background="#fef9c3";
@@ -253,22 +257,51 @@ function atualizarDirecao(price, open){
   }
 }
 
-// BUSCA DADOS DO MINI ÍNDICE
-async function atualizarMiniIndice(){
+// ATUALIZA ATIVOS E SCORE
+async function atualizarAtivosScore(){
   const chave = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-  const url = `https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=WIN`;
+  const ativos = [
+    {id:"sp500", symbol:"^GSPC", tipo:"risco"},
+    {id:"vix", symbol:"^VIX", tipo:"seguranca"},
+    {id:"dxy", symbol:"DX-Y.NYB", tipo:"seguranca"},
+    {id:"di", symbol:"DI1!", tipo:"seguranca"}
+  ];
+
+  for(let a of ativos){
+    try{
+      const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${a.symbol}`);
+      const data = await res.json();
+      const price = data.results[a.symbol].price;
+      const open  = data.results[a.symbol].open_price;
+      const td = document.getElementById(a.id);
+      if(price>open){
+        td.className="alta";
+        td.textContent="ALTA";
+        a.status="ALTA";
+      } else if(price<open){
+        td.className="baixa";
+        td.textContent="BAIXA";
+        a.status="BAIXA";
+      } else{
+        td.className="neutra";
+        td.textContent="NEUTRO";
+        a.status="NEUTRO";
+      }
+    }catch(err){console.log("Erro ativo:", a.symbol, err);}
+  }
+
+  // Atualiza Mini Índice baseado no score
   try{
-    const res = await fetch(url);
+    const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=WIN`);
     const data = await res.json();
     const price = data.results.WIN.price;
-    const open = data.results.WIN.open_price;
-    atualizarDirecao(price, open);
-  }catch(err){
-    console.log("Erro ao buscar dados do Mini Índice:", err);
-  }
+    const open  = data.results.WIN.open_price;
+    atualizarDirecaoScore(price, open, ativos);
+  }catch(err){console.log("Erro Mini:", err);}
 }
-atualizarMiniIndice();
-setInterval(atualizarMiniIndice,5000);
+
+atualizarAtivosScore();
+setInterval(atualizarAtivosScore,5000);
 
 // BREAKING NEWS
 const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
@@ -291,8 +324,7 @@ async function buscarBreaking(){
     div.className="breaking-item";
     div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
     breakingList.appendChild(div);
-    const macro = document.getElementById("direcao").dataset.macro;
-    if(macro!=="NEUTRO" && negativas.some(p=>titulo.toLowerCase().includes(p))){
+    if(negativas.some(p=>titulo.toLowerCase().includes(p))){
       document.getElementById("breaking").classList.add("alerta-contrario");
       som.play().catch(()=>{});
       setTimeout(()=>{document.getElementById("breaking").classList.remove("alerta-contrario");},15000);
