@@ -27,14 +27,23 @@ header{
 
 /* ===== RELÓGIO CENTRAL ===== */
 #relogio{
-  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
   font-size:18px;
   font-weight:bold;
   margin:0 0 10px 0;
-  background:#1d4ed8; /* azul escuro */
   color:#fff;
   border-radius:6px;
   padding:6px;
+  transition: background 0.5s ease, color 0.5s ease; /* transição suave */
+}
+
+/* ICONES */
+#relogio img{
+  width:24px;
+  height:24px;
 }
 
 /* ===== TABELA CENTRAL ===== */
@@ -65,6 +74,7 @@ td{
 .baixa{ background:#fee2e2; color:#7f1d1d; }
 .neutra{ background:#fef9c3; color:#78350f; }
 
+/* BLOCO DIREÇÃO COM TRANSIÇÃO */
 #direcao{
   text-align:center;
   font-size:18px;
@@ -72,6 +82,11 @@ td{
   padding:10px;
   margin-top:10px;
   border-radius:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition: background 0.5s ease, color 0.5s ease; /* transição suave */
 }
 
 /* ===== PAINEL DIREITO ===== */
@@ -158,7 +173,7 @@ td{
 
   <!-- TABELA CENTRAL -->
   <div id="macro">
-    <div id="relogio"></div> <!-- Relógio destacado -->
+    <div id="relogio"><span>⏰</span></div>
 
     <table>
       <thead>
@@ -185,8 +200,8 @@ td{
     </table>
 
     <div id="direcao" class="alta" data-macro="ALTA">
-      🟢 VIÉS DIRECIONAL DE ALTA<br>
-      Buscar COMPRAS no WIN ao longo do dia
+      <span id="iconeDirecao"></span>
+      <span id="textoDirecao">🟢 VIÉS DIRECIONAL DE ALTA<br>Buscar COMPRAS no WIN ao longo do dia</span>
     </div>
   </div>
 
@@ -215,13 +230,45 @@ td{
 <audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// RELÓGIO BRASÍLIA
+// URLs das imagens
+const iconeTouro = "https://i.imgur.com/6b0FhB9.png"; // touro
+const iconeUrso = "https://i.imgur.com/uzYFyfI.png";  // urso
+
 function atualizarRelogio(){
   const agora = new Date();
   const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
   const br = new Date(utc - 3*3600000);
-  document.getElementById("relogio").innerHTML =
-    "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
+  const relogio = document.getElementById("relogio");
+  relogio.innerHTML = "⏰ " + br.toLocaleTimeString("pt-BR");
+
+  // Ajusta cor e ícone conforme viés
+  const direcao = document.getElementById("direcao").dataset.macro;
+  const icone = document.getElementById("iconeDirecao");
+  const texto = document.getElementById("textoDirecao");
+  const blocoDirecao = document.getElementById("direcao");
+
+  if(direcao === "ALTA"){
+    relogio.style.background = "#16a34a"; // verde
+    relogio.style.color = "#fff";
+    icone.innerHTML = `<img src="${iconeTouro}" alt="Touro">`;
+    texto.innerHTML = "🟢 VIÉS DIRECIONAL DE ALTA<br>Buscar COMPRAS no WIN ao longo do dia";
+    blocoDirecao.style.background = "#dcfce7";
+    blocoDirecao.style.color = "#065f46";
+  } else if(direcao === "BAIXA"){
+    relogio.style.background = "#dc2626"; // vermelho
+    relogio.style.color = "#fff";
+    icone.innerHTML = `<img src="${iconeUrso}" alt="Urso">`;
+    texto.innerHTML = "🔴 VIÉS DIRECIONAL DE BAIXA<br>Priorizar VENDAS no WIN";
+    blocoDirecao.style.background = "#fee2e2";
+    blocoDirecao.style.color = "#7f1d1d";
+  } else {
+    relogio.style.background = "#facc15"; // amarelo
+    relogio.style.color = "#000";
+    icone.innerHTML = "";
+    texto.innerHTML = "🟡 NEUTRO<br>Aguardar definição do mercado";
+    blocoDirecao.style.background = "#fef9c3";
+    blocoDirecao.style.color = "#78350f";
+  }
 }
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
@@ -253,9 +300,9 @@ async function buscarBreaking(){
     breakingList.appendChild(div);
 
     const macro = document.getElementById("direcao").dataset.macro;
-    const texto = titulo.toLowerCase();
+    const textoItem = titulo.toLowerCase();
 
-    if(macro !== "NEUTRO" && negativas.some(p=>texto.includes(p))){
+    if(macro !== "NEUTRO" && negativas.some(p=>textoItem.includes(p))){
       document.getElementById("breaking").classList.add("alerta-contrario");
       som.play().catch(()=>{});
       setTimeout(()=>{
