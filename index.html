@@ -5,234 +5,131 @@
 <title>Direção Macro – Mini Índice B3</title>
 
 <style>
-body{
-  font-family:Arial, sans-serif;
-  margin:0;
-  background:#f4f6f8;
-}
+body{font-family:Arial;margin:0;background:#f4f6f8}
+header{background:#020617;color:#fff;padding:12px;text-align:center}
+#relogio{text-align:center;margin:18px 0;font-size:18px;font-weight:bold}
+#conteudo{width:700px;margin:0 auto}
 
-/* ================= HEADER ================= */
-header{
-  background:#020617;
-  color:#fff;
-  padding:12px;
-  text-align:center;
-}
-
-/* ================= RELÓGIO ================= */
-#relogio{
-  text-align:center;
-  margin:18px 0;
-  font-size:18px;
-  font-weight:bold;
-}
-
-/* ================= CONTEÚDO CENTRAL ================= */
-#conteudo{
-  width:700px;
-  margin:0 auto;
-}
-
-/* ================= DIREÇÃO MACRO ================= */
+/* ===== DIREÇÃO MACRO ===== */
 #macroBox{
-  background:linear-gradient(135deg,#ffffff,#f1f5f9);
-  padding:24px;
-  border-radius:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,.2);
-  text-align:center;
-  margin-bottom:16px;
+ background:linear-gradient(135deg,#fff,#f1f5f9);
+ padding:24px;border-radius:12px;
+ box-shadow:0 6px 18px rgba(0,0,0,.2);
+ text-align:center;margin-bottom:16px
 }
-
-#macroBox .titulo{
-  font-size:13px;
-  letter-spacing:1px;
-  opacity:.6;
-}
-#macroBox .direcao{
-  font-size:40px;
-  font-weight:bold;
-  margin:12px 0;
-}
-#macroBox .acao{
-  font-size:16px;
-  font-weight:bold;
-}
-
+.titulo{font-size:13px;letter-spacing:1px;opacity:.6}
+.direcao{font-size:40px;font-weight:bold;margin:12px 0}
+.acao{font-size:16px;font-weight:bold}
 .verde{border-left:8px solid #16a34a;color:#065f46}
 .vermelho{border-left:8px solid #dc2626;color:#7f1d1d}
 .neutro{border-left:8px solid #ca8a04;color:#713f12}
-
 .piscar{animation:pisc 1s infinite}
-@keyframes pisc{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.02)}
-  100%{transform:scale(1)}
-}
+@keyframes pisc{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
 
-/* ================= NOTÍCIAS MACRO ================= */
-#newsMacro{
-  background:#0f172a;
-  color:#fff;
-  border-radius:10px;
-  box-shadow:0 4px 14px rgba(0,0,0,.3);
-}
+/* ===== NOTÍCIAS MACRO ===== */
+#newsMacro{background:#0f172a;color:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#newsMacro h3{margin:0;padding:12px;background:#020617;text-align:center;border-radius:10px 10px 0 0}
+.newsItem{padding:12px;border-bottom:1px solid #1e293b;font-size:13px}
+.newsItem a{color:#93c5fd;text-decoration:none}
 
-#newsMacro h3{
-  margin:0;
-  padding:12px;
-  background:#020617;
-  text-align:center;
-  border-radius:10px 10px 0 0;
-}
-
-.newsItem{
-  padding:12px;
-  border-bottom:1px solid #1e293b;
-  font-size:13px;
-}
-.newsItem a{
-  color:#93c5fd;
-  text-decoration:none;
-}
-
-/* ================= BREAKING NEWS (INALTERADO) ================= */
+/* ===== BREAKING NEWS (INALTERADO) ===== */
 #painel-news{
-  position:fixed;
-  top:28px;
-  right:10px;
-  width:360px;
-  background:#111827;
-  color:white;
-  border-radius:6px;
-  box-shadow:0 4px 8px rgba(0,0,0,0.3);
-  z-index:9998;
+ position:fixed;top:28px;right:10px;width:360px;
+ background:#111827;color:white;border-radius:6px;
+ box-shadow:0 4px 8px rgba(0,0,0,0.3);z-index:9998
 }
-.news-header{
-  text-align:center;
-  font-weight:bold;
-  padding:8px;
-  background:#1f2937;
-  border-radius:6px 6px 0 0;
-}
-#newsList{
-  max-height:260px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.news-item{
-  padding:8px;
-  border-bottom:1px solid #374151;
-}
-.news-item a{
-  color:#93c5fd;
-  text-decoration:none;
-}
-.breaking{
-  animation:piscar 1s infinite;
-}
-@keyframes piscar{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
+.news-header{text-align:center;font-weight:bold;padding:8px;background:#1f2937}
+#newsList{max-height:260px;overflow-y:auto;font-size:13px}
+.news-item{padding:8px;border-bottom:1px solid #374151}
+.news-item a{color:#93c5fd;text-decoration:none}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h2>Direção Macro do Mercado – Mini Índice (WIN)</h2>
-</header>
-
+<header><h2>Direção Macro do Mercado – Mini Índice (WIN)</h2></header>
 <div id="relogio"></div>
 
 <div id="conteudo">
 
-  <!-- DIREÇÃO MACRO -->
-  <div id="macroBox" class="neutro">
-    Carregando direção macro...
-  </div>
+  <div id="macroBox" class="neutro">Carregando dados macro...</div>
 
-  <!-- NOTÍCIAS MACRO -->
   <div id="newsMacro">
     <h3>📰 Notícias Macro Relevantes</h3>
-    <div id="newsMacroList">
-      <div class="newsItem">Aguardando notícias...</div>
-    </div>
+    <div id="newsMacroList"><div class="newsItem">Aguardando...</div></div>
   </div>
 
 </div>
 
-<!-- ================= BREAKING NEWS (NÃO MEXIDO) ================= -->
+<!-- BREAKING NEWS NÃO MEXIDO -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList">
-    <div class="news-item">Aguardando notícias...</div>
-  </div>
+  <div id="newsList"><div class="news-item">Aguardando notícias...</div></div>
 </div>
 
-<audio id="somBreak" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
 <audio id="somMacro" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-/* ================= RELÓGIO BRASÍLIA ================= */
-function atualizarRelogio(){
-  const d=new Date();
-  const utc=d.getTime()+d.getTimezoneOffset()*60000;
-  const br=new Date(utc-3*3600000);
-  relogio.innerText="⏰ Horário de Brasília: "+br.toLocaleTimeString("pt-BR");
+// ===== RELÓGIO BRASÍLIA =====
+setInterval(()=>{
+ const d=new Date(),u=d.getTime()+d.getTimezoneOffset()*60000;
+ relogio.innerText="⏰ Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
+},1000);
+
+// ===== BUSCAR PREÇOS (TradingView JSON) =====
+async function tvPrice(symbol){
+ const url=`https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
+ try{
+  const r=await fetch(url);
+  const j=await r.json();
+  return j.last_price||j.close||0;
+ }catch(e){return 0;}
 }
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
 
-/* ================= DIREÇÃO MACRO (EXEMPLO MACRO) ================= */
-let ultimoEstado="";
-function atualizarMacro(){
-  const r=Math.random()-0.5;
-  let estado="NEUTRO",acao="Aguardar",classe="neutro";
+let prev={sp:0,vix:0,dxy:0},ultimo="";
 
-  if(r>0.2){estado="ALTA";acao="Priorizar COMPRAS no WIN";classe="verde";}
-  if(r<-0.2){estado="BAIXA";acao="Priorizar VENDAS no WIN";classe="vermelho";}
+// ===== DIREÇÃO MACRO REAL =====
+async function atualizarMacro(){
+ const sp=await tvPrice("INDEX:SPX");
+ const vix=await tvPrice("CBOE:VIX");
+ const dxy=await tvPrice("FOREXCOM:DX1!");
 
-  if(ultimoEstado && ultimoEstado!==estado){
-    somMacro.play().catch(()=>{});
-    macroBox.classList.add("piscar");
-    setTimeout(()=>macroBox.classList.remove("piscar"),8000);
-  }
-  ultimoEstado=estado;
+ if(!sp||!vix||!dxy) return;
 
-  macroBox.className=classe;
-  macroBox.innerHTML=`
-    <div class="titulo">Direção Macro do Mercado</div>
-    <div class="direcao">${estado}</div>
-    <div class="acao">${acao}</div>
-  `;
+ const spVar=(sp-prev.sp)/prev.sp||0;
+ const vixVar=(vix-prev.vix)/prev.vix||0;
+ const dxyVar=(dxy-prev.dxy)/prev.dxy||0;
+
+ prev={sp,vix,dxy};
+
+ let estado="NEUTRO",acao="Aguardar",classe="neutro";
+
+ if(spVar>0 && vixVar<0){
+   estado="ALTA";acao="Risco ON → Priorizar COMPRAS no WIN";classe="verde";
+ }
+ if(spVar<0 && vixVar>0){
+   estado="BAIXA";acao="Risco OFF → Priorizar VENDAS no WIN";classe="vermelho";
+ }
+ if(Math.abs(dxyVar)>0.002){
+   estado="NEUTRO";acao="Dólar forte → Reduzir risco";
+ }
+
+ if(ultimo && ultimo!==estado){
+   somMacro.play().catch(()=>{});
+   macroBox.classList.add("piscar");
+   setTimeout(()=>macroBox.classList.remove("piscar"),8000);
+ }
+ ultimo=estado;
+
+ macroBox.className=classe;
+ macroBox.innerHTML=`
+  <div class="titulo">Direção Macro (SP500 + VIX + DXY)</div>
+  <div class="direcao">${estado}</div>
+  <div class="acao">${acao}</div>
+ `;
 }
 setInterval(atualizarMacro,60000);
 atualizarMacro();
-
-/* ================= NOTÍCIAS MACRO ================= */
-async function buscarNoticiasMacro(){
-  const rss="https://news.google.com/rss/search?q=juros+fed+copom+inflação+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
-  try{
-    const res=await fetch(url);
-    const txt=await res.text();
-    const xml=new DOMParser().parseFromString(txt,"text/xml");
-    const items=[...xml.querySelectorAll("item")].slice(0,5);
-    newsMacroList.innerHTML="";
-    items.forEach(i=>{
-      const t=i.querySelector("title").textContent;
-      const l=i.querySelector("link").textContent;
-      const div=document.createElement("div");
-      div.className="newsItem";
-      div.innerHTML=`<b>${t}</b><br><a href="${l}" target="_blank">Ler notícia</a>`;
-      newsMacroList.appendChild(div);
-    });
-  }catch(e){}
-}
-buscarNoticiasMacro();
-setInterval(buscarNoticiasMacro,60000);
 </script>
 
 </body>
