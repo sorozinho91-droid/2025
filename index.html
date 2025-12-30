@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Macro – Mini Índice B3</title>
+<title>Direção Macro – Mini Índice (WIN)</title>
 
 <style>
 body{
@@ -10,8 +10,6 @@ body{
   font-family:Arial, Helvetica, sans-serif;
   background:#f3f4f6;
 }
-
-/* HEADER */
 header{
   background:#111827;
   color:#fff;
@@ -20,16 +18,12 @@ header{
   font-size:18px;
   font-weight:bold;
 }
-
-/* RELÓGIO */
 #relogio{
   text-align:center;
   font-size:18px;
   font-weight:bold;
   margin:12px 0;
 }
-
-/* LAYOUT */
 #layout{
   display:flex;
   justify-content:center;
@@ -135,6 +129,16 @@ td{
   color:#1d4ed8;
   text-decoration:none;
 }
+
+/* ALERTA VISUAL */
+.alerta-contrario{
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{
+  0%{background:#fee2e2;}
+  50%{background:#fecaca;}
+  100%{background:#fee2e2;}
+}
 </style>
 </head>
 
@@ -155,22 +159,21 @@ td{
         <tr><th>Ativo</th><th>Leitura</th></tr>
       </thead>
       <tbody>
-        <tr><td>S&P 500</td><td class="neutra">NEUTRO</td></tr>
-        <tr><td>VIX</td><td class="neutra">NEUTRO</td></tr>
+        <tr><td>S&P 500</td><td class="alta">ALTA</td></tr>
+        <tr><td>VIX</td><td class="baixa">BAIXA</td></tr>
         <tr><td>DXY</td><td class="neutra">NEUTRO</td></tr>
-        <tr><td>DI Futuro</td><td class="neutra">NEUTRO</td></tr>
+        <tr><td>DI Futuro</td><td class="baixa">BAIXA</td></tr>
       </tbody>
     </table>
 
-    <div id="direcao" class="neutra">
-      🟡 Aguardando definição macro
+    <div id="direcao" class="alta" data-macro="ALTA">
+      🟢 MACRO ALTA<br>Priorizar COMPRAS no WIN
     </div>
   </div>
 
   <!-- PAINEL DIREITO -->
   <div id="painel-direito">
 
-    <!-- BREAKING NEWS -->
     <div id="breaking">
       <div class="breaking-header">🚨 BREAKING NEWS</div>
       <div id="breaking-list">
@@ -178,7 +181,6 @@ td{
       </div>
     </div>
 
-    <!-- NOTÍCIAS MERCADO -->
     <div id="mercado">
       <div class="mercado-header">📰 Notícias de Mercado</div>
       <div id="mercado-list">
@@ -188,6 +190,8 @@ td{
 
   </div>
 </div>
+
+<audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 // RELÓGIO BRASÍLIA
@@ -201,24 +205,43 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// BREAKING NEWS
+// PALAVRAS NEGATIVAS (RISCO OFF)
+const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
+
+// BREAKING NEWS COM ALERTA CONTRÁRIO
 const breakingList = document.getElementById("breaking-list");
+const som = document.getElementById("somAlerta");
+
 async function buscarBreaking(){
-  const rss = "https://news.google.com/rss/search?q=fed+OR+juros+OR+guerra+OR+inflation&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const rss = "https://news.google.com/rss/search?q=fed+OR+juros+OR+guerra+OR+inflação&hl=pt-BR&gl=BR&ceid=BR:pt";
   const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
   const res = await fetch(url);
   const text = await res.text();
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
+
   breakingList.innerHTML="";
+
   items.forEach((item,i)=>{
     if(i>4) return;
-    const t=item.querySelector("title").textContent;
-    const l=item.querySelector("link").textContent;
+    const titulo=item.querySelector("title").textContent;
+    const link=item.querySelector("link").textContent;
+
     const div=document.createElement("div");
     div.className="breaking-item";
-    div.innerHTML=`<strong>${t}</strong><br><a href="${l}" target="_blank">Ler</a>`;
+    div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
     breakingList.appendChild(div);
+
+    const macro = document.getElementById("direcao").dataset.macro;
+    const texto = titulo.toLowerCase();
+
+    if(macro !== "NEUTRO" && negativas.some(p=>texto.includes(p))){
+      document.getElementById("breaking").classList.add("alerta-contrario");
+      som.play().catch(()=>{});
+      setTimeout(()=>{
+        document.getElementById("breaking").classList.remove("alerta-contrario");
+      },15000);
+    }
   });
 }
 buscarBreaking();
@@ -233,6 +256,7 @@ async function buscarMercado(){
   const text = await res.text();
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
+
   mercadoList.innerHTML="";
   items.forEach((item,i)=>{
     if(i>4) return;
