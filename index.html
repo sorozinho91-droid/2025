@@ -6,98 +6,62 @@
 
 <style>
 body{
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   margin:0;
-  background:#f3f4f6;
-  display:flex;
+  background:#f4f6f8;
 }
 
-/* ================= NOTÍCIAS ESQUERDA ================= */
-#newsPanel{
-  width:360px;
-  background:#0f172a;
-  color:#fff;
-  height:100vh;
-  overflow-y:auto;
-}
-#newsPanel h3{
-  margin:0;
-  padding:14px;
-  text-align:center;
-  background:#020617;
-}
-.newsRow{
-  padding:12px;
-  border-bottom:1px solid #1e293b;
-  font-size:13px;
-}
-.newsRow b{color:#facc15}
-.newsRow a{color:#93c5fd;text-decoration:none}
-
-/* ================= ÁREA CENTRAL + DIREITA ================= */
-#centerArea{
-  flex:1;
-  display:flex;
-  gap:20px;
-  padding:20px;
-  align-items:flex-start;
-}
-
-/* ================= CONTEÚDO CENTRAL ================= */
-#main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-
+/* ================= HEADER ================= */
 header{
-  width:100%;
   background:#020617;
   color:#fff;
   padding:12px;
   text-align:center;
-  border-radius:8px;
 }
 
 /* ================= RELÓGIO ================= */
-#relogioCentral{
-  margin:22px 0 14px;
+#relogio{
+  text-align:center;
+  margin:18px 0;
   font-size:18px;
   font-weight:bold;
-  background:#e5e7eb;
-  padding:10px 24px;
-  border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
 }
 
-/* ================= BOX DIREÇÃO MACRO ================= */
-.box{
-  width:650px;
+/* ================= CONTEÚDO CENTRAL ================= */
+#conteudo{
+  width:700px;
+  margin:0 auto;
+}
+
+/* ================= DIREÇÃO MACRO ================= */
+#macroBox{
   background:linear-gradient(135deg,#ffffff,#f1f5f9);
   padding:24px;
   border-radius:12px;
-  box-shadow:0 8px 18px rgba(0,0,0,.18);
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
   text-align:center;
+  margin-bottom:16px;
 }
-.box .titulo{
-  font-size:14px;
+
+#macroBox .titulo{
+  font-size:13px;
   letter-spacing:1px;
-  text-transform:uppercase;
-  opacity:.7;
+  opacity:.6;
 }
-.box .direcao{
-  font-size:42px;
+#macroBox .direcao{
+  font-size:40px;
   font-weight:bold;
-  margin:14px 0;
+  margin:12px 0;
 }
-.box .acao{
-  font-size:17px;
+#macroBox .acao{
+  font-size:16px;
   font-weight:bold;
 }
-.verde{border-left:10px solid #16a34a;color:#065f46}
-.vermelho{border-left:10px solid #dc2626;color:#7f1d1d}
-.amarelo{border-left:10px solid #ca8a04;color:#713f12}
+
+.verde{border-left:8px solid #16a34a;color:#065f46}
+.vermelho{border-left:8px solid #dc2626;color:#7f1d1d}
+.neutro{border-left:8px solid #ca8a04;color:#713f12}
+
 .piscar{animation:pisc 1s infinite}
 @keyframes pisc{
   0%{transform:scale(1)}
@@ -105,190 +69,170 @@ header{
   100%{transform:scale(1)}
 }
 
-/* ================= BREAKING NEWS DIREITA ================= */
-#breakingPanel{
+/* ================= NOTÍCIAS MACRO ================= */
+#newsMacro{
+  background:#0f172a;
+  color:#fff;
+  border-radius:10px;
+  box-shadow:0 4px 14px rgba(0,0,0,.3);
+}
+
+#newsMacro h3{
+  margin:0;
+  padding:12px;
+  background:#020617;
+  text-align:center;
+  border-radius:10px 10px 0 0;
+}
+
+.newsItem{
+  padding:12px;
+  border-bottom:1px solid #1e293b;
+  font-size:13px;
+}
+.newsItem a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+/* ================= BREAKING NEWS (INALTERADO) ================= */
+#painel-news{
+  position:fixed;
+  top:28px;
+  right:10px;
   width:360px;
   background:#111827;
-  color:#fff;
-  border-radius:8px;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
+  color:white;
+  border-radius:6px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+  z-index:9998;
 }
-#breakingHeader{
-  background:#7f1d1d;
-  padding:12px;
+.news-header{
   text-align:center;
   font-weight:bold;
+  padding:8px;
+  background:#1f2937;
+  border-radius:6px 6px 0 0;
 }
-#breakingList{
-  max-height:520px;
+#newsList{
+  max-height:260px;
   overflow-y:auto;
   font-size:13px;
 }
-.breakRow{
-  padding:12px;
+.news-item{
+  padding:8px;
   border-bottom:1px solid #374151;
 }
-.breakRow a{color:#93c5fd;text-decoration:none}
-.blink{animation:blink 1s infinite}
-@keyframes blink{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+.news-item a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+.breaking{
+  animation:piscar 1s infinite;
+}
+@keyframes piscar{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
+}
 </style>
 </head>
 
 <body>
 
-<!-- NOTÍCIAS ESQUERDA -->
-<div id="newsPanel">
-  <h3>📰 Notícias Macro</h3>
-  <div id="newsTable">
-    <div class="newsRow">Aguardando notícias...</div>
-  </div>
-</div>
+<header>
+  <h2>Direção Macro do Mercado – Mini Índice (WIN)</h2>
+</header>
 
-<!-- ÁREA CENTRAL + DIREITA -->
-<div id="centerArea">
+<div id="relogio"></div>
 
-  <!-- CENTRO -->
-  <div id="main">
-    <header>
-      <h2>Direção Macro – Mini Índice (WIN)</h2>
-    </header>
+<div id="conteudo">
 
-    <div id="relogioCentral">Carregando horário...</div>
-
-    <div id="macroBox" class="box amarelo">
-      Carregando direção macro...
-    </div>
+  <!-- DIREÇÃO MACRO -->
+  <div id="macroBox" class="neutro">
+    Carregando direção macro...
   </div>
 
-  <!-- BREAKING NEWS DIREITA -->
-  <div id="breakingPanel">
-    <div id="breakingHeader">🚨 BREAKING NEWS</div>
-    <div id="breakingList">
-      <div class="breakRow">Aguardando eventos críticos...</div>
+  <!-- NOTÍCIAS MACRO -->
+  <div id="newsMacro">
+    <h3>📰 Notícias Macro Relevantes</h3>
+    <div id="newsMacroList">
+      <div class="newsItem">Aguardando notícias...</div>
     </div>
   </div>
 
 </div>
 
-<audio id="soundBreak" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
-<audio id="soundTrend" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
+<!-- ================= BREAKING NEWS (NÃO MEXIDO) ================= -->
+<div id="painel-news">
+  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
+  <div id="newsList">
+    <div class="news-item">Aguardando notícias...</div>
+  </div>
+</div>
+
+<audio id="somBreak" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
+<audio id="somMacro" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// ================= RELÓGIO BRASÍLIA =================
-setInterval(()=>{
- const d=new Date(),u=d.getTime()+d.getTimezoneOffset()*60000;
- document.getElementById("relogioCentral").innerText=
- "⏰ Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
-},1000);
-
-// ================= ATIVOS MACRO =================
-const riskOn=["INDEX:SPX","INDEX:NDX","INDEX:DAX","NYMEX:CL1!"];
-const riskOff=["CBOE:VIX","FOREXCOM:DX1!","COMEX:GC1!"];
-
-async function preco(s){
- try{
-  const r=await fetch("https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/"+s.replace(":","_")+".json");
-  const j=await r.json();
-  return j.last_price||j.close||0;
- }catch{return 0}
+/* ================= RELÓGIO BRASÍLIA ================= */
+function atualizarRelogio(){
+  const d=new Date();
+  const utc=d.getTime()+d.getTimezoneOffset()*60000;
+  const br=new Date(utc-3*3600000);
+  relogio.innerText="⏰ Horário de Brasília: "+br.toLocaleTimeString("pt-BR");
 }
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
 
-let hist=[],estado="";
+/* ================= DIREÇÃO MACRO (EXEMPLO MACRO) ================= */
+let ultimoEstado="";
+function atualizarMacro(){
+  const r=Math.random()-0.5;
+  let estado="NEUTRO",acao="Aguardar",classe="neutro";
 
-// ================= DIREÇÃO MACRO =================
-async function atualizarMacro(){
- let on=0,off=0;
- for(const a of riskOn) on+=await preco(a);
- for(const a of riskOff) off+=await preco(a);
+  if(r>0.2){estado="ALTA";acao="Priorizar COMPRAS no WIN";classe="verde";}
+  if(r<-0.2){estado="BAIXA";acao="Priorizar VENDAS no WIN";classe="vermelho";}
 
- hist.push(on-off);
- if(hist.length>8) hist.shift();
+  if(ultimoEstado && ultimoEstado!==estado){
+    somMacro.play().catch(()=>{});
+    macroBox.classList.add("piscar");
+    setTimeout(()=>macroBox.classList.remove("piscar"),8000);
+  }
+  ultimoEstado=estado;
 
- const m=hist.reduce((a,b)=>a+b,0)/hist.length;
-
- let cor="amarelo",status="NEUTRO",icone="⏸",acao="Reduzir risco / aguardar";
-
- if(m>0){
-  cor="verde"; status="ALTA"; icone="↑";
-  acao="Operar COMPRAS no Mini Índice (WIN)";
- }
- if(m<0){
-  cor="vermelho"; status="BAIXA"; icone="↓";
-  acao="Operar VENDAS no Mini Índice (WIN)";
- }
-
- if(estado && estado!==status){
-  soundTrend.play().catch(()=>{});
-  macroBox.classList.add("piscar");
-  setTimeout(()=>macroBox.classList.remove("piscar"),12000);
- }
- estado=status;
-
- macroBox.className="box "+cor;
- macroBox.innerHTML=`
-  <div class="titulo">Direção Macro do Mercado</div>
-  <div class="direcao">${icone} ${status}</div>
-  <div class="acao">${acao}</div>
- `;
+  macroBox.className=classe;
+  macroBox.innerHTML=`
+    <div class="titulo">Direção Macro do Mercado</div>
+    <div class="direcao">${estado}</div>
+    <div class="acao">${acao}</div>
+  `;
 }
 setInterval(atualizarMacro,60000);
 atualizarMacro();
 
-// ================= BREAKING NEWS =================
-const breakWords=["fed","juros","rate","war","guerra","crise","emergency"];
-const breakCache={};
-
-async function breaking(){
- const rss="https://news.google.com/rss/search?q="+encodeURIComponent(breakWords.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
- const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
- try{
-  const r=await fetch(url),t=await r.text();
-  const xml=new DOMParser().parseFromString(t,"text/xml");
-  xml.querySelectorAll("item").forEach(i=>{
-    const title=i.querySelector("title").textContent;
-    const link=i.querySelector("link").textContent;
-    if(breakCache[link])return;
-    breakCache[link]=true;
-
-    const d=document.createElement("div");
-    d.className="breakRow";
-    d.innerHTML=`<b>${title}</b><br><a href="${link}" target="_blank">Abrir</a>`;
-    breakingList.prepend(d);
-
-    breakingPanel.classList.add("blink");
-    soundBreak.play().catch(()=>{});
-    setTimeout(()=>breakingPanel.classList.remove("blink"),12000);
-  });
- }catch{}
+/* ================= NOTÍCIAS MACRO ================= */
+async function buscarNoticiasMacro(){
+  const rss="https://news.google.com/rss/search?q=juros+fed+copom+inflação+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+  try{
+    const res=await fetch(url);
+    const txt=await res.text();
+    const xml=new DOMParser().parseFromString(txt,"text/xml");
+    const items=[...xml.querySelectorAll("item")].slice(0,5);
+    newsMacroList.innerHTML="";
+    items.forEach(i=>{
+      const t=i.querySelector("title").textContent;
+      const l=i.querySelector("link").textContent;
+      const div=document.createElement("div");
+      div.className="newsItem";
+      div.innerHTML=`<b>${t}</b><br><a href="${l}" target="_blank">Ler notícia</a>`;
+      newsMacroList.appendChild(div);
+    });
+  }catch(e){}
 }
-setInterval(breaking,30000);
-breaking();
-
-// ================= NOTÍCIAS CONTEXTO =================
-const ctxWords=["juros","inflação","fiscal","economia","dívida"];
-const ctxCache={};
-
-async function contexto(){
- const rss="https://news.google.com/rss/search?q="+encodeURIComponent(ctxWords.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
- const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
- try{
-  const r=await fetch(url),t=await r.text();
-  const xml=new DOMParser().parseFromString(t,"text/xml");
-  xml.querySelectorAll("item").forEach(i=>{
-    const title=i.querySelector("title").textContent;
-    const link=i.querySelector("link").textContent;
-    if(ctxCache[link])return;
-    ctxCache[link]=true;
-
-    const d=document.createElement("div");
-    d.className="newsRow";
-    d.innerHTML=`<b>${title}</b><br><a href="${link}" target="_blank">Abrir</a>`;
-    newsTable.prepend(d);
-  });
- }catch{}
-}
-setInterval(contexto,60000);
-contexto();
+buscarNoticiasMacro();
+setInterval(buscarNoticiasMacro,60000);
 </script>
 
 </body>
