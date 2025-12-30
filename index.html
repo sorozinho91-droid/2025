@@ -18,12 +18,6 @@ header{
   font-size:18px;
   font-weight:bold;
 }
-#relogio{
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-  margin:12px 0;
-}
 #layout{
   display:flex;
   justify-content:center;
@@ -31,7 +25,19 @@ header{
   padding:10px;
 }
 
-/* ===== TABELA CENTRAL (NÃO MEXER) ===== */
+/* ===== RELÓGIO CENTRAL ===== */
+#relogio{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+  margin:0 0 10px 0;
+  background:#1d4ed8; /* azul escuro */
+  color:#fff;
+  border-radius:6px;
+  padding:6px;
+}
+
+/* ===== TABELA CENTRAL ===== */
 #macro{
   width:420px;
   background:#fff;
@@ -148,43 +154,58 @@ td{
 📊 Direção Macro do Mercado – Mini Índice (WIN)
 </header>
 
-<div id="relogio"></div>
-
 <div id="layout">
 
-  <!-- TABELA CENTRAL (INTACTA) -->
+  <!-- TABELA CENTRAL -->
   <div id="macro">
+    <div id="relogio"></div> <!-- Relógio destacado -->
+
     <table>
       <thead>
-        <tr><th>Ativo</th><th>Leitura</th></tr>
+        <tr><th>Leitura Macro (WIN)</th><th>Condição</th></tr>
       </thead>
       <tbody>
-        <tr><td>S&P 500</td><td class="alta">ALTA</td></tr>
-        <tr><td>VIX</td><td class="baixa">BAIXA</td></tr>
-        <tr><td>DXY</td><td class="neutra">NEUTRO</td></tr>
-        <tr><td>DI Futuro</td><td class="baixa">BAIXA</td></tr>
+        <tr>
+          <td>Futuros EUA (Pré)</td>
+          <td class="alta">POSITIVO</td>
+        </tr>
+        <tr>
+          <td>Volatilidade (VIX)</td>
+          <td class="baixa">CONTROLADA</td>
+        </tr>
+        <tr>
+          <td>Fluxo Institucional</td>
+          <td class="alta">COMPRADOR</td>
+        </tr>
+        <tr>
+          <td>Juros / Risco Brasil</td>
+          <td class="baixa">ALÍVIO</td>
+        </tr>
       </tbody>
     </table>
 
     <div id="direcao" class="alta" data-macro="ALTA">
-      🟢 MACRO ALTA<br>Priorizar COMPRAS no WIN
+      🟢 VIÉS DIRECIONAL DE ALTA<br>
+      Buscar COMPRAS no WIN ao longo do dia
     </div>
   </div>
 
   <!-- PAINEL DIREITO -->
   <div id="painel-direito">
 
-    <div id="breaking">
-      <div class="breaking-header">🚨 BREAKING NEWS</div>
-      <div id="breaking-list">
-        <div class="breaking-item">Aguardando notícias...</div>
-      </div>
-    </div>
-
+    <!-- NOTÍCIAS MERCADO -->
     <div id="mercado">
       <div class="mercado-header">📰 Notícias de Mercado</div>
       <div id="mercado-list">
         <div class="mercado-item">Aguardando notícias...</div>
+      </div>
+    </div>
+
+    <!-- BREAKING NEWS -->
+    <div id="breaking">
+      <div class="breaking-header">🚨 BREAKING NEWS</div>
+      <div id="breaking-list">
+        <div class="breaking-item">Aguardando notícias...</div>
       </div>
     </div>
 
@@ -205,10 +226,9 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// PALAVRAS NEGATIVAS (RISCO OFF)
+// PALAVRAS NEGATIVAS
 const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
 
-// BREAKING NEWS COM ALERTA CONTRÁRIO
 const breakingList = document.getElementById("breaking-list");
 const som = document.getElementById("somAlerta");
 
