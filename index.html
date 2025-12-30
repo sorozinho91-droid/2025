@@ -2,290 +2,84 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Macro – Mini Índice (WIN)</title>
-
+<title>Direção do Mini Índice (WIN)</title>
 <style>
 body{
   margin:0;
   font-family:Arial, Helvetica, sans-serif;
   background:#f3f4f6;
-}
-header{
-  background:#111827;
-  color:#fff;
-  padding:10px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-}
-#layout{
   display:flex;
   justify-content:center;
-  gap:15px;
-  padding:10px;
-}
-#relogio{
-  display:flex;
   align-items:center;
-  justify-content:center;
-  gap:8px;
-  font-size:18px;
-  font-weight:bold;
-  margin:0 0 10px 0;
-  color:#fff;
-  border-radius:6px;
-  padding:6px;
-  transition: background 0.5s ease, color 0.5s ease;
+  height:100vh;
 }
-#macro{
-  width:420px;
+#container{
   background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-  padding:12px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th{
-  background:#1f2937;
-  color:#fff;
-  padding:8px;
-}
-td{
-  padding:6px;
-  border-bottom:1px solid #e5e7eb;
+  padding:20px 30px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
   text-align:center;
-  font-weight:bold;
 }
-.alta{ background:#dcfce7; color:#065f46; }
-.baixa{ background:#fee2e2; color:#7f1d1d; }
-.neutra{ background:#fef9c3; color:#78350f; }
 #direcao{
-  text-align:center;
-  font-size:18px;
+  font-size:24px;
   font-weight:bold;
+  margin-bottom:20px;
   padding:10px;
-  margin-top:10px;
-  border-radius:6px;
-  transition: background 0.5s ease, color 0.5s ease;
+  border-radius:8px;
+  transition: background 0.5s, color 0.5s;
 }
-#imagemDirecao{
-  display:flex;
-  justify-content:center;
-  margin-top:10px;
+#iconeDirecao svg{
+  width:80px;
+  height:80px;
+  transition: transform 0.5s;
 }
-#imagemDirecao svg{
-  width:60px;
-  height:60px;
-  transition: transform 0.3s ease;
-}
-.pulsarZoom{
+.pulsar{
   animation: pulseZoom 0.8s ease;
 }
 @keyframes pulseZoom{
   0% {transform: scale(1);}
-  50% {transform: scale(1.6);}
+  50% {transform: scale(1.5);}
   100% {transform: scale(1);}
-}
-#painel-direito{
-  width:360px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-#breaking{
-  background:#111827;
-  color:#fff;
-  border-radius:6px;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-}
-.breaking-header{
-  background:#7f1d1d;
-  padding:8px;
-  font-weight:bold;
-  text-align:center;
-}
-#breaking-list{
-  max-height:220px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.breaking-item{
-  padding:8px;
-  border-bottom:1px solid #374151;
-}
-.breaking-item a{
-  color:#93c5fd;
-  text-decoration:none;
-}
-#mercado{
-  background:#ffffff;
-  border-radius:6px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-.mercado-header{
-  background:#1f2937;
-  color:#fff;
-  padding:8px;
-  font-weight:bold;
-  text-align:center;
-}
-#mercado-list{
-  max-height:220px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.mercado-item{
-  padding:8px;
-  border-bottom:1px solid #e5e7eb;
-}
-.mercado-item a{
-  color:#1d4ed8;
-  text-decoration:none;
-}
-.alerta-contrario{
-  animation:pulse 1s infinite;
-}
-@keyframes pulse{
-  0%{background:#fee2e2;}
-  50%{background:#fecaca;}
-  100%{background:#fee2e2;}
 }
 </style>
 </head>
 <body>
 
-<header>
-📊 Direção Macro do Mercado – Mini Índice (WIN)
-</header>
-
-<div id="layout">
-  <div id="macro">
-    <div id="relogio"><span>⏰</span></div>
-    <table>
-      <thead>
-        <tr><th>Leitura Macro (WIN)</th><th>Condição</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Futuros EUA (Pré)</td><td class="alta">POSITIVO</td></tr>
-        <tr><td>Volatilidade (VIX)</td><td class="baixa">CONTROLADA</td></tr>
-        <tr><td>Fluxo Institucional</td><td class="alta">COMPRADOR</td></tr>
-        <tr><td>Juros / Risco Brasil</td><td class="baixa">ALÍVIO</td></tr>
-      </tbody>
-    </table>
-    <div id="direcao" class="alta" data-macro="ALTA">
-      🟢 VIÉS DIRECIONAL DE ALTA<br>Buscar COMPRAS no WIN ao longo do dia
-    </div>
-    <div id="imagemDirecao"></div>
-  </div>
-
-  <div id="painel-direito">
-    <div id="mercado">
-      <div class="mercado-header">📰 Notícias de Mercado</div>
-      <div id="mercado-list">
-        <div class="mercado-item">Aguardando notícias...</div>
-      </div>
-    </div>
-    <div id="breaking">
-      <div class="breaking-header">🚨 BREAKING NEWS</div>
-      <div id="breaking-list">
-        <div class="breaking-item">Aguardando notícias...</div>
-      </div>
-    </div>
-  </div>
+<div id="container">
+  <div id="direcao" data-macro="ALTA">🟢 ALTA - Priorizar COMPRAS</div>
+  <div id="iconeDirecao"></div>
 </div>
 
-<audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
 <script>
+// Ícones inline SVG
 const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
-const svgUrso = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
+const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
 
-function atualizarRelogio(){
-  const agora = new Date();
-  const br = new Date(agora.getTime() + (agora.getTimezoneOffset()*60000) - 3*3600000);
-  document.getElementById("relogio").innerHTML = "⏰ " + br.toLocaleTimeString("pt-BR");
-
+// Atualiza direção
+function atualizarDirecao(){
   const direcao = document.getElementById("direcao").dataset.macro;
-  const blocoDirecao = document.getElementById("direcao");
-  const imagemDirecao = document.getElementById("imagemDirecao");
-  imagemDirecao.innerHTML = "";
+  const bloco = document.getElementById("direcao");
+  const icone = document.getElementById("iconeDirecao");
+  icone.innerHTML = "";
 
   if(direcao === "ALTA"){
-    blocoDirecao.style.background="#dcfce7";
-    blocoDirecao.style.color="#065f46";
-    imagemDirecao.innerHTML = `<span class="pulsarZoom">${svgTouro}</span>`;
+    bloco.style.background="#dcfce7";
+    bloco.style.color="#065f46";
+    icone.innerHTML = `<span class="pulsar">${svgTouro}</span>`;
   } else if(direcao === "BAIXA"){
-    blocoDirecao.style.background="#fee2e2";
-    blocoDirecao.style.color="#7f1d1d";
-    imagemDirecao.innerHTML = `<span class="pulsarZoom">${svgUrso}</span>`;
-  } else {
-    blocoDirecao.style.background="#fef9c3";
-    blocoDirecao.style.color="#78350f";
+    bloco.style.background="#fee2e2";
+    bloco.style.color="#7f1d1d";
+    icone.innerHTML = `<span class="pulsar">${svgUrso}</span>`;
+  } else{
+    bloco.style.background="#fef9c3";
+    bloco.style.color="#78350f";
+    icone.innerHTML = "";
   }
 }
 
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
-
-// PALAVRAS NEGATIVAS
-const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
-
-async function buscarBreaking(){
-  const rss = "https://news.google.com/rss/search?q=fed+OR+juros+OR+guerra+OR+inflação&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-  const res = await fetch(url);
-  const text = await res.text();
-  const xml = new DOMParser().parseFromString(text,"text/xml");
-  const items = xml.querySelectorAll("item");
-  const breakingList = document.getElementById("breaking-list");
-  const som = document.getElementById("somAlerta");
-  breakingList.innerHTML="";
-
-  items.forEach((item,i)=>{
-    if(i>4) return;
-    const titulo=item.querySelector("title").textContent;
-    const link=item.querySelector("link").textContent;
-    const div=document.createElement("div");
-    div.className="breaking-item";
-    div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
-    breakingList.appendChild(div);
-
-    const macro = document.getElementById("direcao").dataset.macro;
-    if(macro !== "NEUTRO" && negativas.some(p=>titulo.toLowerCase().includes(p))){
-      document.getElementById("breaking").classList.add("alerta-contrario");
-      som.play().catch(()=>{});
-      setTimeout(()=>{document.getElementById("breaking").classList.remove("alerta-contrario");},15000);
-    }
-  });
-}
-buscarBreaking();
-setInterval(buscarBreaking,30000);
-
-async function buscarMercado(){
-  const rss = "https://news.google.com/rss/search?q=mercado+financeiro+OR+b3+OR+economia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-  const res = await fetch(url);
-  const text = await res.text();
-  const xml = new DOMParser().parseFromString(text,"text/xml");
-  const items = xml.querySelectorAll("item");
-  const mercadoList = document.getElementById("mercado-list");
-  mercadoList.innerHTML="";
-  items.forEach((item,i)=>{
-    if(i>4) return;
-    const t=item.querySelector("title").textContent;
-    const l=item.querySelector("link").textContent;
-    const div=document.createElement("div");
-    div.className="mercado-item";
-    div.innerHTML=`${t}<br><a href="${l}" target="_blank">Ler</a>`;
-    mercadoList.appendChild(div);
-  });
-}
-buscarMercado();
-setInterval(buscarMercado,60000);
+// Inicializa
+atualizarDirecao();
 </script>
+
 </body>
 </html>
