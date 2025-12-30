@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Macro Real Global + Brasil | WIN</title>
+<title>Macro Direcional Global + Brasil | WIN</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#f4f6f8;display:flex;flex-direction:column;align-items:center}
@@ -20,18 +20,19 @@ header{width:100%;background:#1f2937;color:#fff;text-align:center;padding:10px}
 #sentimentoBarContainer{width:650px;height:30px;background:#e5e7eb;border-radius:6px;overflow:hidden}
 #sentimentoBar{height:100%;width:50%;line-height:30px;text-align:center;font-weight:bold;color:#fff;background:linear-gradient(to right, red, green);transition:.4s}
 
-/* BREAKING NEWS INALTERADO */
+/* BREAKING NEWS */
 #painel-news{position:fixed;top:30px;right:10px;width:360px;background:#111827;color:#fff;border-radius:6px;z-index:999}
 .news-header{background:#1f2937;padding:8px;text-align:center;font-weight:bold}
 #newsList{max-height:260px;overflow-y:auto;font-size:13px}
 .news-item{padding:8px;border-bottom:1px solid #374151}
 .news-item a{color:#93c5fd;text-decoration:none}
+.breaking{animation:pisc 1s infinite}
 </style>
 </head>
 
 <body>
 
-<header><h2>Direção Macro Real | Mini Índice (WIN)</h2></header>
+<header><h2>Direção Macro Global + Brasil | Mini Índice (WIN)</h2></header>
 <div id="relogio"></div>
 
 <div id="macroTrend" class="box">🧭 Calculando tendência macro...</div>
@@ -49,24 +50,19 @@ header{width:100%;background:#1f2937;color:#fff;text-align:center;padding:10px}
 
 <audio id="alerta-trend" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 <audio id="alerta-scalp" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="alerta-news" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
 
 <script>
-// ===== RELÓGIO BR =====
+// ================= RELÓGIO BRASÍLIA =================
 setInterval(()=>{
  const d=new Date(),u=d.getTime()+d.getTimezoneOffset()*60000;
  document.getElementById("relogio").innerText=
  "Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
 },1000);
 
-// ===== ATIVOS REAIS (TradingView proxy público) =====
-const ativosRiskOn=[
- "INDEX:SPX","INDEX:NDX","INDEX:DJI","INDEX:DAX",
- "INDEX:N225","NYMEX:CL1!","COMEX:HG1!"
-];
-const ativosRiskOff=[
- "CBOE:VIX","FOREXCOM:DX1!","COMEX:GC1!",
- "CURRENCY:US10Y","FOREXCOM:JPYUSD"
-];
+// ================= ATIVOS REAIS =================
+const riskOn=["INDEX:SPX","INDEX:NDX","INDEX:DJI","INDEX:DAX","INDEX:N225","NYMEX:CL1!","COMEX:HG1!"];
+const riskOff=["CBOE:VIX","FOREXCOM:DX1!","COMEX:GC1!","CURRENCY:US10Y","FOREXCOM:JPYUSD"];
 
 async function preco(symbol){
  try{
@@ -79,65 +75,61 @@ async function preco(symbol){
 let histTrend=[],histScalp=[];
 let estadoTrend="",estadoScalp="";
 
+// ================= LOOP MACRO =================
 async function atualizar(){
- let risk=0,off=0;
+ let on=0,off=0;
+ for(const a of riskOn) on+=await preco(a);
+ for(const a of riskOff) off+=await preco(a);
 
- for(const a of ativosRiskOn) risk+=await preco(a);
- for(const a of ativosRiskOff) off+=await preco(a);
-
- const diff=risk-off;
-
- histTrend.push(diff);
- histScalp.push(diff);
-
+ const diff=on-off;
+ histTrend.push(diff); histScalp.push(diff);
  if(histTrend.length>8) histTrend.shift();
  if(histScalp.length>3) histScalp.shift();
 
  analisar();
 }
+setInterval(atualizar,60000); atualizar();
 
 function analisar(){
  const t=histTrend.reduce((a,b)=>a+b,0)/histTrend.length;
  const s=histScalp.reduce((a,b)=>a+b,0)/histScalp.length;
 
  // TENDÊNCIA
- let nt="NEUTRO";
- if(t>0) nt="ALTA";
- if(t<0) nt="BAIXA";
-
- if(nt!==estadoTrend && estadoTrend!==""){
-  document.getElementById("alerta-trend").play().catch(()=>{});
+ let nt=t>0?"ALTA":t<0?"BAIXA":"NEUTRO";
+ if(nt!==estadoTrend && estadoTrend){
+  alertaTrend.play().catch(()=>{});
   macroTrend.classList.add("piscar");
   setTimeout(()=>macroTrend.classList.remove("piscar"),12000);
  }
  estadoTrend=nt;
-
  macroTrend.className="box "+(nt==="ALTA"?"verde":nt==="BAIXA"?"vermelho":"amarelo");
  macroTrend.innerHTML=`🧭 <b>TENDÊNCIA</b><br>${nt==="ALTA"?"📈 Priorizar compra":nt==="BAIXA"?"📉 Priorizar venda":"⚠️ Lateral"}`;
 
  // SCALP
- let ns="NEUTRO";
- if(s>0) ns="ALTA";
- if(s<0) ns="BAIXA";
-
- if(ns!==estadoScalp && estadoScalp!==""){
-  document.getElementById("alerta-scalp").play().catch(()=>{});
+ let ns=s>0?"ALTA":s<0?"BAIXA":"NEUTRO";
+ if(ns!==estadoScalp && estadoScalp){
+  alertaScalp.play().catch(()=>{});
   macroScalp.classList.add("piscar");
   setTimeout(()=>macroScalp.classList.remove("piscar"),8000);
  }
  estadoScalp=ns;
-
  macroScalp.className="box "+(ns==="ALTA"?"verde":ns==="BAIXA"?"vermelho":"amarelo");
  macroScalp.innerHTML=`⚡ <b>SCALP</b><br>${ns==="ALTA"?"📈 Compra rápida":ns==="BAIXA"?"📉 Venda rápida":"⚠️ Ruído"}`;
 
- const bar=document.getElementById("sentimentoBar");
- bar.style.width=nt==="ALTA"?"80%":nt==="BAIXA"?"20%":"50%";
- bar.innerText=nt;
+ sentimentoBar.style.width=nt==="ALTA"?"80%":nt==="BAIXA"?"20%":"50%";
+ sentimentoBar.innerText=nt;
 }
 
-setInterval(atualizar,60000);
-atualizar();
-</script>
+// ================= NOTÍCIAS DE MERCADO (RESTAURADO) =================
+const palavras=["fed","cpi","juros","taxa","inflação","inflation","guerra","war","banco central"];
+const cache={};
 
-</body>
-</html>
+async function buscarNoticias(){
+ const rss="https://news.google.com/rss/search?q="+encodeURIComponent(palavras.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+ const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+ try{
+  const r=await fetch(url);
+  const t=await r.text();
+  const xml=new DOMParser().parseFromString(t,"text/xml");
+  xml.querySelectorAll("item").forEach(i=>{
+    const title=i.querySelector("title").textCon
