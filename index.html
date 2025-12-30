@@ -5,45 +5,144 @@
 <title>Direção Macro – Mini Índice B3</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f4f6f8}
-header{background:#020617;color:#fff;padding:12px;text-align:center}
-#relogio{text-align:center;margin:18px 0;font-size:18px;font-weight:bold}
-#conteudo{width:720px;margin:0 auto}
+body{
+  font-family:Arial, sans-serif;
+  margin:0;
+  background:#f4f6f8;
+}
+
+/* ===== HEADER ===== */
+header{
+  background:#020617;
+  color:#fff;
+  padding:12px;
+  text-align:center;
+}
+
+/* ===== RELÓGIO ===== */
+#relogio{
+  text-align:center;
+  margin:18px 0;
+  font-size:18px;
+  font-weight:bold;
+}
+
+/* ===== CONTEÚDO CENTRAL ===== */
+#conteudo{
+  width:720px;
+  margin:0 auto;
+}
 
 /* ===== DIREÇÃO MACRO ===== */
 #macroBox{
- padding:26px;border-radius:14px;
- box-shadow:0 8px 22px rgba(0,0,0,.25);
- text-align:center;margin-bottom:18px;
- transition:all .4s;
+  padding:26px;
+  border-radius:14px;
+  box-shadow:0 8px 22px rgba(0,0,0,.25);
+  text-align:center;
+  margin-bottom:18px;
+  transition:all .4s;
 }
-.titulo{font-size:13px;letter-spacing:1px;opacity:.7}
-.direcao{font-size:42px;font-weight:bold;margin:12px 0}
-.acao{font-size:16px;font-weight:bold}
 
-.verde{background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#065f46}
-.vermelho{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#7f1d1d}
-.neutro{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#713f12}
+.titulo{
+  font-size:13px;
+  letter-spacing:1px;
+  opacity:.7;
+}
+.direcao{
+  font-size:42px;
+  font-weight:bold;
+  margin:12px 0;
+}
+.acao{
+  font-size:16px;
+  font-weight:bold;
+}
+
+/* CORES DO EVENTO */
+.verde{
+  background:linear-gradient(135deg,#dcfce7,#bbf7d0);
+  color:#065f46;
+}
+.vermelho{
+  background:linear-gradient(135deg,#fee2e2,#fecaca);
+  color:#7f1d1d;
+}
+.neutro{
+  background:linear-gradient(135deg,#fef9c3,#fde68a);
+  color:#713f12;
+}
 
 .piscar{animation:pisc 1s infinite}
-@keyframes pisc{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+@keyframes pisc{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.02)}
+  100%{transform:scale(1)}
+}
 
 /* ===== NOTÍCIAS MACRO ===== */
-#newsMacro{background:#0f172a;color:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.35)}
-#newsMacro h3{margin:0;padding:12px;background:#020617;text-align:center;border-radius:12px 12px 0 0}
-.newsItem{padding:12px;border-bottom:1px solid #1e293b;font-size:13px}
-.newsItem a{color:#93c5fd;text-decoration:none}
-
-/* ===== BREAKING NEWS (NÃO ALTERADO) ===== */
-#painel-news{
- position:fixed;top:28px;right:10px;width:360px;
- background:#111827;color:white;border-radius:6px;
- box-shadow:0 4px 8px rgba(0,0,0,0.3);z-index:9998
+#newsMacro{
+  background:#0f172a;
+  color:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.35);
 }
-.news-header{text-align:center;font-weight:bold;padding:8px;background:#1f2937}
-#newsList{max-height:260px;overflow-y:auto;font-size:13px}
-.news-item{padding:8px;border-bottom:1px solid #374151}
-.news-item a{color:#93c5fd;text-decoration:none}
+#newsMacro h3{
+  margin:0;
+  padding:12px;
+  background:#020617;
+  text-align:center;
+  border-radius:12px 12px 0 0;
+}
+.newsItem{
+  padding:12px;
+  border-bottom:1px solid #1e293b;
+  font-size:13px;
+}
+.newsItem a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+/* ===== BREAKING NEWS (INALTERADO) ===== */
+#painel-news{
+  position:fixed;
+  top:28px;
+  right:10px;
+  width:360px;
+  background:#111827;
+  color:white;
+  border-radius:6px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+  z-index:9998;
+}
+.news-header{
+  text-align:center;
+  font-weight:bold;
+  padding:8px;
+  background:#1f2937;
+  border-radius:6px 6px 0 0;
+}
+#newsList{
+  max-height:260px;
+  overflow-y:auto;
+  font-size:13px;
+}
+.news-item{
+  padding:8px;
+  border-bottom:1px solid #374151;
+}
+.news-item a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+.breaking{
+  animation:blink 1s infinite;
+}
+@keyframes blink{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
+}
 </style>
 </head>
 
@@ -57,10 +156,12 @@ header{background:#020617;color:#fff;padding:12px;text-align:center}
 
 <div id="conteudo">
 
+  <!-- DIREÇÃO MACRO -->
   <div id="macroBox" class="neutro">
     Carregando leitura macro...
   </div>
 
+  <!-- NOTÍCIAS MACRO -->
   <div id="newsMacro">
     <h3>📰 Notícias Macro Relevantes</h3>
     <div id="newsMacroList">
@@ -70,7 +171,7 @@ header{background:#020617;color:#fff;padding:12px;text-align:center}
 
 </div>
 
-<!-- BREAKING NEWS INTACTO -->
+<!-- BREAKING NEWS (NÃO MEXIDO) -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
   <div id="newsList">
@@ -81,77 +182,103 @@ header{background:#020617;color:#fff;padding:12px;text-align:center}
 <audio id="somMacro" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// ===== RELÓGIO BRASÍLIA =====
+/* ===== RELÓGIO BRASÍLIA ===== */
 setInterval(()=>{
- const d=new Date(),u=d.getTime()+d.getTimezoneOffset()*60000;
- relogio.innerText="⏰ Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
+  const d=new Date();
+  const utc=d.getTime()+d.getTimezoneOffset()*60000;
+  const br=new Date(utc-3*3600000);
+  document.getElementById("relogio").innerText =
+    "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
 },1000);
 
-// ===== BUSCAR PREÇOS (TradingView) =====
-async function tvPrice(symbol){
- const url=`https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
- try{
-  const r=await fetch(url);
-  const j=await r.json();
-  return j.last_price||j.close||0;
- }catch(e){return 0;}
+/* ===== FUNÇÃO YAHOO FINANCE ===== */
+async function yahoo(symbol){
+  const url="https://query1.finance.yahoo.com/v7/finance/quote?symbols="+symbol;
+  try{
+    const r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));
+    const j=await r.json();
+    return j.quoteResponse.result[0].regularMarketPrice || 0;
+  }catch(e){
+    return 0;
+  }
 }
 
-let prev={sp:0,vix:0,dxy:0,di:0},ultimo="";
+let prev={sp:0,vix:0,dxy:0};
+let ultimoEstado="";
 
-// ===== DIREÇÃO MACRO GLOBAL + BRASIL =====
+/* ===== DIREÇÃO MACRO AUTOMÁTICA ===== */
 async function atualizarMacro(){
- const sp=await tvPrice("INDEX:SPX");        // S&P 500
- const vix=await tvPrice("CBOE:VIX");        // Volatilidade
- const dxy=await tvPrice("FOREXCOM:DX1!");   // Dólar
- const di=await tvPrice("BMFBOVESPA:DI1!");  // DI Futuro Brasil
+  const sp = await yahoo("^GSPC");      // S&P 500
+  const vix = await yahoo("^VIX");      // VIX
+  const dxy = await yahoo("DX-Y.NYB");  // DXY
 
- if(!sp||!vix||!dxy||!di) return;
+  if(!sp || !vix || !dxy){
+    macroBox.innerHTML = "Erro ao carregar dados macro";
+    return;
+  }
 
- const spVar=(sp-prev.sp)/prev.sp||0;
- const vixVar=(vix-prev.vix)/prev.vix||0;
- const dxyVar=(dxy-prev.dxy)/prev.dxy||0;
- const diVar=(di-prev.di)/prev.di||0;
+  const spVar = (sp-prev.sp)/prev.sp || 0;
+  const vixVar = (vix-prev.vix)/prev.vix || 0;
+  const dxyVar = (dxy-prev.dxy)/prev.dxy || 0;
 
- prev={sp,vix,dxy,di};
+  prev = {sp,vix,dxy};
 
- let estado="NEUTRO",acao="Aguardar",classe="neutro";
+  let estado="NEUTRO";
+  let acao="Aguardar";
+  let classe="neutro";
 
- const riscoOn = spVar>0 && vixVar<0 && diVar<0;
- const riscoOff = spVar<0 && vixVar>0 && diVar>0;
+  if(spVar>0 && vixVar<0 && dxyVar<=0){
+    estado="ALTA";
+    acao="Risco ON global → Priorizar COMPRAS no WIN";
+    classe="verde";
+  }
+  else if(spVar<0 && vixVar>0 && dxyVar>=0){
+    estado="BAIXA";
+    acao="Risco OFF global → Priorizar VENDAS no WIN";
+    classe="vermelho";
+  }
 
- if(riscoOn){
-   estado="ALTA";
-   acao="Global + Brasil favoráveis → Priorizar COMPRAS no WIN";
-   classe="verde";
- }
- else if(riscoOff){
-   estado="BAIXA";
-   acao="Aversão ao risco + Juros abrindo → Priorizar VENDAS no WIN";
-   classe="vermelho";
- }
- else{
-   estado="NEUTRO";
-   acao="Conflito macro → Defesa / Reduzir exposição";
-   classe="neutro";
- }
+  if(ultimoEstado && ultimoEstado!==estado){
+    document.getElementById("somMacro").play().catch(()=>{});
+    macroBox.classList.add("piscar");
+    setTimeout(()=>macroBox.classList.remove("piscar"),8000);
+  }
+  ultimoEstado = estado;
 
- if(ultimo && ultimo!==estado){
-   somMacro.play().catch(()=>{});
-   macroBox.classList.add("piscar");
-   setTimeout(()=>macroBox.classList.remove("piscar"),9000);
- }
- ultimo=estado;
-
- macroBox.className=classe;
- macroBox.innerHTML=`
-  <div class="titulo">Direção Macro (SP500 • VIX • DXY • DI Futuro)</div>
-  <div class="direcao">${estado}</div>
-  <div class="acao">${acao}</div>
- `;
+  macroBox.className = classe;
+  macroBox.innerHTML = `
+    <div class="titulo">Direção Macro (SP500 • VIX • DXY)</div>
+    <div class="direcao">${estado}</div>
+    <div class="acao">${acao}</div>
+  `;
 }
+
 setInterval(atualizarMacro,60000);
 atualizarMacro();
+
+/* ===== NOTÍCIAS MACRO ===== */
+async function buscarNoticiasMacro(){
+  const rss="https://news.google.com/rss/search?q=juros+fed+copom+inflação+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+  try{
+    const res=await fetch(url);
+    const txt=await res.text();
+    const xml=new DOMParser().parseFromString(txt,"text/xml");
+    const items=[...xml.querySelectorAll("item")].slice(0,5);
+    const box=document.getElementById("newsMacroList");
+    box.innerHTML="";
+    items.forEach(i=>{
+      const t=i.querySelector("title").textContent;
+      const l=i.querySelector("link").textContent;
+      const div=document.createElement("div");
+      div.className="newsItem";
+      div.innerHTML=`<b>${t}</b><br><a href="${l}" target="_blank">Ler notícia</a>`;
+      box.appendChild(div);
+    });
+  }catch(e){}
+}
+buscarNoticiasMacro();
+setInterval(buscarNoticiasMacro,60000);
 </script>
 
 </body>
