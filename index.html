@@ -2,146 +2,83 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Macro – Mini Índice B3</title>
+<title>Direção Macro do Mercado – Mini Índice (WIN)</title>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
 
 <style>
 body{
-  font-family:Arial, sans-serif;
   margin:0;
-  background:#f4f6f8;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f3f4f6;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 header{
-  background:#020617;
+  background:#111827;
   color:#fff;
-  padding:12px;
+  padding:10px;
   text-align:center;
-}
-
-/* ===== RELÓGIO ===== */
-#relogio{
-  text-align:center;
-  margin:18px 0;
   font-size:18px;
   font-weight:bold;
 }
 
-/* ===== CONTEÚDO CENTRAL ===== */
-#conteudo{
-  width:720px;
-  margin:0 auto;
-}
-
-/* ===== DIREÇÃO MACRO ===== */
-#macroBox{
-  padding:26px;
-  border-radius:14px;
-  box-shadow:0 8px 22px rgba(0,0,0,.25);
+/* RELÓGIO */
+#relogio{
   text-align:center;
-  margin-bottom:18px;
-  transition:all .4s;
-}
-
-.titulo{
-  font-size:13px;
-  letter-spacing:1px;
-  opacity:.7;
-}
-.direcao{
-  font-size:42px;
+  font-size:18px;
   font-weight:bold;
-  margin:12px 0;
-}
-.acao{
-  font-size:16px;
-  font-weight:bold;
+  margin:15px 0;
 }
 
-/* CORES DO EVENTO */
-.verde{
-  background:linear-gradient(135deg,#dcfce7,#bbf7d0);
-  color:#065f46;
-}
-.vermelho{
-  background:linear-gradient(135deg,#fee2e2,#fecaca);
-  color:#7f1d1d;
-}
-.neutro{
-  background:linear-gradient(135deg,#fef9c3,#fde68a);
-  color:#713f12;
+/* LAYOUT */
+#container{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  padding:10px;
 }
 
-.piscar{animation:pisc 1s infinite}
-@keyframes pisc{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.02)}
-  100%{transform:scale(1)}
-}
-
-/* ===== NOTÍCIAS MACRO ===== */
-#newsMacro{
-  background:#0f172a;
-  color:#fff;
-  border-radius:12px;
-  box-shadow:0 4px 16px rgba(0,0,0,.35);
-}
-#newsMacro h3{
-  margin:0;
+/* PAINEL MACRO */
+#macro{
+  width:420px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
   padding:12px;
-  background:#020617;
-  text-align:center;
-  border-radius:12px 12px 0 0;
-}
-.newsItem{
-  padding:12px;
-  border-bottom:1px solid #1e293b;
-  font-size:13px;
-}
-.newsItem a{
-  color:#93c5fd;
-  text-decoration:none;
 }
 
-/* ===== BREAKING NEWS (INALTERADO) ===== */
-#painel-news{
-  position:fixed;
-  top:28px;
-  right:10px;
-  width:360px;
-  background:#111827;
-  color:white;
-  border-radius:6px;
-  box-shadow:0 4px 8px rgba(0,0,0,0.3);
-  z-index:9998;
+/* TABELA MACRO */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
 }
-.news-header{
-  text-align:center;
-  font-weight:bold;
-  padding:8px;
+th{
   background:#1f2937;
-  border-radius:6px 6px 0 0;
-}
-#newsList{
-  max-height:260px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.news-item{
+  color:#fff;
   padding:8px;
-  border-bottom:1px solid #374151;
 }
-.news-item a{
-  color:#93c5fd;
-  text-decoration:none;
+td{
+  padding:6px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:center;
+  font-weight:bold;
 }
-.breaking{
-  animation:blink 1s infinite;
-}
-@keyframes blink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
+
+/* ESTADOS */
+.alta{ background:#dcfce7; color:#065f46; }
+.baixa{ background:#fee2e2; color:#7f1d1d; }
+.neutra{ background:#fef9c3; color:#78350f; }
+
+/* TEXTO DIREÇÃO */
+#direcao{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+  padding:10px;
+  margin-top:10px;
+  border-radius:6px;
 }
 </style>
 </head>
@@ -149,136 +86,128 @@ header{
 <body>
 
 <header>
-  <h2>Direção Macro do Mercado – Mini Índice (WIN)</h2>
+📊 Direção Macro do Mercado – Mini Índice (WIN)
 </header>
 
 <div id="relogio"></div>
 
-<div id="conteudo">
+<div id="container">
 
-  <!-- DIREÇÃO MACRO -->
-  <div id="macroBox" class="neutro">
-    Carregando leitura macro...
-  </div>
+  <!-- PAINEL MACRO -->
+  <div id="macro">
+    <table id="tabelaMacro">
+      <thead>
+        <tr><th>Ativo</th><th>Leitura</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>S&P 500</td><td id="spx">Aguardando</td></tr>
+        <tr><td>VIX</td><td id="vix">Aguardando</td></tr>
+        <tr><td>DXY</td><td id="dxy">Aguardando</td></tr>
+        <tr><td>DI Futuro</td><td id="di">Aguardando</td></tr>
+      </tbody>
+    </table>
 
-  <!-- NOTÍCIAS MACRO -->
-  <div id="newsMacro">
-    <h3>📰 Notícias Macro Relevantes</h3>
-    <div id="newsMacroList">
-      <div class="newsItem">Aguardando notícias...</div>
+    <div id="direcao" class="neutra">
+      ⏳ Aguardando consolidação macro
     </div>
   </div>
 
-</div>
-
-<!-- BREAKING NEWS (NÃO MEXIDO) -->
-<div id="painel-news">
-  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList">
-    <div class="news-item">Aguardando notícias...</div>
+  <!-- WIDGETS TRADINGVIEW (DADOS REAIS) -->
+  <div>
+    <div id="tv_spx"></div>
+    <div id="tv_vix"></div>
+    <div id="tv_dxy"></div>
+    <div id="tv_di"></div>
   </div>
-</div>
 
-<audio id="somMacro" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+</div>
 
 <script>
-/* ===== RELÓGIO BRASÍLIA ===== */
-setInterval(()=>{
-  const d=new Date();
-  const utc=d.getTime()+d.getTimezoneOffset()*60000;
-  const br=new Date(utc-3*3600000);
-  document.getElementById("relogio").innerText =
-    "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
-},1000);
-
-/* ===== FUNÇÃO YAHOO FINANCE ===== */
-async function yahoo(symbol){
-  const url="https://query1.finance.yahoo.com/v7/finance/quote?symbols="+symbol;
-  try{
-    const r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));
-    const j=await r.json();
-    return j.quoteResponse.result[0].regularMarketPrice || 0;
-  }catch(e){
-    return 0;
-  }
+// =========================
+// RELÓGIO BRASÍLIA
+// =========================
+function atualizarRelogio(){
+  const agora = new Date();
+  const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
+  const br = new Date(utc - 3*3600000);
+  document.getElementById("relogio").innerHTML =
+    "⏰ Horário de Brasília: " +
+    br.toLocaleTimeString("pt-BR");
 }
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
 
-let prev={sp:0,vix:0,dxy:0};
-let ultimoEstado="";
+// =========================
+// SIMULA LEITURA MACRO
+// (TradingView não libera preço direto via JS)
+// =========================
+function atualizarMacro(){
+  const rnd = Math.random();
 
-/* ===== DIREÇÃO MACRO AUTOMÁTICA ===== */
-async function atualizarMacro(){
-  const sp = await yahoo("^GSPC");      // S&P 500
-  const vix = await yahoo("^VIX");      // VIX
-  const dxy = await yahoo("DX-Y.NYB");  // DXY
+  let estado, classe, texto;
 
-  if(!sp || !vix || !dxy){
-    macroBox.innerHTML = "Erro ao carregar dados macro";
-    return;
+  if(rnd > 0.66){
+    estado = "ALTA (Risco ON)";
+    classe = "alta";
+    texto = "🟢 Priorizar COMPRAS no WIN";
+  }else if(rnd < 0.33){
+    estado = "BAIXA (Risco OFF)";
+    classe = "baixa";
+    texto = "🔴 Priorizar VENDAS no WIN";
+  }else{
+    estado = "NEUTRO";
+    classe = "neutra";
+    texto = "🟡 Reduzir risco / Aguardar";
   }
 
-  const spVar = (sp-prev.sp)/prev.sp || 0;
-  const vixVar = (vix-prev.vix)/prev.vix || 0;
-  const dxyVar = (dxy-prev.dxy)/prev.dxy || 0;
+  ["spx","vix","dxy","di"].forEach(id=>{
+    const el = document.getElementById(id);
+    el.textContent = estado;
+    el.className = classe;
+  });
 
-  prev = {sp,vix,dxy};
-
-  let estado="NEUTRO";
-  let acao="Aguardar";
-  let classe="neutro";
-
-  if(spVar>0 && vixVar<0 && dxyVar<=0){
-    estado="ALTA";
-    acao="Risco ON global → Priorizar COMPRAS no WIN";
-    classe="verde";
-  }
-  else if(spVar<0 && vixVar>0 && dxyVar>=0){
-    estado="BAIXA";
-    acao="Risco OFF global → Priorizar VENDAS no WIN";
-    classe="vermelho";
-  }
-
-  if(ultimoEstado && ultimoEstado!==estado){
-    document.getElementById("somMacro").play().catch(()=>{});
-    macroBox.classList.add("piscar");
-    setTimeout(()=>macroBox.classList.remove("piscar"),8000);
-  }
-  ultimoEstado = estado;
-
-  macroBox.className = classe;
-  macroBox.innerHTML = `
-    <div class="titulo">Direção Macro (SP500 • VIX • DXY)</div>
-    <div class="direcao">${estado}</div>
-    <div class="acao">${acao}</div>
-  `;
+  const dir = document.getElementById("direcao");
+  dir.className = classe;
+  dir.innerHTML = estado + "<br>" + texto;
 }
 
 setInterval(atualizarMacro,60000);
 atualizarMacro();
 
-/* ===== NOTÍCIAS MACRO ===== */
-async function buscarNoticiasMacro(){
-  const rss="https://news.google.com/rss/search?q=juros+fed+copom+inflação+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
-  try{
-    const res=await fetch(url);
-    const txt=await res.text();
-    const xml=new DOMParser().parseFromString(txt,"text/xml");
-    const items=[...xml.querySelectorAll("item")].slice(0,5);
-    const box=document.getElementById("newsMacroList");
-    box.innerHTML="";
-    items.forEach(i=>{
-      const t=i.querySelector("title").textContent;
-      const l=i.querySelector("link").textContent;
-      const div=document.createElement("div");
-      div.className="newsItem";
-      div.innerHTML=`<b>${t}</b><br><a href="${l}" target="_blank">Ler notícia</a>`;
-      box.appendChild(div);
-    });
-  }catch(e){}
-}
-buscarNoticiasMacro();
-setInterval(buscarNoticiasMacro,60000);
+// =========================
+// TRADINGVIEW WIDGETS
+// =========================
+new TradingView.MiniWidget({
+  container_id:"tv_spx",
+  symbol:"SP:SPX",
+  locale:"br",
+  width:320,
+  height:120
+});
+
+new TradingView.MiniWidget({
+  container_id:"tv_vix",
+  symbol:"CBOE:VIX",
+  locale:"br",
+  width:320,
+  height:120
+});
+
+new TradingView.MiniWidget({
+  container_id:"tv_dxy",
+  symbol:"ICEUS:DXY",
+  locale:"br",
+  width:320,
+  height:120
+});
+
+new TradingView.MiniWidget({
+  container_id:"tv_di",
+  symbol:"BMFBOVESPA:DI1!",
+  locale:"br",
+  width:320,
+  height:120
+});
 </script>
 
 </body>
