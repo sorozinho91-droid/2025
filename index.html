@@ -12,7 +12,38 @@ body{
   display:flex;
 }
 
-/* ===== NOTÍCIAS (LADO ESQUERDO) ===== */
+/* ================= BREAKING NEWS ================= */
+#breakingPanel{
+  position:fixed;
+  top:10px;
+  right:10px;
+  width:360px;
+  background:#111827;
+  color:#fff;
+  border-radius:6px;
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+  z-index:9999;
+}
+#breakingHeader{
+  background:#7f1d1d;
+  padding:8px;
+  text-align:center;
+  font-weight:bold;
+}
+#breakingList{
+  max-height:260px;
+  overflow-y:auto;
+  font-size:13px;
+}
+.breakRow{
+  padding:8px;
+  border-bottom:1px solid #374151;
+}
+.breakRow a{color:#93c5fd;text-decoration:none}
+.blink{animation:blink 1s infinite}
+@keyframes blink{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+
+/* ================= NOTÍCIAS LADO ESQUERDO ================= */
 #newsPanel{
   width:360px;
   background:#0f172a;
@@ -25,7 +56,6 @@ body{
   padding:12px;
   text-align:center;
   background:#020617;
-  border-bottom:1px solid #1e293b;
 }
 .newsRow{
   padding:10px;
@@ -33,12 +63,9 @@ body{
   font-size:13px;
 }
 .newsRow b{color:#facc15}
-.newsRow a{
-  color:#93c5fd;
-  text-decoration:none;
-}
+.newsRow a{color:#93c5fd;text-decoration:none}
 
-/* ===== CONTEÚDO CENTRAL ===== */
+/* ================= CONTEÚDO CENTRAL ================= */
 #main{
   flex:1;
   padding:20px;
@@ -56,159 +83,148 @@ header{
   border-radius:6px;
 }
 
-/* ===== RELÓGIO CENTRAL ===== */
+/* RELÓGIO */
 #relogioCentral{
-  margin:20px 0 10px 0;
+  margin:20px 0 10px;
   font-size:18px;
   font-weight:bold;
-  text-align:center;
-  color:#020617;
   background:#e5e7eb;
   padding:8px 20px;
   border-radius:6px;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
 }
 
-/* ===== BOX TENDÊNCIA ===== */
+/* BOX MACRO */
 .box{
   width:650px;
   background:#fff;
   padding:18px;
   margin-top:10px;
   border-radius:6px;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
   font-size:16px;
 }
-
 .verde{border-left:6px solid #16a34a}
 .vermelho{border-left:6px solid #dc2626}
 .amarelo{border-left:6px solid #ca8a04}
-
-.piscar{animation:pisc 1s infinite}
-@keyframes pisc{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-
-#audioTrend{display:none}
+.piscar{animation:blink 1s infinite}
 </style>
 </head>
 
 <body>
 
-<!-- ===== NOTÍCIAS IMPACTANTES ===== -->
-<div id="newsPanel">
-  <h3>🚨 Notícias que Impactam o Mercado</h3>
-  <div id="newsTable">
-    <div class="newsRow">Aguardando notícias macro...</div>
+<!-- BREAKING NEWS -->
+<div id="breakingPanel">
+  <div id="breakingHeader">🚨 BREAKING NEWS – MERCADO</div>
+  <div id="breakingList">
+    <div class="breakRow">Aguardando eventos críticos...</div>
   </div>
 </div>
 
-<!-- ===== CONTEÚDO CENTRAL ===== -->
+<!-- NOTÍCIAS MACRO -->
+<div id="newsPanel">
+  <h3>📰 Notícias Macro (Contexto)</h3>
+  <div id="newsTable">
+    <div class="newsRow">Aguardando notícias...</div>
+  </div>
+</div>
+
+<!-- CONTEÚDO -->
 <div id="main">
 <header>
   <h2>Direção Macro – Mini Índice (WIN)</h2>
 </header>
 
-<!-- RELÓGIO CENTRAL -->
 <div id="relogioCentral">Carregando horário...</div>
 
-<!-- BOX TENDÊNCIA -->
 <div id="macroBox" class="box amarelo">
-  Calculando tendência macro do mercado…
+  Calculando tendência macro...
 </div>
 </div>
 
-<audio id="audioTrend" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
+<audio id="soundBreak" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
+<audio id="soundTrend" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 
 <script>
-// ================= RELÓGIO BRASÍLIA =================
-function atualizarRelogio(){
- const agora=new Date();
- const utc=agora.getTime()+agora.getTimezoneOffset()*60000;
- const br=new Date(utc-3*3600000);
- document.getElementById("relogioCentral").innerText =
- "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
-}
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
+// RELÓGIO BRASÍLIA
+setInterval(()=>{
+ const d=new Date(),u=d.getTime()+d.getTimezoneOffset()*60000;
+ document.getElementById("relogioCentral").innerText=
+ "⏰ Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
+},1000);
 
-// ================= ATIVOS MACRO REAIS =================
+// ATIVOS MACRO
 const riskOn=["INDEX:SPX","INDEX:NDX","INDEX:DAX","NYMEX:CL1!"];
 const riskOff=["CBOE:VIX","FOREXCOM:DX1!","COMEX:GC1!"];
-
-async function preco(symbol){
+async function preco(s){
  try{
-  const r=await fetch("https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/"+symbol.replace(":","_")+".json");
-  const j=await r.json();
-  return j.last_price||j.close||0;
+  const r=await fetch("https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/"+s.replace(":","_")+".json");
+  const j=await r.json(); return j.last_price||j.close||0;
  }catch{return 0}
 }
 
 let hist=[],estado="";
-
-// ================= CÁLCULO TENDÊNCIA MACRO =================
 async function atualizarMacro(){
  let on=0,off=0;
  for(const a of riskOn) on+=await preco(a);
  for(const a of riskOff) off+=await preco(a);
-
- hist.push(on-off);
- if(hist.length>8) hist.shift();
-
- const media=hist.reduce((a,b)=>a+b,0)/hist.length;
- let novo="NEUTRO",cor="amarelo",texto="⚠️ Mercado indefinido / cautela";
-
- if(media>0){
-  novo="ALTA";
-  cor="verde";
-  texto="📈 TENDÊNCIA DE ALTA<br><br><b>Priorizar COMPRAS no Mini Índice (WIN)</b>";
- }
- if(media<0){
-  novo="BAIXA";
-  cor="vermelho";
-  texto="📉 TENDÊNCIA DE BAIXA<br><br><b>Priorizar VENDAS no Mini Índice (WIN)</b>";
- }
-
- if(estado && estado!==novo){
-  audioTrend.play().catch(()=>{});
-  macroBox.classList.add("piscar");
-  setTimeout(()=>macroBox.classList.remove("piscar"),12000);
- }
-
- estado=novo;
- macroBox.className="box "+cor;
- macroBox.innerHTML=`<b>🧭 DIREÇÃO MACRO DO MERCADO</b><br><br>${texto}`;
+ hist.push(on-off); if(hist.length>8) hist.shift();
+ const m=hist.reduce((a,b)=>a+b,0)/hist.length;
+ let cor="amarelo",txt="⚠️ Mercado indefinido";
+ if(m>0){cor="verde";txt="📈 TENDÊNCIA DE ALTA – Priorizar COMPRAS"}
+ if(m<0){cor="vermelho";txt="📉 TENDÊNCIA DE BAIXA – Priorizar VENDAS"}
+ if(estado && estado!==txt){soundTrend.play().catch(()=>{});macroBox.classList.add("piscar");setTimeout(()=>macroBox.classList.remove("piscar"),12000);}
+ estado=txt; macroBox.className="box "+cor; macroBox.innerHTML="<b>🧭 DIREÇÃO MACRO</b><br><br>"+txt;
 }
+setInterval(atualizarMacro,60000); atualizarMacro();
 
-setInterval(atualizarMacro,60000);
-atualizarMacro();
-
-// ================= NOTÍCIAS MACRO =================
-const keywords=["fed","juros","interest rate","cpi","inflation","inflação","banco central","fiscal","dívida","guerra","war","recessão"];
-const cache={};
-
-async function carregarNoticias(){
- const rss="https://news.google.com/rss/search?q="+encodeURIComponent(keywords.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+// BREAKING NEWS (CRÍTICAS)
+const breakWords=["fed","juros","rate","war","guerra","default","emergency","crise"];
+const breakCache={};
+async function breaking(){
+ const rss="https://news.google.com/rss/search?q="+encodeURIComponent(breakWords.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
-
  try{
-  const r=await fetch(url);
-  const t=await r.text();
+  const r=await fetch(url); const t=await r.text();
   const xml=new DOMParser().parseFromString(t,"text/xml");
   xml.querySelectorAll("item").forEach(i=>{
     const title=i.querySelector("title").textContent;
     const link=i.querySelector("link").textContent;
-    if(cache[link]) return;
-    cache[link]=true;
-
-    const row=document.createElement("div");
-    row.className="newsRow";
-    row.innerHTML=`<b>⚠️ ${title}</b><br><a href="${link}" target="_blank">Abrir notícia</a>`;
-    newsTable.prepend(row);
+    if(breakCache[link])return;
+    breakCache[link]=true;
+    const d=document.createElement("div");
+    d.className="breakRow";
+    d.innerHTML="<b>"+title+"</b><br><a href='"+link+"' target='_blank'>Abrir</a>";
+    breakingList.prepend(d);
+    breakingPanel.classList.add("blink");
+    soundBreak.play().catch(()=>{});
+    setTimeout(()=>breakingPanel.classList.remove("blink"),12000);
   });
  }catch{}
 }
+setInterval(breaking,30000); breaking();
 
-carregarNoticias();
-setInterval(carregarNoticias,30000);
+// NOTÍCIAS CONTEXTO
+const ctxWords=["juros","inflação","fiscal","dívida","economia"];
+const ctxCache={};
+async function contexto(){
+ const rss="https://news.google.com/rss/search?q="+encodeURIComponent(ctxWords.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+ const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+ try{
+  const r=await fetch(url); const t=await r.text();
+  const xml=new DOMParser().parseFromString(t,"text/xml");
+  xml.querySelectorAll("item").forEach(i=>{
+    const title=i.querySelector("title").textContent;
+    const link=i.querySelector("link").textContent;
+    if(ctxCache[link])return;
+    ctxCache[link]=true;
+    const d=document.createElement("div");
+    d.className="newsRow";
+    d.innerHTML="<b>"+title+"</b><br><a href='"+link+"' target='_blank'>Abrir</a>";
+    newsTable.prepend(d);
+  });
+ }catch{}
+}
+setInterval(contexto,60000); contexto();
 </script>
 
 </body>
