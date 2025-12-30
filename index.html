@@ -18,6 +18,18 @@ header{
   font-weight:bold;
 }
 
+/* RELÓGIO NO TOPO */
+#relogio{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+  padding:6px;
+  margin-bottom:10px;
+  color:#fff;
+  background:#1f2937;
+  border-radius:6px;
+}
+
 /* LAYOUT PRINCIPAL */
 #layout{
   display:flex;
@@ -131,15 +143,15 @@ header{
 }
 </style>
 </head>
-
 <body>
 
 <header>📊 Direção Macro do Mercado – Mini Índice (WIN)</header>
+<div id="relogio">⏰ --:--:--</div>
 
 <div id="layout">
   <!-- TABELA CENTRAL -->
   <div id="macro">
-    <div id="direcao" data-macro="ALTA">🟢 VIÉS DE ALTA - Priorizar COMPRAS</div>
+    <div id="direcao" data-macro="NEUTRO">🟡 NEUTRO</div>
     <div id="iconeDirecao"></div>
   </div>
 
@@ -163,31 +175,64 @@ header{
 <audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// Ícones SVG
+// SVGs Touro e Urso
 const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
 const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
 
-// Atualiza direção do Mini Índice
+// FUNÇÃO RELÓGIO BRASÍLIA
+function atualizarRelogio(){
+  const agora = new Date();
+  const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
+  const br = new Date(utc - 3*3600000);
+  document.getElementById("relogio").innerHTML = "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
+}
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
+
+// ATUALIZA DIREÇÃO
 function atualizarDirecao(){
-  const direcao = document.getElementById("direcao").dataset.macro;
   const bloco = document.getElementById("direcao");
   const icone = document.getElementById("iconeDirecao");
+  const direcao = bloco.dataset.macro;
   icone.innerHTML = "";
-
   if(direcao==="ALTA"){
     bloco.style.background="#dcfce7";
     bloco.style.color="#065f46";
+    bloco.innerHTML = "🟢 ALTA - Priorizar COMPRAS";
     icone.innerHTML = `<span class="pulsar">${svgTouro}</span>`;
   } else if(direcao==="BAIXA"){
     bloco.style.background="#fee2e2";
     bloco.style.color="#7f1d1d";
+    bloco.innerHTML = "🔴 BAIXA - Priorizar VENDAS";
     icone.innerHTML = `<span class="pulsar">${svgUrso}</span>`;
   } else{
     bloco.style.background="#fef9c3";
     bloco.style.color="#78350f";
+    bloco.innerHTML = "🟡 NEUTRO";
   }
 }
-atualizarDirecao();
+
+// FUNÇÃO PARA BUSCAR DIREÇÃO AUTOMÁTICA DO MINI ÍNDICE
+async function atualizarDirecaoMini(){
+  const chave = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
+  const url = `https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=WIN`;
+  try{
+    const res = await fetch(url);
+    const data = await res.json();
+    const price = data.results.WIN.price;
+    const open  = data.results.WIN.open_price;
+    let direcao;
+    if(price > open) direcao="ALTA";
+    else if(price < open) direcao="BAIXA";
+    else direcao="NEUTRO";
+    document.getElementById("direcao").dataset.macro = direcao;
+    atualizarDirecao();
+  }catch(err){
+    console.log("Erro ao buscar dados do Mini Índice:", err);
+  }
+}
+atualizarDirecaoMini();
+setInterval(atualizarDirecaoMini,5000);
 
 // BREAKING NEWS
 const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
@@ -202,7 +247,6 @@ async function buscarBreaking(){
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
   breakingList.innerHTML="";
-
   items.forEach((item,i)=>{
     if(i>4) return;
     const titulo=item.querySelector("title").textContent;
@@ -211,7 +255,6 @@ async function buscarBreaking(){
     div.className="breaking-item";
     div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
     breakingList.appendChild(div);
-
     const macro = document.getElementById("direcao").dataset.macro;
     if(macro!=="NEUTRO" && negativas.some(p=>titulo.toLowerCase().includes(p))){
       document.getElementById("breaking").classList.add("alerta-contrario");
