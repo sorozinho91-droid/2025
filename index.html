@@ -12,39 +12,7 @@ body{
   display:flex;
 }
 
-/* ================= BREAKING NEWS ================= */
-#breakingPanel{
-  position:fixed;
-  top:10px;
-  right:10px;
-  width:360px;
-  background:#111827;
-  color:#fff;
-  border-radius:8px;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
-  z-index:9999;
-}
-#breakingHeader{
-  background:#7f1d1d;
-  padding:10px;
-  text-align:center;
-  font-weight:bold;
-  letter-spacing:.5px;
-}
-#breakingList{
-  max-height:260px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.breakRow{
-  padding:10px;
-  border-bottom:1px solid #374151;
-}
-.breakRow a{color:#93c5fd;text-decoration:none}
-.blink{animation:blink 1s infinite}
-@keyframes blink{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-
-/* ================= NOTÍCIAS LADO ESQUERDO ================= */
+/* ================= NOTÍCIAS ESQUERDA ================= */
 #newsPanel{
   width:360px;
   background:#0f172a;
@@ -57,7 +25,6 @@ body{
   padding:14px;
   text-align:center;
   background:#020617;
-  font-size:15px;
 }
 .newsRow{
   padding:12px;
@@ -67,10 +34,18 @@ body{
 .newsRow b{color:#facc15}
 .newsRow a{color:#93c5fd;text-decoration:none}
 
+/* ================= ÁREA CENTRAL + DIREITA ================= */
+#centerArea{
+  flex:1;
+  display:flex;
+  gap:20px;
+  padding:20px;
+  align-items:flex-start;
+}
+
 /* ================= CONTEÚDO CENTRAL ================= */
 #main{
   flex:1;
-  padding:20px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -105,67 +80,94 @@ header{
   box-shadow:0 8px 18px rgba(0,0,0,.18);
   text-align:center;
 }
-
 .box .titulo{
   font-size:14px;
   letter-spacing:1px;
   text-transform:uppercase;
   opacity:.7;
 }
-
 .box .direcao{
   font-size:42px;
   font-weight:bold;
   margin:14px 0;
 }
-
 .box .acao{
   font-size:17px;
   font-weight:bold;
 }
-
 .verde{border-left:10px solid #16a34a;color:#065f46}
 .vermelho{border-left:10px solid #dc2626;color:#7f1d1d}
 .amarelo{border-left:10px solid #ca8a04;color:#713f12}
-
 .piscar{animation:pisc 1s infinite}
 @keyframes pisc{
   0%{transform:scale(1)}
   50%{transform:scale(1.02)}
   100%{transform:scale(1)}
 }
+
+/* ================= BREAKING NEWS DIREITA ================= */
+#breakingPanel{
+  width:360px;
+  background:#111827;
+  color:#fff;
+  border-radius:8px;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+#breakingHeader{
+  background:#7f1d1d;
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+}
+#breakingList{
+  max-height:520px;
+  overflow-y:auto;
+  font-size:13px;
+}
+.breakRow{
+  padding:12px;
+  border-bottom:1px solid #374151;
+}
+.breakRow a{color:#93c5fd;text-decoration:none}
+.blink{animation:blink 1s infinite}
+@keyframes blink{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
 </style>
 </head>
 
 <body>
 
-<!-- BREAKING NEWS -->
-<div id="breakingPanel">
-  <div id="breakingHeader">🚨 BREAKING NEWS – MERCADO</div>
-  <div id="breakingList">
-    <div class="breakRow">Aguardando eventos críticos...</div>
-  </div>
-</div>
-
-<!-- NOTÍCIAS MACRO -->
+<!-- NOTÍCIAS ESQUERDA -->
 <div id="newsPanel">
-  <h3>📰 Notícias Macro (Contexto)</h3>
+  <h3>📰 Notícias Macro</h3>
   <div id="newsTable">
     <div class="newsRow">Aguardando notícias...</div>
   </div>
 </div>
 
-<!-- CONTEÚDO CENTRAL -->
-<div id="main">
-<header>
-  <h2>Direção Macro – Mini Índice (WIN)</h2>
-</header>
+<!-- ÁREA CENTRAL + DIREITA -->
+<div id="centerArea">
 
-<div id="relogioCentral">Carregando horário...</div>
+  <!-- CENTRO -->
+  <div id="main">
+    <header>
+      <h2>Direção Macro – Mini Índice (WIN)</h2>
+    </header>
 
-<div id="macroBox" class="box amarelo">
-  Carregando direção macro...
-</div>
+    <div id="relogioCentral">Carregando horário...</div>
+
+    <div id="macroBox" class="box amarelo">
+      Carregando direção macro...
+    </div>
+  </div>
+
+  <!-- BREAKING NEWS DIREITA -->
+  <div id="breakingPanel">
+    <div id="breakingHeader">🚨 BREAKING NEWS</div>
+    <div id="breakingList">
+      <div class="breakRow">Aguardando eventos críticos...</div>
+    </div>
+  </div>
+
 </div>
 
 <audio id="soundBreak" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
