@@ -2,14 +2,84 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Macro Direcional Global + Brasil | WIN</title>
+<title>Direção Macro – Mini Índice B3</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f4f6f8;display:flex;flex-direction:column;align-items:center}
-header{width:100%;background:#1f2937;color:#fff;text-align:center;padding:10px}
-#relogio{margin:10px;font-weight:bold}
+body{
+  font-family:Arial;
+  margin:0;
+  background:#f3f4f6;
+  display:flex;
+}
 
-.box{width:650px;background:#fff;padding:14px;margin:8px 0;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+/* ===== NOTÍCIAS (LADO ESQUERDO) ===== */
+#newsPanel{
+  width:360px;
+  background:#0f172a;
+  color:#fff;
+  height:100vh;
+  overflow-y:auto;
+}
+#newsPanel h3{
+  margin:0;
+  padding:12px;
+  text-align:center;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+}
+.newsRow{
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+  font-size:13px;
+}
+.newsRow b{color:#facc15}
+.newsRow a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+/* ===== CONTEÚDO CENTRAL ===== */
+#main{
+  flex:1;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+header{
+  width:100%;
+  background:#020617;
+  color:#fff;
+  padding:10px;
+  text-align:center;
+  border-radius:6px;
+}
+
+/* ===== RELÓGIO CENTRAL ===== */
+#relogioCentral{
+  margin:20px 0 10px 0;
+  font-size:18px;
+  font-weight:bold;
+  text-align:center;
+  color:#020617;
+  background:#e5e7eb;
+  padding:8px 20px;
+  border-radius:6px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+
+/* ===== BOX TENDÊNCIA ===== */
+.box{
+  width:650px;
+  background:#fff;
+  padding:18px;
+  margin-top:10px;
+  border-radius:6px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+  font-size:16px;
+}
+
 .verde{border-left:6px solid #16a34a}
 .vermelho{border-left:6px solid #dc2626}
 .amarelo{border-left:6px solid #ca8a04}
@@ -17,119 +87,129 @@ header{width:100%;background:#1f2937;color:#fff;text-align:center;padding:10px}
 .piscar{animation:pisc 1s infinite}
 @keyframes pisc{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
 
-#sentimentoBarContainer{width:650px;height:30px;background:#e5e7eb;border-radius:6px;overflow:hidden}
-#sentimentoBar{height:100%;width:50%;line-height:30px;text-align:center;font-weight:bold;color:#fff;background:linear-gradient(to right, red, green);transition:.4s}
-
-/* BREAKING NEWS */
-#painel-news{position:fixed;top:30px;right:10px;width:360px;background:#111827;color:#fff;border-radius:6px;z-index:999}
-.news-header{background:#1f2937;padding:8px;text-align:center;font-weight:bold}
-#newsList{max-height:260px;overflow-y:auto;font-size:13px}
-.news-item{padding:8px;border-bottom:1px solid #374151}
-.news-item a{color:#93c5fd;text-decoration:none}
-.breaking{animation:pisc 1s infinite}
+#audioTrend{display:none}
 </style>
 </head>
 
 <body>
 
-<header><h2>Direção Macro Global + Brasil | Mini Índice (WIN)</h2></header>
-<div id="relogio"></div>
-
-<div id="macroTrend" class="box">🧭 Calculando tendência macro...</div>
-<div id="macroScalp" class="box">⚡ Calculando scalp macro...</div>
-
-<div id="sentimentoBarContainer">
-  <div id="sentimentoBar">Aguardando...</div>
+<!-- ===== NOTÍCIAS IMPACTANTES ===== -->
+<div id="newsPanel">
+  <h3>🚨 Notícias que Impactam o Mercado</h3>
+  <div id="newsTable">
+    <div class="newsRow">Aguardando notícias macro...</div>
+  </div>
 </div>
 
-<!-- BREAKING NEWS -->
-<div id="painel-news">
-  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList"><div class="news-item">Aguardando notícias...</div></div>
+<!-- ===== CONTEÚDO CENTRAL ===== -->
+<div id="main">
+<header>
+  <h2>Direção Macro – Mini Índice (WIN)</h2>
+</header>
+
+<!-- RELÓGIO CENTRAL -->
+<div id="relogioCentral">Carregando horário...</div>
+
+<!-- BOX TENDÊNCIA -->
+<div id="macroBox" class="box amarelo">
+  Calculando tendência macro do mercado…
+</div>
 </div>
 
-<audio id="alerta-trend" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
-<audio id="alerta-scalp" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-<audio id="alerta-news" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
+<audio id="audioTrend" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 
 <script>
 // ================= RELÓGIO BRASÍLIA =================
-setInterval(()=>{
- const d=new Date(),u=d.getTime()+d.getTimezoneOffset()*60000;
- document.getElementById("relogio").innerText=
- "Horário de Brasília: "+new Date(u-3*3600000).toLocaleTimeString("pt-BR");
-},1000);
+function atualizarRelogio(){
+ const agora=new Date();
+ const utc=agora.getTime()+agora.getTimezoneOffset()*60000;
+ const br=new Date(utc-3*3600000);
+ document.getElementById("relogioCentral").innerText =
+ "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
+}
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
 
-// ================= ATIVOS REAIS =================
-const riskOn=["INDEX:SPX","INDEX:NDX","INDEX:DJI","INDEX:DAX","INDEX:N225","NYMEX:CL1!","COMEX:HG1!"];
-const riskOff=["CBOE:VIX","FOREXCOM:DX1!","COMEX:GC1!","CURRENCY:US10Y","FOREXCOM:JPYUSD"];
+// ================= ATIVOS MACRO REAIS =================
+const riskOn=["INDEX:SPX","INDEX:NDX","INDEX:DAX","NYMEX:CL1!"];
+const riskOff=["CBOE:VIX","FOREXCOM:DX1!","COMEX:GC1!"];
 
 async function preco(symbol){
  try{
   const r=await fetch("https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/"+symbol.replace(":","_")+".json");
   const j=await r.json();
   return j.last_price||j.close||0;
- }catch{ return 0 }
+ }catch{return 0}
 }
 
-let histTrend=[],histScalp=[];
-let estadoTrend="",estadoScalp="";
+let hist=[],estado="";
 
-// ================= LOOP MACRO =================
-async function atualizar(){
+// ================= CÁLCULO TENDÊNCIA MACRO =================
+async function atualizarMacro(){
  let on=0,off=0;
  for(const a of riskOn) on+=await preco(a);
  for(const a of riskOff) off+=await preco(a);
 
- const diff=on-off;
- histTrend.push(diff); histScalp.push(diff);
- if(histTrend.length>8) histTrend.shift();
- if(histScalp.length>3) histScalp.shift();
+ hist.push(on-off);
+ if(hist.length>8) hist.shift();
 
- analisar();
-}
-setInterval(atualizar,60000); atualizar();
+ const media=hist.reduce((a,b)=>a+b,0)/hist.length;
+ let novo="NEUTRO",cor="amarelo",texto="⚠️ Mercado indefinido / cautela";
 
-function analisar(){
- const t=histTrend.reduce((a,b)=>a+b,0)/histTrend.length;
- const s=histScalp.reduce((a,b)=>a+b,0)/histScalp.length;
-
- // TENDÊNCIA
- let nt=t>0?"ALTA":t<0?"BAIXA":"NEUTRO";
- if(nt!==estadoTrend && estadoTrend){
-  alertaTrend.play().catch(()=>{});
-  macroTrend.classList.add("piscar");
-  setTimeout(()=>macroTrend.classList.remove("piscar"),12000);
+ if(media>0){
+  novo="ALTA";
+  cor="verde";
+  texto="📈 TENDÊNCIA DE ALTA<br><br><b>Priorizar COMPRAS no Mini Índice (WIN)</b>";
  }
- estadoTrend=nt;
- macroTrend.className="box "+(nt==="ALTA"?"verde":nt==="BAIXA"?"vermelho":"amarelo");
- macroTrend.innerHTML=`🧭 <b>TENDÊNCIA</b><br>${nt==="ALTA"?"📈 Priorizar compra":nt==="BAIXA"?"📉 Priorizar venda":"⚠️ Lateral"}`;
-
- // SCALP
- let ns=s>0?"ALTA":s<0?"BAIXA":"NEUTRO";
- if(ns!==estadoScalp && estadoScalp){
-  alertaScalp.play().catch(()=>{});
-  macroScalp.classList.add("piscar");
-  setTimeout(()=>macroScalp.classList.remove("piscar"),8000);
+ if(media<0){
+  novo="BAIXA";
+  cor="vermelho";
+  texto="📉 TENDÊNCIA DE BAIXA<br><br><b>Priorizar VENDAS no Mini Índice (WIN)</b>";
  }
- estadoScalp=ns;
- macroScalp.className="box "+(ns==="ALTA"?"verde":ns==="BAIXA"?"vermelho":"amarelo");
- macroScalp.innerHTML=`⚡ <b>SCALP</b><br>${ns==="ALTA"?"📈 Compra rápida":ns==="BAIXA"?"📉 Venda rápida":"⚠️ Ruído"}`;
 
- sentimentoBar.style.width=nt==="ALTA"?"80%":nt==="BAIXA"?"20%":"50%";
- sentimentoBar.innerText=nt;
+ if(estado && estado!==novo){
+  audioTrend.play().catch(()=>{});
+  macroBox.classList.add("piscar");
+  setTimeout(()=>macroBox.classList.remove("piscar"),12000);
+ }
+
+ estado=novo;
+ macroBox.className="box "+cor;
+ macroBox.innerHTML=`<b>🧭 DIREÇÃO MACRO DO MERCADO</b><br><br>${texto}`;
 }
 
-// ================= NOTÍCIAS DE MERCADO (RESTAURADO) =================
-const palavras=["fed","cpi","juros","taxa","inflação","inflation","guerra","war","banco central"];
+setInterval(atualizarMacro,60000);
+atualizarMacro();
+
+// ================= NOTÍCIAS MACRO =================
+const keywords=["fed","juros","interest rate","cpi","inflation","inflação","banco central","fiscal","dívida","guerra","war","recessão"];
 const cache={};
 
-async function buscarNoticias(){
- const rss="https://news.google.com/rss/search?q="+encodeURIComponent(palavras.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+async function carregarNoticias(){
+ const rss="https://news.google.com/rss/search?q="+encodeURIComponent(keywords.join(" OR "))+"&hl=pt-BR&gl=BR&ceid=BR:pt";
  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+
  try{
   const r=await fetch(url);
   const t=await r.text();
   const xml=new DOMParser().parseFromString(t,"text/xml");
   xml.querySelectorAll("item").forEach(i=>{
-    const title=i.querySelector("title").textCon
+    const title=i.querySelector("title").textContent;
+    const link=i.querySelector("link").textContent;
+    if(cache[link]) return;
+    cache[link]=true;
+
+    const row=document.createElement("div");
+    row.className="newsRow";
+    row.innerHTML=`<b>⚠️ ${title}</b><br><a href="${link}" target="_blank">Abrir notícia</a>`;
+    newsTable.prepend(row);
+  });
+ }catch{}
+}
+
+carregarNoticias();
+setInterval(carregarNoticias,30000);
+</script>
+
+</body>
+</html>
