@@ -80,42 +80,42 @@ header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18
 <script>
 // RELÓGIO
 function atualizarRelogio(){
-  const agora = new Date();
-  const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
-  const br = new Date(utc - 3*3600000);
-  document.getElementById("relogio").innerHTML = "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
+  const agora=new Date();
+  const utc=agora.getTime()+agora.getTimezoneOffset()*60000;
+  const br=new Date(utc-3*3600000);
+  document.getElementById("relogio").innerHTML="⏰ Horário de Brasília: "+br.toLocaleTimeString("pt-BR");
 }
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
 // DIREÇÃO SCORE
-const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
-const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
-function atualizarDirecaoScore(price, open, ativos){
-  let score = 0;
+const svgTouro=`<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
+const svgUrso=`<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
+function atualizarDirecaoScore(price,open,ativos){
+  let score=0;
   ativos.forEach(a=>{
     if(a.tipo==="risco" && a.status==="ALTA") score++;
     if(a.tipo==="seguranca" && a.status==="ALTA") score--;
   });
-  const bloco = document.getElementById("direcao");
-  const icone = document.getElementById("iconeDirecao");
-  const variacao = document.getElementById("variacao");
-  icone.innerHTML = "";
-  const pct = ((price - open)/open*100).toFixed(2);
-  variacao.innerHTML = `Variação: ${pct}%`;
+  const bloco=document.getElementById("direcao");
+  const icone=document.getElementById("iconeDirecao");
+  const variacao=document.getElementById("variacao");
+  icone.innerHTML="";
+  const pct=((price-open)/open*100).toFixed(2);
+  variacao.innerHTML=`Variação: ${pct}%`;
   if(score>0){bloco.style.background="#dcfce7";bloco.style.color="#065f46";bloco.innerHTML=`🟢 ALTA - Score: ${score}`;icone.innerHTML=`<span class="pulsar">${svgTouro}</span>`;}
   else if(score<0){bloco.style.background="#fee2e2";bloco.style.color="#7f1d1d";bloco.innerHTML=`🔴 BAIXA - Score: ${score}`;icone.innerHTML=`<span class="pulsar">${svgUrso}</span>`;}
   else{bloco.style.background="#fef9c3";bloco.style.color="#78350f";bloco.innerHTML="🟡 NEUTRO";}
 }
 
-// ATUALIZA ATIVOS E SCORE
+// ATIVOS
 async function atualizarAtivosScore(){
   const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
   const ativos=[
-    {id:"sp500", symbol:"^GSPC", tipo:"risco"},
-    {id:"vix", symbol:"^VIX", tipo:"seguranca"},
-    {id:"dxy", symbol:"DX-Y.NYB", tipo:"seguranca"},
-    {id:"di", symbol:"DI1!", tipo:"seguranca"}
+    {id:"sp500",symbol:"^GSPC",tipo:"risco"},
+    {id:"vix",symbol:"^VIX",tipo:"seguranca"},
+    {id:"dxy",symbol:"DX-Y.NYB",tipo:"seguranca"},
+    {id:"di",symbol:"DI1!",tipo:"seguranca"}
   ];
   for(let a of ativos){
     try{
@@ -140,117 +140,78 @@ async function atualizarAtivosScore(){
 atualizarAtivosScore();
 setInterval(atualizarAtivosScore,5000);
 
-// BREAKING NEWS
-const palavrasImpacto=["b3","ibovespa","juros","selic","bolsa","inflação","recessão","economia brasil","crise","investimento"];
-const breakingList=document.getElementById("breaking-list");
-const som=document.getElementById("somAlerta");
-async function buscarBreaking(){
-  const rss="https://news.google.com/rss/search?q=b3+OR+ibovespa+OR+economia+brasil+OR+inflação+OR+juros&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
-  const res=await fetch(url);
-  const text=await res.text();
-  const xml=new DOMParser().parseFromString(text,"text/xml");
-  const items=xml.querySelectorAll("item");
-  breakingList.innerHTML="";
-  let count=0;
-  items.forEach(item=>{
-    if(count>=5)return;
-    const titulo=item.querySelector("title").textContent;
-    const link=item.querySelector("link").textContent;
-    if(palavrasImpacto.some(p=>titulo.toLowerCase().includes(p))){
-      const div=document.createElement("div");
-      div.className="breaking-item";
-      if(["queda","crise","recessão","alta de juros","inflação"].some(n=>titulo.toLowerCase().includes(n))){div.classList.add("alerta");som.play().catch(()=>{});}
-      div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
-      breakingList.appendChild(div);
-      count++;
-    }
-  });
-  if(breakingList.children.length===0){breakingList.innerHTML='<div class="breaking-item">Nenhuma notícia relevante no momento...</div>';}
-}
-buscarBreaking();
-setInterval(buscarBreaking,30000);
-
-// NOTÍCIAS MERCADO
-const mercadoList=document.getElementById("mercado-list");
-async function buscarMercado(){
-  const rss="https://news.google.com/rss/search?q=mercado+financeiro+OR+b3+OR+economia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
-  const res=await fetch(url);
-  const text=await res.text();
-  const xml=new DOMParser().parseFromString(text,"text/xml");
-  const items=xml.querySelectorAll("item");
-  mercadoList.innerHTML="";
-  items.forEach((item,i)=>{
-    if(i>4)return;
-    const t=item.querySelector("title").textContent;
-    const l=item.querySelector("link").textContent;
-    const div=document.createElement("div");
-    div.className="mercado-item";
-    div.innerHTML=`${t}<br><a href="${l}" target="_blank">Ler</a>`;
-    mercadoList.appendChild(div);
-  });
-}
-buscarMercado();
-setInterval(buscarMercado,60000);
-
-// GRÁFICO INTRADAY VARIAÇÃO PERCENTUAL – GPS DE MERCADO
+// GRÁFICO DINÂMICO – LINHAS COLORIDAS CONFORME DIREÇÃO
 const ctx=document.getElementById('graficoAtivos').getContext('2d');
 let precoInicial={risco:null,seguranca:null};
+let ultimaRisco=null, ultimaSeg=null;
 const maxPontos=60;
+
 const grafico=new Chart(ctx,{
-    type:'line',
-    data:{labels:[],datasets:[
-        {label:'Ativos de Risco (%)',data:[],borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.1)',tension:0.2},
-        {label:'Ativos de Segurança (%)',data:[],borderColor:'#16a34a',backgroundColor:'rgba(22,163,70,0.1)',tension:0.2}
-    ]},
-    options:{responsive:true,animation:{duration:0},interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Horário'}},y:{title:{display:true,text:'Variação (%)'},beginAtZero:false}}}
+  type:'line',
+  data:{labels:[],datasets:[
+    {label:'Ativos de Risco (%)',data:[],borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.1)',tension:0.2},
+    {label:'Ativos de Segurança (%)',data:[],borderColor:'#16a34a',backgroundColor:'rgba(22,163,70,0.1)',tension:0.2}
+  ]},
+  options:{responsive:true,animation:{duration:0},interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top'}},
+    scales:{x:{title:{display:true,text:'Horário'}},y:{title:{display:true,text:'Variação (%)'},beginAtZero:false}}
+  }
 });
 
 async function atualizarGraficoPerc(){
-    const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-    const risco=["^GSPC"];
-    const seguranca=["^VIX","DX-Y.NYB","DI1!"];
-    const agora=new Date();
-    const horario=agora.toLocaleTimeString('pt-BR',{hour12:false});
-    grafico.data.labels.push(horario);
-    if(grafico.data.labels.length>maxPontos) grafico.data.labels.shift();
+  const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
+  const risco=["^GSPC"];
+  const seguranca=["^VIX","DX-Y.NYB","DI1!"];
+  const agora=new Date();
+  const horario=agora.toLocaleTimeString('pt-BR',{hour12:false});
+  grafico.data.labels.push(horario);
+  if(grafico.data.labels.length>maxPontos) grafico.data.labels.shift();
 
-    async function mediaGrupo(grupo){
-        let soma=0,cont=0;
-        for(let s of grupo){
-            try{
-                const res=await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
-                const data=await res.json();
-                soma+=data.results[s].price;
-                cont++;
-            }catch(err){console.log("Erro:",s);}
-        }
-        return cont>0?soma/cont:null;
+  async function mediaGrupo(grupo){
+    let soma=0, cont=0;
+    for(let s of grupo){
+      try{
+        const res=await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
+        const data=await res.json();
+        soma+=data.results[s].price;
+        cont++;
+      }catch(err){console.log("Erro:",s);}
     }
+    return cont>0?soma/cont:null;
+  }
 
-    const mediaRisco=await mediaGrupo(risco);
-    const mediaSeg=await mediaGrupo(seguranca);
+  const mediaRisco=await mediaGrupo(risco);
+  const mediaSeg=await mediaGrupo(seguranca);
 
-    if(precoInicial.risco===null) precoInicial.risco=mediaRisco;
-    if(precoInicial.seguranca===null) precoInicial.seguranca=mediaSeg;
+  if(precoInicial.risco===null) precoInicial.risco=mediaRisco;
+  if(precoInicial.seguranca===null) precoInicial.seguranca=mediaSeg;
 
-    const percRisco=((mediaRisco-precoInicial.risco)/precoInicial.risco*100).toFixed(2);
-    const percSeg=((mediaSeg-precoInicial.seguranca)/precoInicial.seguranca*100).toFixed(2);
+  const percRisco=((mediaRisco-precoInicial.risco)/precoInicial.risco*100).toFixed(2);
+  const percSeg=((mediaSeg-precoInicial.seguranca)/precoInicial.seguranca*100).toFixed(2);
 
-    grafico.data.datasets[0].data.push(percRisco);
-    grafico.data.datasets[1].data.push(percSeg);
+  // altera cor da linha conforme direção
+  if(ultimaRisco!==null){
+    grafico.data.datasets[0].borderColor = percRisco>ultimaRisco?'#f87171':'#7f1d1d';
+  }
+  if(ultimaSeg!==null){
+    grafico.data.datasets[1].borderColor = percSeg>ultimaSeg?'#34d399':'#065f46';
+  }
+  ultimaRisco=percRisco;
+  ultimaSeg=percSeg;
 
-    if(grafico.data.datasets[0].data.length>maxPontos){
-        grafico.data.datasets[0].data.shift();
-        grafico.data.datasets[1].data.shift();
-    }
+  grafico.data.datasets[0].data.push(percRisco);
+  grafico.data.datasets[1].data.push(percSeg);
 
-    grafico.update('none');
+  if(grafico.data.datasets[0].data.length>maxPontos){
+    grafico.data.datasets[0].data.shift();
+    grafico.data.datasets[1].data.shift();
+  }
+
+  grafico.update('none');
 }
 
 atualizarGraficoPerc();
-setInterval(atualizarGraficoPerc,60000); // atualiza a cada 60 segundos
+setInterval(atualizarGraficoPerc,60000); // 60 segundos
 </script>
 </body>
 </html>
