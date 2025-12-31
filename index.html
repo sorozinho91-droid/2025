@@ -2,30 +2,44 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GPS Macro – Mini Índice</title>
+<title>GPS Macro Profissional – Mini Índice</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#f3f4f6}
-header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold}
-#relogio{text-align:center;margin:10px auto;padding:6px;width:340px;background:#1f2937;color:#fff;border-radius:6px;font-weight:bold}
-
-#layout{display:flex;gap:15px;padding:10px;justify-content:space-between;align-items:flex-start}
-
-.card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:10px}
-
-#macro{width:360px}
-#painel-direito{width:380px;display:flex;flex-direction:column;gap:12px}
-
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:#1f2937;color:#fff;padding:6px}
-td{padding:6px;border-bottom:1px solid #e5e7eb;font-weight:bold;text-align:center}
-
-#grafico-container{width:95%;max-width:1200px;margin:20px auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-
-.header{background:#1f2937;color:#fff;padding:8px;text-align:center;font-weight:bold;border-radius:6px}
-.breaking{background:#b91c1c}
-.item{font-size:13px;padding:6px;border-bottom:1px solid #e5e7eb}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f3f4f6;
+}
+header{
+  background:#111827;
+  color:#fff;
+  padding:10px;
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+}
+#relogio{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+  padding:6px;
+  margin:10px auto;
+  width:360px;
+  color:#fff;
+  background:#1f2937;
+  border-radius:6px;
+}
+#grafico-container{
+  width:95%;
+  max-width:1200px;
+  margin:20px auto;
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
 </style>
 </head>
 
@@ -33,38 +47,6 @@ td{padding:6px;border-bottom:1px solid #e5e7eb;font-weight:bold;text-align:cente
 
 <header>📊 GPS Macro Profissional – Mini Índice</header>
 <div id="relogio">⏰ --:--:--</div>
-
-<div id="layout">
-
-  <!-- TABELA MACRO -->
-  <div id="macro" class="card">
-    <table>
-      <tr><th>Ativo</th><th>Valor</th></tr>
-      <tr><td>S&P 500</td><td id="sp">---</td></tr>
-      <tr><td>Nasdaq</td><td id="nas">---</td></tr>
-      <tr><td>Ibovespa</td><td id="ibov">---</td></tr>
-      <tr><td>Bitcoin</td><td id="btc">---</td></tr>
-      <tr><td>VIX</td><td id="vix">---</td></tr>
-      <tr><td>DXY</td><td id="dxy">---</td></tr>
-      <tr><td>Ouro</td><td id="gold">---</td></tr>
-    </table>
-  </div>
-
-  <!-- NOTÍCIAS -->
-  <div id="painel-direito">
-    <div class="card">
-      <div class="header">📰 Notícias Mercado</div>
-      <div class="item">Mercados aguardam dados de inflação</div>
-      <div class="item">Bolsas globais operam mistas</div>
-    </div>
-
-    <div class="card">
-      <div class="header breaking">🚨 Breaking News</div>
-      <div class="item">DXY acelera forte no intraday</div>
-    </div>
-  </div>
-
-</div>
 
 <div id="grafico-container">
   <canvas id="grafico"></canvas>
@@ -77,44 +59,122 @@ setInterval(()=>{
     "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
 },1000);
 
-// ===== DADOS SIMULADOS INTELIGENTES =====
-let risco = 0;
-let seguranca = 0;
+// ===== LISTA DE ATIVOS =====
+
+// RISCO (risk-on)
+const ativosRisco = [
+  "^GSPC",   // S&P 500
+  "^IXIC",   // Nasdaq
+  "^DJI",    // Dow Jones
+  "^BVSP",   // Ibovespa
+  "BTC-USD", // Bitcoin
+  "CL=F",    // Petróleo
+  "HG=F"     // Cobre
+];
+
+// SEGURANÇA (risk-off)
+const ativosSeguranca = [
+  "^VIX",      // Volatilidade
+  "DX-Y.NYB",  // DXY
+  "BRL=X",    // USD/BRL
+  "GC=F",     // Ouro
+  "^TNX"      // Treasury 10Y
+];
+
+// ===== FUNÇÃO DE PREÇO (Yahoo via proxy) =====
+async function buscarPreco(symbol){
+  const url = "https://api.allorigins.win/raw?url=" +
+    encodeURIComponent(
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
+    );
+  const res = await fetch(url);
+  const json = await res.json();
+  return json.quoteResponse.result[0].regularMarketPrice;
+}
+
+// ===== MÉDIA DO GRUPO =====
+async function mediaGrupo(grupo){
+  let soma = 0;
+  let qtd = 0;
+
+  for(const ativo of grupo){
+    try{
+      soma += await buscarPreco(ativo);
+      qtd++;
+    }catch(e){
+      console.log("Erro ativo:", ativo);
+    }
+  }
+  return qtd ? soma / qtd : 0;
+}
 
 // ===== GRÁFICO =====
-const ctx = document.getElementById("grafico");
+const ctx = document.getElementById("grafico").getContext("2d");
+
 const grafico = new Chart(ctx,{
   type:"line",
   data:{
     labels:[],
     datasets:[
-      {label:"Ativos de Risco (%)",data:[],borderColor:"#16a34a",backgroundColor:"rgba(22,163,74,.1)",fill:true,tension:.4},
-      {label:"Ativos de Segurança (%)",data:[],borderColor:"#dc2626",backgroundColor:"rgba(220,38,38,.1)",fill:true,tension:.4}
+      {
+        label:"Ativos de Risco (média %)",
+        data:[],
+        borderColor:"#16a34a",
+        backgroundColor:"rgba(22,163,74,0.1)",
+        tension:0.4,
+        fill:true
+      },
+      {
+        label:"Ativos de Segurança (média %)",
+        data:[],
+        borderColor:"#dc2626",
+        backgroundColor:"rgba(220,38,38,0.1)",
+        tension:0.4,
+        fill:true
+      }
     ]
+  },
+  options:{
+    responsive:true,
+    interaction:{mode:"index",intersect:false},
+    scales:{
+      y:{title:{display:true,text:"Variação (%)"}},
+      x:{title:{display:true,text:"Horário"}}
+    }
   }
 });
 
-// ===== ATUALIZA =====
-function atualizar(){
-  risco += (Math.random() - 0.45);
-  seguranca += (Math.random() - 0.55);
+// ===== BASE PARA % =====
+let baseRisco = null;
+let baseSeg = null;
 
-  grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
-  grafico.data.datasets[0].data.push(risco.toFixed(2));
-  grafico.data.datasets[1].data.push(seguranca.toFixed(2));
-  grafico.update();
+// ===== ATUALIZA A CADA 1 MINUTO =====
+async function atualizarGrafico(){
+  try{
+    const mediaRisco = await mediaGrupo(ativosRisco);
+    const mediaSeg = await mediaGrupo(ativosSeguranca);
 
-  document.getElementById("sp").innerText = (5000 + risco*10).toFixed(0);
-  document.getElementById("nas").innerText = (17000 + risco*12).toFixed(0);
-  document.getElementById("ibov").innerText = (125000 + risco*20).toFixed(0);
-  document.getElementById("btc").innerText = (60000 + risco*50).toFixed(0);
-  document.getElementById("vix").innerText = (18 - risco).toFixed(2);
-  document.getElementById("dxy").innerText = (104 + seguranca/5).toFixed(2);
-  document.getElementById("gold").innerText = (2350 + seguranca*4).toFixed(2);
+    if(baseRisco === null){
+      baseRisco = mediaRisco;
+      baseSeg = mediaSeg;
+    }
+
+    const percRisco = ((mediaRisco - baseRisco) / baseRisco) * 100;
+    const percSeg = ((mediaSeg - baseSeg) / baseSeg) * 100;
+
+    grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
+    grafico.data.datasets[0].data.push(Number(percRisco.toFixed(2)));
+    grafico.data.datasets[1].data.push(Number(percSeg.toFixed(2)));
+
+    grafico.update();
+  }catch(err){
+    console.log("Erro atualização:", err);
+  }
 }
 
-atualizar();
-setInterval(atualizar,60000);
+// ===== INICIALIZA =====
+atualizarGrafico();
+setInterval(atualizarGrafico, 60000); // 1 minuto
 </script>
 
 </body>
