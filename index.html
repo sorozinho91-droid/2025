@@ -78,7 +78,7 @@ header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18
 <audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// RELÓGIO
+// ===== RELÓGIO =====
 function atualizarRelogio(){
   const agora=new Date();
   const utc=agora.getTime()+agora.getTimezoneOffset()*60000;
@@ -88,7 +88,7 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// DIREÇÃO SCORE
+// ===== DIREÇÃO =====
 const svgTouro=`<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
 const svgUrso=`<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
 function atualizarDirecaoScore(price,open,ativos){
@@ -108,7 +108,7 @@ function atualizarDirecaoScore(price,open,ativos){
   else{bloco.style.background="#fef9c3";bloco.style.color="#78350f";bloco.innerHTML="🟡 NEUTRO";}
 }
 
-// ATIVOS
+// ===== ATIVOS =====
 async function atualizarAtivosScore(){
   const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
   const ativos=[
@@ -140,23 +140,30 @@ async function atualizarAtivosScore(){
 atualizarAtivosScore();
 setInterval(atualizarAtivosScore,5000);
 
-// GRÁFICO DINÂMICO – LINHAS COLORIDAS CONFORME DIREÇÃO
+// ===== GRÁFICO DINÂMICO COM HISTÓRICO INICIAL =====
 const ctx=document.getElementById('graficoAtivos').getContext('2d');
-let precoInicial={risco:null,seguranca:null};
-let ultimaRisco=null, ultimaSeg=null;
 const maxPontos=60;
+let precoInicial={risco:null,seguranca:null};
+let ultimaRisco=null,ultimaSeg=null;
 
 const grafico=new Chart(ctx,{
   type:'line',
   data:{labels:[],datasets:[
-    {label:'Ativos de Risco (%)',data:[],borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.1)',tension:0.2},
-    {label:'Ativos de Segurança (%)',data:[],borderColor:'#16a34a',backgroundColor:'rgba(22,163,70,0.1)',tension:0.2}
+    {label:'Ativos de Risco (%)',data:[],borderColor:'#f87171',backgroundColor:'rgba(220,38,38,0.1)',tension:0.2},
+    {label:'Ativos de Segurança (%)',data:[],borderColor:'#34d399',backgroundColor:'rgba(22,163,70,0.1)',tension:0.2}
   ]},
   options:{responsive:true,animation:{duration:0},interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'top'}},
     scales:{x:{title:{display:true,text:'Horário'}},y:{title:{display:true,text:'Variação (%)'},beginAtZero:false}}
   }
 });
+
+// Adiciona histórico inicial de 10 pontos zerados
+for(let i=0;i<10;i++){
+  grafico.data.labels.push('');
+  grafico.data.datasets[0].data.push(0);
+  grafico.data.datasets[1].data.push(0);
+}
 
 async function atualizarGraficoPerc(){
   const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
@@ -168,7 +175,7 @@ async function atualizarGraficoPerc(){
   if(grafico.data.labels.length>maxPontos) grafico.data.labels.shift();
 
   async function mediaGrupo(grupo){
-    let soma=0, cont=0;
+    let soma=0,cont=0;
     for(let s of grupo){
       try{
         const res=await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
@@ -177,7 +184,7 @@ async function atualizarGraficoPerc(){
         cont++;
       }catch(err){console.log("Erro:",s);}
     }
-    return cont>0?soma/cont:null;
+    return cont>0?soma/cont:0;
   }
 
   const mediaRisco=await mediaGrupo(risco);
@@ -186,21 +193,17 @@ async function atualizarGraficoPerc(){
   if(precoInicial.risco===null) precoInicial.risco=mediaRisco;
   if(precoInicial.seguranca===null) precoInicial.seguranca=mediaSeg;
 
-  const percRisco=((mediaRisco-precoInicial.risco)/precoInicial.risco*100).toFixed(2);
-  const percSeg=((mediaSeg-precoInicial.seguranca)/precoInicial.seguranca*100).toFixed(2);
+  const percRisco=((mediaRisco-precoInicial.risco)/precoInicial.risco*100);
+  const percSeg=((mediaSeg-precoInicial.seguranca)/precoInicial.seguranca*100);
 
-  // altera cor da linha conforme direção
-  if(ultimaRisco!==null){
-    grafico.data.datasets[0].borderColor = percRisco>ultimaRisco?'#f87171':'#7f1d1d';
-  }
-  if(ultimaSeg!==null){
-    grafico.data.datasets[1].borderColor = percSeg>ultimaSeg?'#34d399':'#065f46';
-  }
+  if(ultimaRisco!==null) grafico.data.datasets[0].borderColor = percRisco>ultimaRisco?'#f87171':'#7f1d1d';
+  if(ultimaSeg!==null) grafico.data.datasets[1].borderColor = percSeg>ultimaSeg?'#34d399':'#065f46';
+
   ultimaRisco=percRisco;
   ultimaSeg=percSeg;
 
-  grafico.data.datasets[0].data.push(percRisco);
-  grafico.data.datasets[1].data.push(percSeg);
+  grafico.data.datasets[0].data.push(Number(percRisco.toFixed(2)));
+  grafico.data.datasets[1].data.push(Number(percSeg.toFixed(2)));
 
   if(grafico.data.datasets[0].data.length>maxPontos){
     grafico.data.datasets[0].data.shift();
@@ -215,3 +218,4 @@ setInterval(atualizarGraficoPerc,60000); // 60 segundos
 </script>
 </body>
 </html>
+
