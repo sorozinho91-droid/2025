@@ -13,6 +13,7 @@ body{
   background:#f3f4f6;
 }
 
+/* HEADER */
 header{
   background:#111827;
   color:#fff;
@@ -31,6 +32,7 @@ header{
   font-weight:bold;
 }
 
+/* LAYOUT */
 #conteudo{
   display:flex;
   justify-content:center;
@@ -39,6 +41,7 @@ header{
   padding:20px;
 }
 
+/* TABELA CENTRAL */
 #tabela-central{
   background:#fff;
   border-radius:8px;
@@ -79,6 +82,7 @@ td{
 .baixa{background:#fee2e2;color:#7f1d1d;}
 .neutra{background:#fef9c3;color:#78350f;}
 
+/* GRÁFICO */
 #grafico-box{
   background:#fff;
   border-radius:8px;
@@ -86,29 +90,84 @@ td{
   padding:15px;
   width:700px;
 }
+
+/* NEWS */
+#news-area{
+  width:360px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+.news-box{
+  background:#111827;
+  color:white;
+  border-radius:8px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+  overflow:hidden;
+}
+
+.news-header{
+  background:#1f2937;
+  padding:8px;
+  text-align:center;
+  font-weight:bold;
+}
+
+.news-list{
+  max-height:260px;
+  overflow-y:auto;
+  font-size:13px;
+}
+
+.news-item{
+  padding:8px;
+  border-bottom:1px solid #374151;
+}
+
+.news-item a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+/* ALERTA */
+.alerta-box{
+  background:#ffffff;
+  border-left:5px solid #c00000;
+  box-shadow:0 2px 8px rgba(0,0,0,0.2);
+  font-size:12px;
+}
+
+.alerta-header{
+  background:#c00000;
+  color:white;
+  font-weight:bold;
+  padding:6px;
+  text-align:center;
+}
+
+.alerta-conteudo{
+  padding:8px;
+}
 </style>
 </head>
 
 <body>
 
-<header>📊 Painel Macro – Ativos de Risco x Segurança</header>
-<div id="relogio">⏰ --:--:--</div>
+<header>📊 Painel Macro – Risco x Segurança</header>
+<div id="relogio"></div>
 
 <div id="conteudo">
 
-  <!-- TABELA CENTRAL -->
+  <!-- TABELA -->
   <div id="tabela-central">
     <h3>Visão Macro</h3>
     <table>
-      <thead>
-        <tr><th>Ativo</th><th>Status</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>S&P 500</td><td id="sp" class="neutra">NEUTRO</td></tr>
-        <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
-        <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
-        <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
-      </tbody>
+      <tr><th>Ativo</th><th>Status</th></tr>
+      <tr><td>S&P 500</td><td id="sp" class="neutra">NEUTRO</td></tr>
+      <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
+      <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
+      <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
     </table>
   </div>
 
@@ -117,137 +176,109 @@ td{
     <canvas id="grafico"></canvas>
   </div>
 
+  <!-- NEWS -->
+  <div id="news-area">
+
+    <div class="news-box">
+      <div class="news-header">🚨 BREAKING NEWS</div>
+      <div class="news-list" id="breakingNews">
+        <div class="news-item">Aguardando notícias...</div>
+      </div>
+    </div>
+
+    <div class="alerta-box">
+      <div class="alerta-header">⚠️ ALERTA DE MERCADO</div>
+      <div class="alerta-conteudo" id="alertaMercado">
+        Aguardando alerta...
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
-/* ================= RELÓGIO ================= */
-function atualizarRelogio(){
-  document.getElementById("relogio").innerHTML =
+/* RELÓGIO */
+setInterval(()=>{
+  document.getElementById("relogio").innerText =
     "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
-}
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
+},1000);
 
-/* ================= DADOS ================= */
-let datas = [];
-let risco = [];
-let seguro = [];
+/* GRÁFICO */
+let labels=[], risco=[], seguro=[];
+let vr=0, vs=0;
 
-let valorRisco = 0;
-let valorSeguro = 0;
-
-/* ================= GRÁFICO ================= */
-const ctx = document.getElementById("grafico").getContext("2d");
-
-const grafico = new Chart(ctx,{
+const chart=new Chart(document.getElementById("grafico"),{
   type:"line",
   data:{
     labels:[],
     datasets:[
-      {
-        label:"Ativos de Risco",
-        data:[],
-        borderColor:"#16a34a",
-        backgroundColor:"rgba(22,163,74,0.15)",
-        tension:0.4,
-        fill:true
-      },
-      {
-        label:"Ativos de Segurança",
-        data:[],
-        borderColor:"#dc2626",
-        backgroundColor:"rgba(220,38,38,0.15)",
-        tension:0.4,
-        fill:true
-      }
+      {label:"Ativos de Risco",data:[],borderColor:"#16a34a",fill:true},
+      {label:"Ativos de Segurança",data:[],borderColor:"#dc2626",fill:true}
     ]
-  },
-  options:{
-    responsive:true,
-    interaction:{mode:"index",intersect:false},
-    scales:{
-      x:{title:{display:true,text:"Horário"}},
-      y:{title:{display:true,text:"Força Relativa"}}
-    }
   }
 });
 
-/* ================= HISTÓRICO DO DIA ================= */
-function gerarHistoricoDia(){
-  datas = [];
-  risco = [];
-  seguro = [];
-
-  const agora = new Date();
-  const inicioDia = new Date();
-  inicioDia.setHours(0,0,0,0);
-
-  let vr = 0;
-  let vs = 0;
-
-  for(let d = new Date(inicioDia); d <= agora; d.setMinutes(d.getMinutes()+1)){
-    vr += (Math.random()-0.5)*0.4;
-    vs += (Math.random()-0.5)*0.3;
-
-    datas.push(new Date(d));
-    risco.push(vr);
-    seguro.push(vs);
-  }
-
-  valorRisco = vr;
-  valorSeguro = vs;
-
-  atualizarGraficoVisual();
-}
-
-/* ================= ATUALIZAÇÃO ================= */
-function atualizarGraficoVisual(){
-  grafico.data.labels = datas.map(d =>
-    d.toLocaleTimeString("pt-BR",{hour12:false})
-  );
-  grafico.data.datasets[0].data = risco;
-  grafico.data.datasets[1].data = seguro;
-  grafico.update();
-}
-
 function atualizarGrafico(){
-  const agora = new Date();
+  const agora=new Date();
+  vr+=(Math.random()-0.5)*0.4;
+  vs+=(Math.random()-0.5)*0.3;
 
-  if(datas.length > 0){
-    const ultima = datas[datas.length-1];
-    if(ultima.toDateString() !== agora.toDateString()){
-      gerarHistoricoDia();
-      return;
-    }
-  }
+  labels.push(agora.toLocaleTimeString("pt-BR"));
+  risco.push(vr);
+  seguro.push(vs);
 
-  valorRisco += (Math.random()-0.5)*0.4;
-  valorSeguro += (Math.random()-0.5)*0.3;
+  chart.data.labels=labels;
+  chart.data.datasets[0].data=risco;
+  chart.data.datasets[1].data=seguro;
+  chart.update();
 
-  datas.push(agora);
-  risco.push(valorRisco);
-  seguro.push(valorSeguro);
-
-  atualizarGraficoVisual();
   atualizarTabela();
 }
+setInterval(atualizarGrafico,60000);
+atualizarGrafico();
 
-/* ================= TABELA ================= */
-function definirStatus(el, valor){
-  el.className = valor > 0.2 ? "alta" : valor < -0.2 ? "baixa" : "neutra";
-  el.innerText = valor > 0.2 ? "ALTA" : valor < -0.2 ? "BAIXA" : "NEUTRO";
+/* TABELA */
+function status(el,val){
+  el.className=val>0.2?"alta":val<-0.2?"baixa":"neutra";
+  el.innerText=val>0.2?"ALTA":val<-0.2?"BAIXA":"NEUTRO";
 }
-
 function atualizarTabela(){
-  definirStatus(document.getElementById("sp"), valorRisco);
-  definirStatus(document.getElementById("vix"), -valorRisco);
-  definirStatus(document.getElementById("dxy"), valorSeguro);
-  definirStatus(document.getElementById("di"), valorSeguro);
+  status(sp,vr); status(vix,-vr); status(dxy,vs); status(di,vs);
 }
 
-/* ================= START ================= */
-gerarHistoricoDia();
-setInterval(atualizarGrafico, 60000); // 1 minuto
+/* BREAKING NEWS */
+async function buscarNoticias(){
+  const rss="https://news.google.com/rss/search?q=market+fed+inflation+stocks";
+  const res=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(rss));
+  const xml=new DOMParser().parseFromString(await res.text(),"text/xml");
+  const items=xml.querySelectorAll("item");
+  const box=document.getElementById("breakingNews");
+  box.innerHTML="";
+  items.forEach((i,idx)=>{
+    if(idx>5)return;
+    box.innerHTML+=`<div class="news-item">
+      <strong>${i.querySelector("title").textContent}</strong><br>
+      <a href="${i.querySelector("link").textContent}" target="_blank">Ler</a>
+    </div>`;
+  });
+}
+setInterval(buscarNoticias,30000);
+buscarNoticias();
+
+/* ALERTA */
+async function alertaMercado(){
+  const rss="https://news.google.com/rss/search?q=crise+mercado+juros";
+  const res=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(rss));
+  const xml=new DOMParser().parseFromString(await res.text(),"text/xml");
+  const item=xml.querySelector("item");
+  if(item){
+    document.getElementById("alertaMercado").innerHTML=
+      `<strong>${item.querySelector("title").textContent}</strong>`;
+  }
+}
+setInterval(alertaMercado,60000);
+alertaMercado();
 </script>
 
 </body>
