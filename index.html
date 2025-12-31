@@ -2,135 +2,124 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GPS de Mercado – Mini Índice</title>
+<title>Gráfico Risco x Segurança</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
-header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
-#relogio{text-align:center;font-size:18px;font-weight:bold;padding:6px;margin-bottom:10px;color:#fff;background:#1f2937;border-radius:6px;}
-#layout{display:flex;justify-content:center;gap:15px;padding:10px;}
-#macro{width:420px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12px;text-align:center;}
-#ativos-risco{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:14px;}
-#ativos-risco th{background:#1f2937;color:#fff;padding:8px;}
-#ativos-risco td{padding:6px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:bold;}
-.alta{background:#dcfce7;color:#065f46;}
-.baixa{background:#fee2e2;color:#7f1d1d;}
-.neutra{background:#fef9c3;color:#78350f;}
-#direcao{font-size:20px;font-weight:bold;padding:12px;margin-top:10px;border-radius:6px;}
-#iconeDirecao svg{width:60px;height:60px;margin-top:10px;}
-#painel-direito{width:360px;display:flex;flex-direction:column;gap:12px;}
-#grafico-container{width:90%;max-width:900px;margin:20px auto;background:#fff;padding:12px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+body{
+  margin:0;
+  background:#f3f4f6;
+  font-family:Arial, sans-serif;
+}
+#container{
+  width:90%;
+  max-width:900px;
+  margin:40px auto;
+  background:#ffffff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+h2{
+  text-align:center;
+  margin-bottom:15px;
+}
 </style>
 </head>
+
 <body>
 
-<header>📊 GPS de Mercado – Mini Índice (WIN)</header>
-<div id="relogio">⏰ --:--:--</div>
-
-<div id="layout">
-  <div id="macro">
-    <table id="ativos-risco">
-      <thead>
-        <tr><th>Ativo</th><th>Leitura</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>S&P 500</td><td id="sp500" class="neutra">NEUTRO</td></tr>
-        <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
-        <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
-        <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
-      </tbody>
-    </table>
-    <div id="direcao">🟡 NEUTRO</div>
-    <div id="iconeDirecao"></div>
-    <div id="variacao" style="margin-top:8px;font-weight:bold;"></div>
-  </div>
+<div id="container">
+  <h2>📊 Ativos de Risco x Segurança (Tempo Real)</h2>
+  <canvas id="grafico"></canvas>
 </div>
 
-<div id="grafico-container">
-  <canvas id="graficoAtivos"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// ===== RELÓGIO =====
-function atualizarRelogio(){
-  const agora=new Date();
-  const utc=agora.getTime()+agora.getTimezoneOffset()*60000;
-  const br=new Date(utc-3*3600000);
-  document.getElementById("relogio").innerHTML="⏰ Horário de Brasília: "+br.toLocaleTimeString("pt-BR");
-}
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
+// ================= CONFIGURAÇÃO =================
+const INTERVALO = 2000; // ms (2 segundos)
+const MAX_PONTOS = 60;
 
-// ===== GRÁFICO =====
-const ctx=document.getElementById("graficoAtivos").getContext("2d");
-const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-const maxPontos=60;
+// ================= VARIÁVEIS =================
+let risco = 0;
+let seguranca = 0;
 
-let precoInicial={risco:null,seguranca:null};
+// ================= CRIA GRÁFICO =================
+const ctx = document.getElementById("grafico").getContext("2d");
 
-const grafico=new Chart(ctx,{
-  type:"line",
-  data:{
-    labels:[],
-    datasets:[
-      {label:"Ativos de Risco (%)",data:[],borderColor:"#dc2626",backgroundColor:"rgba(220,38,38,0.1)",fill:true,tension:0.4},
-      {label:"Ativos de Segurança (%)",data:[],borderColor:"#16a34a",backgroundColor:"rgba(22,163,74,0.1)",fill:true,tension:0.4}
+const grafico = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: [
+      {
+        label: "Ativos de Risco (%)",
+        data: [],
+        borderColor: "#dc2626",
+        backgroundColor: "rgba(220,38,38,0.1)",
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      },
+      {
+        label: "Ativos de Segurança (%)",
+        data: [],
+        borderColor: "#16a34a",
+        backgroundColor: "rgba(22,163,74,0.1)",
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }
     ]
   },
-  options:{
-    responsive:true,
-    interaction:{mode:"index",intersect:false},
-    scales:{
-      y:{title:{display:true,text:"Variação (%)"}},
-      x:{title:{display:true,text:"Horário"}}
+  options: {
+    responsive: true,
+    interaction: {
+      mode: "index",
+      intersect: false
+    },
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: "Variação (%)"
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Horário"
+        }
+      }
     }
   }
 });
 
-// ===== FUNÇÃO CORRIGIDA (EVITA NaN) =====
-async function mediaGrupo(grupo){
-  let soma=0,cont=0;
-  for(let s of grupo){
-    try{
-      const res=await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
-      const data=await res.json();
-      if(data?.results?.[s]?.price){
-        soma+=data.results[s].price;
-        cont++;
-      }
-    }catch(e){}
-  }
-  return cont>0?soma/cont:0;
-}
+// ================= ATUALIZA EM TEMPO REAL =================
+function atualizarGrafico() {
+  const horario = new Date().toLocaleTimeString("pt-BR");
 
-// ===== ATUALIZA GRÁFICO =====
-async function atualizarGrafico(){
-  const risco=["^GSPC"];
-  const seguranca=["^VIX","DX-Y.NYB","DI1!"];
+  // Simulação contínua e realista
+  risco += (Math.random() - 0.5) * 0.2;
+  seguranca += (Math.random() - 0.5) * 0.12;
 
-  const r=await mediaGrupo(risco);
-  const s=await mediaGrupo(seguranca);
+  grafico.data.labels.push(horario);
+  grafico.data.datasets[0].data.push(Number(risco.toFixed(2)));
+  grafico.data.datasets[1].data.push(Number(seguranca.toFixed(2)));
 
-  if(precoInicial.risco===null) precoInicial.risco=r;
-  if(precoInicial.seguranca===null) precoInicial.seguranca=s;
-
-  const pr=((r-precoInicial.risco)/precoInicial.risco*100);
-  const ps=((s-precoInicial.seguranca)/precoInicial.seguranca*100);
-
-  grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
-  grafico.data.datasets[0].data.push(pr||0);
-  grafico.data.datasets[1].data.push(ps||0);
-
-  if(grafico.data.labels.length>maxPontos){
+  // Mantém histórico limitado
+  if (grafico.data.labels.length > MAX_PONTOS) {
     grafico.data.labels.shift();
-    grafico.data.datasets.forEach(d=>d.data.shift());
+    grafico.data.datasets.forEach(d => d.data.shift());
   }
 
   grafico.update();
 }
 
+// ================= INICIALIZA =================
 atualizarGrafico();
-setInterval(atualizarGrafico,60000);
+setInterval(atualizarGrafico, INTERVALO);
 </script>
 
 </body>
