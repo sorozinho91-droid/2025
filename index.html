@@ -7,115 +7,31 @@
 
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
-header{
-  background:#111827;
-  color:#fff;
-  padding:10px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-}
-#relogio{
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-  padding:8px;
-  background:#1f2937;
-  color:#fff;
-}
+header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
+#relogio{background:#1f2937;color:#fff;text-align:center;font-size:18px;font-weight:bold;padding:8px;}
 
-#topo{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px;
-}
+#topo{display:flex;justify-content:space-between;gap:12px;padding:12px;}
+.caixa{width:32%;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden;}
+.caixa h3{margin:0;padding:8px;background:#1f2937;color:#fff;text-align:center;font-size:15px;}
+.caixa.breaking h3{background:#b91c1c;}
 
-.caixa{
-  width:32%;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-  overflow:hidden;
-}
+.lista{max-height:220px;overflow-y:auto;font-size:14px;}
+.item{padding:8px;border-bottom:1px solid #e5e7eb;}
+.item a{text-decoration:none;color:#1d4ed8;}
+.item.alerta{background:#fee2e2;border-left:4px solid #dc2626;font-weight:bold;}
 
-.caixa h3{
-  background:#1f2937;
-  color:#fff;
-  margin:0;
-  padding:8px;
-  font-size:15px;
-  text-align:center;
-}
+#layout{display:flex;justify-content:center;padding:10px;}
+#macro{width:420px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12px;text-align:center;}
 
-.caixa.breaking h3{
-  background:#b91c1c;
-}
-
-.lista{
-  max-height:220px;
-  overflow-y:auto;
-  font-size:14px;
-}
-
-.item{
-  padding:8px;
-  border-bottom:1px solid #e5e7eb;
-}
-.item a{
-  text-decoration:none;
-  color:#1d4ed8;
-}
-.item.alerta{
-  background:#fee2e2;
-  border-left:4px solid #dc2626;
-  font-weight:bold;
-}
-
-#layout{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  padding:10px;
-}
-
-#macro{
-  width:420px;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-  padding:12px;
-  text-align:center;
-}
-
-#ativos-risco{
-  width:100%;
-  border-collapse:collapse;
-  margin-bottom:12px;
-  font-size:14px;
-}
-#ativos-risco th{
-  background:#1f2937;
-  color:#fff;
-  padding:8px;
-}
-#ativos-risco td{
-  padding:6px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:center;
-  font-weight:bold;
-}
+#ativos-risco{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:14px;}
+#ativos-risco th{background:#1f2937;color:#fff;padding:8px;}
+#ativos-risco td{padding:6px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:bold;}
 
 .alta{background:#dcfce7;color:#065f46;}
 .baixa{background:#fee2e2;color:#7f1d1d;}
 .neutra{background:#fef9c3;color:#78350f;}
 
-#direcao{
-  font-size:20px;
-  font-weight:bold;
-  padding:12px;
-  border-radius:6px;
-}
+#direcao{font-size:20px;font-weight:bold;padding:12px;border-radius:6px;}
 
 #grafico-container{
   width:90%;
@@ -138,27 +54,23 @@ header{
 <div id="topo">
   <div class="caixa">
     <h3>📰 Notícias de Mercado</h3>
-    <div class="lista" id="noticias-mercado">
-      <div class="item">Carregando...</div>
-    </div>
+    <div class="lista" id="noticias-mercado"><div class="item">Carregando...</div></div>
   </div>
 
   <div class="caixa">
-    <h3>📌 Visão Macro</h3>
+    <h3>📌 Visão Geral</h3>
     <div class="lista" style="text-align:center;padding:20px;font-weight:bold;">
-      Acompanhamento em tempo real<br>dos ativos globais
+      Painel Macro<br>Atualização contínua
     </div>
   </div>
 
   <div class="caixa breaking">
     <h3>🚨 Breaking News</h3>
-    <div class="lista" id="breaking-news">
-      <div class="item">Carregando...</div>
-    </div>
+    <div class="lista" id="breaking-news"><div class="item">Carregando...</div></div>
   </div>
 </div>
 
-<!-- TABELAS -->
+<!-- TABELA ATIVOS -->
 <div id="layout">
   <div id="macro">
     <table id="ativos-risco">
@@ -172,7 +84,6 @@ header{
         <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
       </tbody>
     </table>
-
     <div id="direcao" class="neutra">🟡 NEUTRO</div>
   </div>
 </div>
@@ -215,7 +126,7 @@ carregarNoticias(document.getElementById("noticias-mercado"),"mercado financeiro
 carregarNoticias(document.getElementById("breaking-news"),"ibovespa OR juros OR inflação OR crise",true);
 setInterval(()=>carregarNoticias(document.getElementById("breaking-news"),"ibovespa OR juros OR inflação OR crise",true),30000);
 
-// ===== GRÁFICO =====
+// ===== GRÁFICO (CORES CORRETAS) =====
 const ctx=document.getElementById("grafico").getContext("2d");
 let risco=0,seguranca=0;
 
@@ -227,7 +138,7 @@ const grafico=new Chart(ctx,{
       {
         label:"Ativos de Risco (%)",
         data:[],
-        borderColor:"#16a34a",
+        borderColor:"#16a34a",              // VERDE
         backgroundColor:"rgba(22,163,74,0.12)",
         tension:0.4,
         fill:true
@@ -235,7 +146,7 @@ const grafico=new Chart(ctx,{
       {
         label:"Ativos de Segurança (%)",
         data:[],
-        borderColor:"#dc2626",
+        borderColor:"#dc2626",              // VERMELHO
         backgroundColor:"rgba(220,38,38,0.12)",
         tension:0.4,
         fill:true
@@ -256,10 +167,11 @@ function atualizarGrafico(){
   risco += (Math.random()-0.5)*0.15;
   seguranca += (Math.random()-0.5)*0.1;
   grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR",{hour12:false}));
-  grafico.data.datasets[0].data.push(risco.toFixed(2));
-  grafico.data.datasets[1].data.push(seguranca.toFixed(2));
+  grafico.data.datasets[0].data.push(Number(risco.toFixed(2)));
+  grafico.data.datasets[1].data.push(Number(seguranca.toFixed(2)));
   grafico.update();
 }
+
 atualizarGrafico();
 setInterval(atualizarGrafico,60000);
 </script>
