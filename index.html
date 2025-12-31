@@ -1,362 +1,105 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Direção Macro – Mini Índice (WIN)</title>
-<style>
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#f3f4f6;
-}
-header{
-  background:#111827;
-  color:#fff;
-  padding:10px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-}
-
-/* RELÓGIO NO TOPO */
-#relogio{
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-  padding:6px;
-  margin-bottom:10px;
-  color:#fff;
-  background:#1f2937;
-  border-radius:6px;
-}
-
-/* LAYOUT PRINCIPAL */
-#layout{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  padding:10px;
-}
-
-/* TABELA CENTRAL */
-#macro{
-  width:420px;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-  padding:12px;
-  text-align:center;
-}
-
-/* TABELA ATIVOS DE RISCO x SEGURANÇA */
-#ativos-risco{
-  width:100%;
-  border-collapse:collapse;
-  margin-bottom:12px;
-  font-size:14px;
-}
-#ativos-risco th{
-  background:#1f2937;
-  color:#fff;
-  padding:8px;
-}
-#ativos-risco td{
-  padding:6px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:center;
-  font-weight:bold;
-}
-.alta{ background:#dcfce7; color:#065f46; }
-.baixa{ background:#fee2e2; color:#7f1d1d; }
-.neutra{ background:#fef9c3; color:#78350f; }
-
-#direcao{
-  font-size:20px;
-  font-weight:bold;
-  padding:12px;
-  margin-top:10px;
-  border-radius:6px;
-  transition: background 0.5s, color 0.5s;
-}
-#iconeDirecao svg{
-  width:60px;
-  height:60px;
-  margin-top:10px;
-  transition: transform 0.5s;
-}
-.pulsar{
-  animation: pulseZoom 0.8s ease;
-}
-@keyframes pulseZoom{
-  0% {transform: scale(1);}
-  50% {transform: scale(1.5);}
-  100% {transform: scale(1);}
-}
-
-/* PAINEL DIREITO */
-#painel-direito{
-  width:360px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-/* BREAKING NEWS */
-#breaking{
-  background:#111827;
-  color:#fff;
-  border-radius:6px;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
-}
-.breaking-header{
-  background:#7f1d1d;
-  padding:8px;
-  font-weight:bold;
-  text-align:center;
-}
-#breaking-list{
-  max-height:220px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.breaking-item{
-  padding:8px;
-  border-bottom:1px solid #374151;
-}
-.breaking-item a{
-  color:#93c5fd;
-  text-decoration:none;
-}
-
-/* NOTÍCIAS MERCADO */
-#mercado{
-  background:#ffffff;
-  border-radius:6px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-}
-.mercado-header{
-  background:#1f2937;
-  color:#fff;
-  padding:8px;
-  font-weight:bold;
-  text-align:center;
-}
-#mercado-list{
-  max-height:220px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.mercado-item{
-  padding:8px;
-  border-bottom:1px solid #e5e7eb;
-}
-.mercado-item a{
-  color:#1d4ed8;
-  text-decoration:none;
-}
-
-/* ALERTA VISUAL */
-.alerta-contrario{
-  animation:pulse 1s infinite;
-}
-@keyframes pulse{
-  0%{background:#fee2e2;}
-  50%{background:#fecaca;}
-  100%{background:#fee2e2;}
-}
-</style>
-</head>
-
-<body>
-
-<header>📊 Direção Macro do Mercado – Mini Índice (WIN)</header>
-<div id="relogio">⏰ --:--:--</div>
-
-<div id="layout">
-  <div id="macro">
-    <!-- TABELA ATIVOS DE RISCO x SEGURANÇA -->
-    <table id="ativos-risco">
-      <thead>
-        <tr><th>Ativo</th><th>Leitura</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>S&P 500</td><td id="sp500" class="neutra">NEUTRO</td></tr>
-        <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
-        <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
-        <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
-      </tbody>
-    </table>
-
-    <div id="direcao" data-macro="NEUTRO">🟡 NEUTRO</div>
-    <div id="iconeDirecao"></div>
-    <div id="variacao" style="margin-top:8px;font-weight:bold;font-size:16px;"></div>
-  </div>
-
-  <div id="painel-direito">
-    <div id="mercado">
-      <div class="mercado-header">📰 Notícias de Mercado</div>
-      <div id="mercado-list">
-        <div class="mercado-item">Aguardando notícias...</div>
-      </div>
-    </div>
-    <div id="breaking">
-      <div class="breaking-header">🚨 BREAKING NEWS</div>
-      <div id="breaking-list">
-        <div class="breaking-item">Aguardando notícias...</div>
-      </div>
-    </div>
+<!-- BREAKING NEWS -->
+<div id="breaking">
+  <div class="breaking-header">🚨 BREAKING NEWS</div>
+  <div id="breaking-list">
+    <div class="breaking-item">Aguardando notícias...</div>
   </div>
 </div>
 
-<audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<style>
+/* BREAKING NEWS MODERNO */
+#breaking{
+  background:#111827;
+  color:#fff;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+  overflow:hidden;
+}
+
+.breaking-header{
+  background:#b91c1c;
+  padding:10px;
+  font-weight:bold;
+  text-align:center;
+  font-size:16px;
+}
+
+#breaking-list{
+  max-height:220px;
+  overflow-y:auto;
+  font-size:14px;
+  padding:6px;
+}
+
+.breaking-item{
+  background:#1f2937;
+  margin:6px 0;
+  padding:10px;
+  border-radius:6px;
+  transition: transform 0.2s, background 0.3s;
+}
+.breaking-item:hover{
+  transform:translateX(5px);
+  background:#374151;
+}
+.breaking-item a{
+  color:#60a5fa;
+  text-decoration:none;
+  font-weight:500;
+}
+
+.breaking-item.alerta{
+  border-left:4px solid #f87171;
+  background:#7f1d1d;
+  animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1;}
+  50%{opacity:0.7;}
+}
+</style>
 
 <script>
-// SVGs Touro e Urso
-const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
-const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
+// Palavras-chave de impacto para mercado brasileiro
+const palavrasImpacto = ["b3","ibovespa","juros","selic","bolsa","inflação","recessão","economia brasil","crise","investimento"];
 
-// RELÓGIO BRASÍLIA
-function atualizarRelogio(){
-  const agora = new Date();
-  const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
-  const br = new Date(utc - 3*3600000);
-  document.getElementById("relogio").innerHTML = "⏰ Horário de Brasília: " + br.toLocaleTimeString("pt-BR");
-}
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
-
-// FUNÇÃO DIREÇÃO + SCORE
-function atualizarDirecaoScore(price, open, ativos){
-  let score = 0; // Pontuação de direção
-  ativos.forEach(a=>{
-    if(a.tipo==="risco" && a.status==="ALTA") score++;
-    if(a.tipo==="seguranca" && a.status==="ALTA") score--;
-  });
-
-  const bloco = document.getElementById("direcao");
-  const icone = document.getElementById("iconeDirecao");
-  const variacao = document.getElementById("variacao");
-  icone.innerHTML = "";
-  const pct = ((price - open)/open*100).toFixed(2);
-  variacao.innerHTML = `Variação: ${pct}%`;
-
-  if(score>0){
-    bloco.style.background="#dcfce7";
-    bloco.style.color="#065f46";
-    bloco.innerHTML = `🟢 ALTA - Score: ${score}`;
-    icone.innerHTML = `<span class="pulsar">${svgTouro}</span>`;
-  } else if(score<0){
-    bloco.style.background="#fee2e2";
-    bloco.style.color="#7f1d1d";
-    bloco.innerHTML = `🔴 BAIXA - Score: ${score}`;
-    icone.innerHTML = `<span class="pulsar">${svgUrso}</span>`;
-  } else{
-    bloco.style.background="#fef9c3";
-    bloco.style.color="#78350f";
-    bloco.innerHTML = "🟡 NEUTRO";
-  }
-}
-
-// ATUALIZA ATIVOS E SCORE
-async function atualizarAtivosScore(){
-  const chave = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-  const ativos = [
-    {id:"sp500", symbol:"^GSPC", tipo:"risco"},
-    {id:"vix", symbol:"^VIX", tipo:"seguranca"},
-    {id:"dxy", symbol:"DX-Y.NYB", tipo:"seguranca"},
-    {id:"di", symbol:"DI1!", tipo:"seguranca"}
-  ];
-
-  for(let a of ativos){
-    try{
-      const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${a.symbol}`);
-      const data = await res.json();
-      const price = data.results[a.symbol].price;
-      const open  = data.results[a.symbol].open_price;
-      const td = document.getElementById(a.id);
-      if(price>open){
-        td.className="alta";
-        td.textContent="ALTA";
-        a.status="ALTA";
-      } else if(price<open){
-        td.className="baixa";
-        td.textContent="BAIXA";
-        a.status="BAIXA";
-      } else{
-        td.className="neutra";
-        td.textContent="NEUTRO";
-        a.status="NEUTRO";
-      }
-    }catch(err){console.log("Erro ativo:", a.symbol, err);}
-  }
-
-  // Atualiza Mini Índice baseado no score
-  try{
-    const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=WIN`);
-    const data = await res.json();
-    const price = data.results.WIN.price;
-    const open  = data.results.WIN.open_price;
-    atualizarDirecaoScore(price, open, ativos);
-  }catch(err){console.log("Erro Mini:", err);}
-}
-
-atualizarAtivosScore();
-setInterval(atualizarAtivosScore,5000);
-
-// BREAKING NEWS
-const negativas = ["queda","crise","guerra","juros","alta de juros","inflation","recessão","risco"];
-const breakingList = document.getElementById("breaking-list");
-const som = document.getElementById("somAlerta");
-
+// Função atualizar breaking news
 async function buscarBreaking(){
-  const rss="https://news.google.com/rss/search?q=fed+OR+juros+OR+guerra+OR+inflação&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const rss="https://news.google.com/rss/search?q=b3+OR+ibovespa+OR+economia+brasil+OR+inflação+OR+juros&hl=pt-BR&gl=BR&ceid=BR:pt";
   const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
   const res = await fetch(url);
   const text = await res.text();
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
   breakingList.innerHTML="";
-  items.forEach((item,i)=>{
-    if(i>4) return;
+  
+  let count=0;
+  items.forEach(item=>{
+    if(count>=5) return;
     const titulo=item.querySelector("title").textContent;
     const link=item.querySelector("link").textContent;
-    const div=document.createElement("div");
-    div.className="breaking-item";
-    div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
-    breakingList.appendChild(div);
-    if(negativas.some(p=>titulo.toLowerCase().includes(p))){
-      document.getElementById("breaking").classList.add("alerta-contrario");
-      som.play().catch(()=>{});
-      setTimeout(()=>{document.getElementById("breaking").classList.remove("alerta-contrario");},15000);
+
+    // Filtra apenas notícias de impacto no mercado brasileiro
+    if(palavrasImpacto.some(p=>titulo.toLowerCase().includes(p))){
+      const div=document.createElement("div");
+      div.className="breaking-item";
+      // Se tiver palavras negativas, adiciona alerta visual
+      if(["queda","crise","recessão","alta de juros","inflação"].some(n=>titulo.toLowerCase().includes(n))){
+        div.classList.add("alerta");
+        som.play().catch(()=>{});
+      }
+      div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
+      breakingList.appendChild(div);
+      count++;
     }
   });
+
+  // Se não houver notícias, mostra mensagem
+  if(breakingList.children.length===0){
+    breakingList.innerHTML='<div class="breaking-item">Nenhuma notícia relevante no momento...</div>';
+  }
 }
 buscarBreaking();
 setInterval(buscarBreaking,30000);
-
-// NOTÍCIAS MERCADO
-const mercadoList = document.getElementById("mercado-list");
-async function buscarMercado(){
-  const rss="https://news.google.com/rss/search?q=mercado+financeiro+OR+b3+OR+economia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
-  const res = await fetch(url);
-  const text = await res.text();
-  const xml = new DOMParser().parseFromString(text,"text/xml");
-  const items = xml.querySelectorAll("item");
-  mercadoList.innerHTML="";
-  items.forEach((item,i)=>{
-    if(i>4) return;
-    const t=item.querySelector("title").textContent;
-    const l=item.querySelector("link").textContent;
-    const div=document.createElement("div");
-    div.className="mercado-item";
-    div.innerHTML=`${t}<br><a href="${l}" target="_blank">Ler</a>`;
-    mercadoList.appendChild(div);
-  });
-}
-buscarMercado();
-setInterval(buscarMercado,60000);
 </script>
-
-</body>
-</html>
