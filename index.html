@@ -9,8 +9,8 @@
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
 header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
-#relogio{text-align:center;font-size:18px;font-weight:bold;padding:6px;margin:10px auto;width:340px;color:#fff;background:#1f2937;border-radius:6px;}
-#layout{display:flex;gap:15px;padding:10px;justify-content:space-between;align-items:flex-start;}
+#relogio{text-align:center;font-size:18px;font-weight:bold;padding:6px;margin:10px auto;width:320px;color:#fff;background:#1f2937;border-radius:6px;}
+#layout{display:flex;gap:15px;padding:10px;justify-content:space-between;}
 #macro{width:360px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12px;text-align:center;}
 #ativos-risco{width:100%;border-collapse:collapse;font-size:13px;}
 #ativos-risco th{background:#1f2937;color:#fff;padding:6px;}
@@ -19,7 +19,7 @@ header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18
 #mercado,#breaking{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);overflow:hidden;}
 .mercado-header,.breaking-header{background:#1f2937;color:#fff;padding:8px;font-weight:bold;text-align:center;}
 .breaking-header{background:#b91c1c;}
-#grafico-container{width:95%;max-width:1100px;margin:20px auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+#grafico-container{width:95%;max-width:1000px;margin:20px auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
 </style>
 </head>
 
@@ -31,22 +31,20 @@ header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18
 <div id="layout">
   <div id="macro">
     <table id="ativos-risco">
-      <tr><th>Ativo</th><th>Preço</th></tr>
-      <tr><td>S&P 500</td><td id="sp">--</td></tr>
-      <tr><td>Mini Índice (WIN)</td><td id="win">--</td></tr>
-      <tr><td>VIX</td><td id="vix">--</td></tr>
-      <tr><td>DXY</td><td id="dxy">--</td></tr>
+      <tr><th>Ativo</th><th>Leitura</th></tr>
+      <tr><td>S&P 500</td><td id="sp">---</td></tr>
+      <tr><td>VIX</td><td id="vix">---</td></tr>
     </table>
   </div>
 
   <div id="painel-direito">
     <div id="mercado">
       <div class="mercado-header">📰 Notícias Mercado</div>
-      <div style="padding:8px;font-size:13px;">(mantido)</div>
+      <div style="padding:8px;font-size:13px;">(mantido como está)</div>
     </div>
     <div id="breaking">
       <div class="breaking-header">🚨 Breaking News</div>
-      <div style="padding:8px;font-size:13px;">(mantido)</div>
+      <div style="padding:8px;font-size:13px;">(mantido como está)</div>
     </div>
   </div>
 </div>
@@ -63,8 +61,8 @@ setInterval(()=>{
 },1000);
 
 // ===== GRÁFICO =====
-const ctx=document.getElementById("grafico").getContext("2d");
-const grafico=new Chart(ctx,{
+const ctx = document.getElementById("grafico").getContext("2d");
+const grafico = new Chart(ctx,{
   type:"line",
   data:{
     labels:[],
@@ -89,52 +87,43 @@ const grafico=new Chart(ctx,{
   }
 });
 
-// ===== FUNÇÃO YAHOO =====
+// ===== BUSCA DADOS REAIS =====
+let baseRisco=null, baseSeg=null;
+
 async function buscarPreco(symbol){
-  const url="https://api.allorigins.win/raw?url="+
+  const url = "https://api.allorigins.win/raw?url=" +
     encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
-  const res=await fetch(url);
-  const json=await res.json();
+  const res = await fetch(url);
+  const json = await res.json();
   return json.quoteResponse.result[0].regularMarketPrice;
 }
 
-// ===== BASE =====
-let baseRisco=null,baseSeg=null;
-
-// ===== ATUALIZA =====
-async function atualizar(){
+async function atualizarGrafico(){
   try{
-    const sp=await buscarPreco("^GSPC");
-    const win=await buscarPreco("^BVSP"); // proxy Mini Índice
-    const vix=await buscarPreco("^VIX");
-    const dxy=await buscarPreco("DX-Y.NYB");
+    const risco = await buscarPreco("^GSPC");
+    const seg = await buscarPreco("^VIX");
 
-    document.getElementById("sp").innerText=sp.toFixed(2);
-    document.getElementById("win").innerText=win.toFixed(2);
-    document.getElementById("vix").innerText=vix.toFixed(2);
-    document.getElementById("dxy").innerText=dxy.toFixed(2);
+    if(baseRisco===null){baseRisco=risco;baseSeg=seg;}
 
-    const riscoMedia=(sp+win)/2;
-    const segMedia=(vix+dxy)/2;
+    const pr = ((risco-baseRisco)/baseRisco)*100;
+    const ps = ((seg-baseSeg)/baseSeg)*100;
 
-    if(baseRisco===null){baseRisco=riscoMedia;baseSeg=segMedia;}
-
-    const riscoPerc=((riscoMedia-baseRisco)/baseRisco)*100;
-    const segPerc=((segMedia-baseSeg)/baseSeg)*100;
+    document.getElementById("sp").innerText = risco.toFixed(2);
+    document.getElementById("vix").innerText = seg.toFixed(2);
 
     grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
-    grafico.data.datasets[0].data.push(riscoPerc.toFixed(2));
-    grafico.data.datasets[1].data.push(segPerc.toFixed(2));
+    grafico.data.datasets[0].data.push(pr.toFixed(2));
+    grafico.data.datasets[1].data.push(ps.toFixed(2));
 
     grafico.update();
   }catch(e){
-    console.log("Erro:",e);
+    console.log("Erro dados:",e);
   }
 }
 
 // ===== INICIALIZA =====
-atualizar();
-setInterval(atualizar,60000);
+atualizarGrafico();
+setInterval(atualizarGrafico,60000);
 </script>
 
 </body>
