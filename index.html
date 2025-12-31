@@ -17,8 +17,6 @@ header{
   font-size:18px;
   font-weight:bold;
 }
-
-/* RELÓGIO NO TOPO */
 #relogio{
   text-align:center;
   font-size:18px;
@@ -29,16 +27,12 @@ header{
   background:#1f2937;
   border-radius:6px;
 }
-
-/* LAYOUT PRINCIPAL */
 #layout{
   display:flex;
   justify-content:center;
   gap:15px;
   padding:10px;
 }
-
-/* TABELA CENTRAL */
 #macro{
   width:420px;
   background:#fff;
@@ -47,8 +41,6 @@ header{
   padding:12px;
   text-align:center;
 }
-
-/* TABELA ATIVOS DE RISCO x SEGURANÇA */
 #ativos-risco{
   width:100%;
   border-collapse:collapse;
@@ -69,7 +61,6 @@ header{
 .alta{ background:#dcfce7; color:#065f46; }
 .baixa{ background:#fee2e2; color:#7f1d1d; }
 .neutra{ background:#fef9c3; color:#78350f; }
-
 #direcao{
   font-size:20px;
   font-weight:bold;
@@ -92,16 +83,12 @@ header{
   50% {transform: scale(1.5);}
   100% {transform: scale(1);}
 }
-
-/* PAINEL DIREITO */
 #painel-direito{
   width:360px;
   display:flex;
   flex-direction:column;
   gap:12px;
 }
-
-/* BREAKING NEWS MODERNO */
 #breaking{
   background:#111827;
   color:#fff;
@@ -147,8 +134,6 @@ header{
   0%,100%{opacity:1;}
   50%{opacity:0.7;}
 }
-
-/* NOTÍCIAS MERCADO */
 #mercado{
   background:#ffffff;
   border-radius:6px;
@@ -174,13 +159,9 @@ header{
   color:#1d4ed8;
   text-decoration:none;
 }
-
-/* ALERTA VISUAL */
 .alerta-contrario{
   animation:pulse 1s infinite;
 }
-
-/* GRÁFICO DE ATIVOS */
 #grafico-container{
   width:90%;
   max-width:900px;
@@ -192,7 +173,6 @@ header{
 }
 </style>
 </head>
-
 <body>
 
 <header>📊 Direção Macro do Mercado – Mini Índice (WIN)</header>
@@ -211,7 +191,6 @@ header{
         <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
       </tbody>
     </table>
-
     <div id="direcao" data-macro="NEUTRO">🟡 NEUTRO</div>
     <div id="iconeDirecao"></div>
     <div id="variacao" style="margin-top:8px;font-weight:bold;font-size:16px;"></div>
@@ -233,22 +212,15 @@ header{
   </div>
 </div>
 
-<!-- GRÁFICO DE ATIVOS -->
 <div id="grafico-container">
   <canvas id="graficoAtivos"></canvas>
 </div>
 
 <audio id="somAlerta" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-// SVGs Touro e Urso
-const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
-const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
-
-// RELÓGIO BRASÍLIA
+// RELÓGIO
 function atualizarRelogio(){
   const agora = new Date();
   const utc = agora.getTime() + agora.getTimezoneOffset()*60000;
@@ -258,21 +230,21 @@ function atualizarRelogio(){
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
 
-// FUNÇÃO DIREÇÃO + SCORE
+// DIREÇÃO SCORE
+const svgTouro = `<svg viewBox="0 0 64 64" fill="#16a34a"><path d="M32 2l6 12 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2z"/></svg>`;
+const svgUrso  = `<svg viewBox="0 0 64 64" fill="#dc2626"><path d="M32 2l-6 12-12 2 9 9-2 12 11-6 11 6-2-12 9-9-12-2z"/></svg>`;
 function atualizarDirecaoScore(price, open, ativos){
   let score = 0;
   ativos.forEach(a=>{
     if(a.tipo==="risco" && a.status==="ALTA") score++;
     if(a.tipo==="seguranca" && a.status==="ALTA") score--;
   });
-
   const bloco = document.getElementById("direcao");
   const icone = document.getElementById("iconeDirecao");
   const variacao = document.getElementById("variacao");
   icone.innerHTML = "";
   const pct = ((price - open)/open*100).toFixed(2);
   variacao.innerHTML = `Variação: ${pct}%`;
-
   if(score>0){
     bloco.style.background="#dcfce7";
     bloco.style.color="#065f46";
@@ -299,7 +271,6 @@ async function atualizarAtivosScore(){
     {id:"dxy", symbol:"DX-Y.NYB", tipo:"seguranca"},
     {id:"di", symbol:"DI1!", tipo:"seguranca"}
   ];
-
   for(let a of ativos){
     try{
       const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${a.symbol}`);
@@ -307,22 +278,11 @@ async function atualizarAtivosScore(){
       const price = data.results[a.symbol].price;
       const open  = data.results[a.symbol].open_price;
       const td = document.getElementById(a.id);
-      if(price>open){
-        td.className="alta";
-        td.textContent="ALTA";
-        a.status="ALTA";
-      } else if(price<open){
-        td.className="baixa";
-        td.textContent="BAIXA";
-        a.status="BAIXA";
-      } else{
-        td.className="neutra";
-        td.textContent="NEUTRO";
-        a.status="NEUTRO";
-      }
-    }catch(err){console.log("Erro ativo:", a.symbol, err);}
+      if(price>open){ td.className="alta"; td.textContent="ALTA"; a.status="ALTA"; }
+      else if(price<open){ td.className="baixa"; td.textContent="BAIXA"; a.status="BAIXA"; }
+      else{ td.className="neutra"; td.textContent="NEUTRO"; a.status="NEUTRO"; }
+    }catch(err){ console.log("Erro ativo:", a.symbol, err);}
   }
-
   try{
     const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=WIN`);
     const data = await res.json();
@@ -331,7 +291,6 @@ async function atualizarAtivosScore(){
     atualizarDirecaoScore(price, open, ativos);
   }catch(err){console.log("Erro Mini:", err);}
 }
-
 atualizarAtivosScore();
 setInterval(atualizarAtivosScore,5000);
 
@@ -339,7 +298,6 @@ setInterval(atualizarAtivosScore,5000);
 const palavrasImpacto = ["b3","ibovespa","juros","selic","bolsa","inflação","recessão","economia brasil","crise","investimento"];
 const breakingList = document.getElementById("breaking-list");
 const som = document.getElementById("somAlerta");
-
 async function buscarBreaking(){
   const rss="https://news.google.com/rss/search?q=b3+OR+ibovespa+OR+economia+brasil+OR+inflação+OR+juros&hl=pt-BR&gl=BR&ceid=BR:pt";
   const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
@@ -348,13 +306,11 @@ async function buscarBreaking(){
   const xml = new DOMParser().parseFromString(text,"text/xml");
   const items = xml.querySelectorAll("item");
   breakingList.innerHTML="";
-  
   let count=0;
   items.forEach(item=>{
     if(count>=5) return;
     const titulo=item.querySelector("title").textContent;
     const link=item.querySelector("link").textContent;
-
     if(palavrasImpacto.some(p=>titulo.toLowerCase().includes(p))){
       const div=document.createElement("div");
       div.className="breaking-item";
@@ -367,7 +323,6 @@ async function buscarBreaking(){
       count++;
     }
   });
-
   if(breakingList.children.length===0){
     breakingList.innerHTML='<div class="breaking-item">Nenhuma notícia relevante no momento...</div>';
   }
@@ -398,63 +353,52 @@ async function buscarMercado(){
 buscarMercado();
 setInterval(buscarMercado,60000);
 
-// GRÁFICO DE ATIVOS
+// GRÁFICO INTRADAY: 2 LINHAS (Risco x Segurança)
 const ctx = document.getElementById('graficoAtivos').getContext('2d');
-const grafico = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [
-            { label: 'S&P 500', data: [], borderColor: '#16a34a', backgroundColor:'rgba(22,163,70,0.1)', tension:0.2 },
-            { label: 'VIX', data: [], borderColor: '#dc2626', backgroundColor:'rgba(220,38,38,0.1)', tension:0.2 },
-            { label: 'DXY', data: [], borderColor: '#2563eb', backgroundColor:'rgba(37,99,235,0.1)', tension:0.2 },
-            { label: 'DI Futuro', data: [], borderColor: '#f59e0b', backgroundColor:'rgba(245,158,11,0.1)', tension:0.2 }
-        ]
-    },
-    options: {
+const grafico = new Chart(ctx,{
+    type:'line',
+    data:{labels:[], datasets:[
+        {label:'Ativos de Risco', data:[], borderColor:'#dc2626', backgroundColor:'rgba(220,38,38,0.1)', tension:0.2},
+        {label:'Ativos de Segurança', data:[], borderColor:'#16a34a', backgroundColor:'rgba(22,163,70,0.1)', tension:0.2}
+    ]},
+    options:{
         responsive:true,
         interaction:{mode:'index', intersect:false},
         plugins:{legend:{position:'top'}},
-        scales:{
-            x:{title:{display:true, text:'Horário'}},
-            y:{title:{display:true, text:'Preço'}, beginAtZero:false}
-        }
+        scales:{x:{title:{display:true,text:'Horário'}}, y:{title:{display:true,text:'Preço'}, beginAtZero:false}}
     }
 });
 
 async function atualizarGrafico(){
-    const chave = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-    const ativos = [
-        {label:"S&P 500", symbol:"^GSPC"},
-        {label:"VIX", symbol:"^VIX"},
-        {label:"DXY", symbol:"DX-Y.NYB"},
-        {label:"DI Futuro", symbol:"DI1!"}
-    ];
-
+    const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
+    const risco=["^GSPC"];
+    const seguranca=["^VIX","DX-Y.NYB","DI1!"];
     const agora = new Date();
     const horario = agora.toLocaleTimeString('pt-BR',{hour12:false});
-
     grafico.data.labels.push(horario);
-    if(grafico.data.labels.length > 20) grafico.data.labels.shift();
-
-    for(let i=0;i<ativos.length;i++){
-        try{
-            const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${ativos[i].symbol}`);
-            const data = await res.json();
-            const price = data.results[ativos[i].symbol].price;
-            grafico.data.datasets[i].data.push(price);
-            if(grafico.data.datasets[i].data.length > 20) grafico.data.datasets[i].data.shift();
-        }catch(err){
-            console.log("Erro ao buscar ativo:", ativos[i].symbol, err);
-            grafico.data.datasets[i].data.push(null);
+    if(grafico.data.labels.length>120) grafico.data.labels.shift(); // Últimas 2h aprox (1min ponto)
+    async function mediaGrupo(grupo){
+        let soma=0, cont=0;
+        for(let s of grupo){
+            try{
+                const res = await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
+                const data = await res.json();
+                const price = data.results[s].price;
+                soma+=price;
+                cont++;
+            }catch(err){console.log("Erro:",s);}
         }
+        return cont>0 ? soma/cont : null;
     }
+    const mediaRisco = await mediaGrupo(risco);
+    const mediaSeg = await mediaGrupo(seguranca);
+    grafico.data.datasets[0].data.push(mediaRisco);
+    grafico.data.datasets[1].data.push(mediaSeg);
+    if(grafico.data.datasets[0].data.length>120){grafico.data.datasets[0].data.shift(); grafico.data.datasets[1].data.shift();}
     grafico.update();
 }
-
 atualizarGrafico();
 setInterval(atualizarGrafico,60000);
 </script>
-
 </body>
 </html>
