@@ -140,7 +140,61 @@ async function atualizarAtivosScore(){
 atualizarAtivosScore();
 setInterval(atualizarAtivosScore,5000);
 
-// ===== GRÁFICO DINÂMICO COM HISTÓRICO INICIAL =====
+// ===== BREAKING NEWS =====
+const palavrasImpacto=["b3","ibovespa","juros","selic","bolsa","inflação","recessão","economia brasil","crise","investimento"];
+const breakingList=document.getElementById("breaking-list");
+const som=document.getElementById("somAlerta");
+async function buscarBreaking(){
+  const rss="https://news.google.com/rss/search?q=b3+OR+ibovespa+OR+economia+brasil+OR+inflação+OR+juros&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+  const res=await fetch(url);
+  const text=await res.text();
+  const xml=new DOMParser().parseFromString(text,"text/xml");
+  const items=xml.querySelectorAll("item");
+  breakingList.innerHTML="";
+  let count=0;
+  items.forEach(item=>{
+    if(count>=5) return;
+    const titulo=item.querySelector("title").textContent;
+    const link=item.querySelector("link").textContent;
+    if(palavrasImpacto.some(p=>titulo.toLowerCase().includes(p))){
+      const div=document.createElement("div");
+      div.className="breaking-item";
+      if(["queda","crise","recessão","alta de juros","inflação"].some(n=>titulo.toLowerCase().includes(n))){div.classList.add("alerta");som.play().catch(()=>{});}
+      div.innerHTML=`<strong>${titulo}</strong><br><a href="${link}" target="_blank">Ler</a>`;
+      breakingList.appendChild(div);
+      count++;
+    }
+  });
+  if(breakingList.children.length===0) breakingList.innerHTML='<div class="breaking-item">Nenhuma notícia relevante no momento...</div>';
+}
+buscarBreaking();
+setInterval(buscarBreaking,30000);
+
+// ===== NOTÍCIAS DE MERCADO =====
+const mercadoList=document.getElementById("mercado-list");
+async function buscarMercado(){
+  const rss="https://news.google.com/rss/search?q=mercado+financeiro+OR+b3+OR+economia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+  const res=await fetch(url);
+  const text=await res.text();
+  const xml=new DOMParser().parseFromString(text,"text/xml");
+  const items=xml.querySelectorAll("item");
+  mercadoList.innerHTML="";
+  items.forEach((item,i)=>{
+    if(i>4) return;
+    const t=item.querySelector("title").textContent;
+    const l=item.querySelector("link").textContent;
+    const div=document.createElement("div");
+    div.className="mercado-item";
+    div.innerHTML=`${t}<br><a href="${l}" target="_blank">Ler</a>`;
+    mercadoList.appendChild(div);
+  });
+}
+buscarMercado();
+setInterval(buscarMercado,60000);
+
+// ===== GRÁFICO DINÂMICO COM TRANSIÇÃO SUAVE =====
 const ctx=document.getElementById('graficoAtivos').getContext('2d');
 const maxPontos=60;
 let precoInicial={risco:null,seguranca:null};
@@ -148,17 +202,32 @@ let ultimaRisco=null,ultimaSeg=null;
 
 const grafico=new Chart(ctx,{
   type:'line',
-  data:{labels:[],datasets:[
-    {label:'Ativos de Risco (%)',data:[],borderColor:'#f87171',backgroundColor:'rgba(220,38,38,0.1)',tension:0.2},
-    {label:'Ativos de Segurança (%)',data:[],borderColor:'#34d399',backgroundColor:'rgba(22,163,70,0.1)',tension:0.2}
-  ]},
-  options:{responsive:true,animation:{duration:0},interaction:{mode:'index',intersect:false},
-    plugins:{legend:{position:'top'}},
+  data:{
+    labels:[],
+    datasets:[
+      {label:'Ativos de Risco (%)',data:[],borderColor:'#f87171',backgroundColor:'rgba(220,38,38,0.1)',tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6},
+      {label:'Ativos de Segurança (%)',data:[],borderColor:'#34d399',backgroundColor:'rgba(22,163,70,0.1)',tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6}
+    ]
+  },
+  options:{
+    responsive:true,
+    animation:{duration:500,easing:'easeOutQuad'},
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'top'},
+      tooltip:{
+        mode:'index',
+        intersect:false,
+        callbacks:{
+          label:function(context){return context.dataset.label + ': ' + context.raw.toFixed(2) + '%';}
+        }
+      }
+    },
     scales:{x:{title:{display:true,text:'Horário'}},y:{title:{display:true,text:'Variação (%)'},beginAtZero:false}}
   }
 });
 
-// Adiciona histórico inicial de 10 pontos zerados
+// Histórico inicial para mostrar linhas desde o início
 for(let i=0;i<10;i++){
   grafico.data.labels.push('');
   grafico.data.datasets[0].data.push(0);
@@ -210,11 +279,11 @@ async function atualizarGraficoPerc(){
     grafico.data.datasets[1].data.shift();
   }
 
-  grafico.update('none');
+  grafico.update();
 }
 
 atualizarGraficoPerc();
-setInterval(atualizarGraficoPerc,60000); // 60 segundos
+setInterval(atualizarGraficoPerc,60000); // Atualiza a cada 60 segundos
 </script>
 </body>
 </html>
