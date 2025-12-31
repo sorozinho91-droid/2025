@@ -2,51 +2,54 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GPS Macro Profissional – Mini Índice</title>
+<title>GPS de Mercado – Risco x Segurança</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f3f4f6;
-}
-header{
-  background:#111827;
-  color:#fff;
-  padding:10px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-}
-#relogio{
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-  padding:6px;
-  margin:10px auto;
-  width:360px;
-  color:#fff;
-  background:#1f2937;
-  border-radius:6px;
-}
-#grafico-container{
-  width:95%;
-  max-width:1200px;
-  margin:20px auto;
-  background:#fff;
-  padding:15px;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
+header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
+#relogio{text-align:center;font-size:18px;font-weight:bold;padding:6px;margin:10px auto;width:340px;color:#fff;background:#1f2937;border-radius:6px;}
+#layout{display:flex;gap:15px;padding:10px;justify-content:space-between;align-items:flex-start;}
+#macro{width:360px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12px;text-align:center;}
+#ativos-risco{width:100%;border-collapse:collapse;font-size:13px;}
+#ativos-risco th{background:#1f2937;color:#fff;padding:6px;}
+#ativos-risco td{padding:6px;border-bottom:1px solid #e5e7eb;font-weight:bold;}
+#painel-direito{width:380px;display:flex;flex-direction:column;gap:12px;}
+#mercado,#breaking{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);overflow:hidden;}
+.mercado-header,.breaking-header{background:#1f2937;color:#fff;padding:8px;font-weight:bold;text-align:center;}
+.breaking-header{background:#b91c1c;}
+#grafico-container{width:95%;max-width:1100px;margin:20px auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
 </style>
 </head>
 
 <body>
 
-<header>📊 GPS Macro Profissional – Mini Índice</header>
+<header>📊 GPS de Mercado – Risco x Segurança</header>
 <div id="relogio">⏰ --:--:--</div>
+
+<div id="layout">
+  <div id="macro">
+    <table id="ativos-risco">
+      <tr><th>Ativo</th><th>Preço</th></tr>
+      <tr><td>S&P 500</td><td id="sp">--</td></tr>
+      <tr><td>Mini Índice (WIN)</td><td id="win">--</td></tr>
+      <tr><td>VIX</td><td id="vix">--</td></tr>
+      <tr><td>DXY</td><td id="dxy">--</td></tr>
+    </table>
+  </div>
+
+  <div id="painel-direito">
+    <div id="mercado">
+      <div class="mercado-header">📰 Notícias Mercado</div>
+      <div style="padding:8px;font-size:13px;">(mantido)</div>
+    </div>
+    <div id="breaking">
+      <div class="breaking-header">🚨 Breaking News</div>
+      <div style="padding:8px;font-size:13px;">(mantido)</div>
+    </div>
+  </div>
+</div>
 
 <div id="grafico-container">
   <canvas id="grafico"></canvas>
@@ -55,69 +58,19 @@ header{
 <script>
 // ===== RELÓGIO =====
 setInterval(()=>{
-  document.getElementById("relogio").innerText =
-    "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
+  document.getElementById("relogio").innerHTML =
+  "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
 },1000);
 
-// ===== LISTA DE ATIVOS =====
-
-// RISCO (risk-on)
-const ativosRisco = [
-  "^GSPC",   // S&P 500
-  "^IXIC",   // Nasdaq
-  "^DJI",    // Dow Jones
-  "^BVSP",   // Ibovespa
-  "BTC-USD", // Bitcoin
-  "CL=F",    // Petróleo
-  "HG=F"     // Cobre
-];
-
-// SEGURANÇA (risk-off)
-const ativosSeguranca = [
-  "^VIX",      // Volatilidade
-  "DX-Y.NYB",  // DXY
-  "BRL=X",    // USD/BRL
-  "GC=F",     // Ouro
-  "^TNX"      // Treasury 10Y
-];
-
-// ===== FUNÇÃO DE PREÇO (Yahoo via proxy) =====
-async function buscarPreco(symbol){
-  const url = "https://api.allorigins.win/raw?url=" +
-    encodeURIComponent(
-      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
-    );
-  const res = await fetch(url);
-  const json = await res.json();
-  return json.quoteResponse.result[0].regularMarketPrice;
-}
-
-// ===== MÉDIA DO GRUPO =====
-async function mediaGrupo(grupo){
-  let soma = 0;
-  let qtd = 0;
-
-  for(const ativo of grupo){
-    try{
-      soma += await buscarPreco(ativo);
-      qtd++;
-    }catch(e){
-      console.log("Erro ativo:", ativo);
-    }
-  }
-  return qtd ? soma / qtd : 0;
-}
-
 // ===== GRÁFICO =====
-const ctx = document.getElementById("grafico").getContext("2d");
-
-const grafico = new Chart(ctx,{
+const ctx=document.getElementById("grafico").getContext("2d");
+const grafico=new Chart(ctx,{
   type:"line",
   data:{
     labels:[],
     datasets:[
       {
-        label:"Ativos de Risco (média %)",
+        label:"Ativos de Risco (%)",
         data:[],
         borderColor:"#16a34a",
         backgroundColor:"rgba(22,163,74,0.1)",
@@ -125,7 +78,7 @@ const grafico = new Chart(ctx,{
         fill:true
       },
       {
-        label:"Ativos de Segurança (média %)",
+        label:"Ativos de Segurança (%)",
         data:[],
         borderColor:"#dc2626",
         backgroundColor:"rgba(220,38,38,0.1)",
@@ -133,48 +86,55 @@ const grafico = new Chart(ctx,{
         fill:true
       }
     ]
-  },
-  options:{
-    responsive:true,
-    interaction:{mode:"index",intersect:false},
-    scales:{
-      y:{title:{display:true,text:"Variação (%)"}},
-      x:{title:{display:true,text:"Horário"}}
-    }
   }
 });
 
-// ===== BASE PARA % =====
-let baseRisco = null;
-let baseSeg = null;
+// ===== FUNÇÃO YAHOO =====
+async function buscarPreco(symbol){
+  const url="https://api.allorigins.win/raw?url="+
+    encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
+  const res=await fetch(url);
+  const json=await res.json();
+  return json.quoteResponse.result[0].regularMarketPrice;
+}
 
-// ===== ATUALIZA A CADA 1 MINUTO =====
-async function atualizarGrafico(){
+// ===== BASE =====
+let baseRisco=null,baseSeg=null;
+
+// ===== ATUALIZA =====
+async function atualizar(){
   try{
-    const mediaRisco = await mediaGrupo(ativosRisco);
-    const mediaSeg = await mediaGrupo(ativosSeguranca);
+    const sp=await buscarPreco("^GSPC");
+    const win=await buscarPreco("^BVSP"); // proxy Mini Índice
+    const vix=await buscarPreco("^VIX");
+    const dxy=await buscarPreco("DX-Y.NYB");
 
-    if(baseRisco === null){
-      baseRisco = mediaRisco;
-      baseSeg = mediaSeg;
-    }
+    document.getElementById("sp").innerText=sp.toFixed(2);
+    document.getElementById("win").innerText=win.toFixed(2);
+    document.getElementById("vix").innerText=vix.toFixed(2);
+    document.getElementById("dxy").innerText=dxy.toFixed(2);
 
-    const percRisco = ((mediaRisco - baseRisco) / baseRisco) * 100;
-    const percSeg = ((mediaSeg - baseSeg) / baseSeg) * 100;
+    const riscoMedia=(sp+win)/2;
+    const segMedia=(vix+dxy)/2;
+
+    if(baseRisco===null){baseRisco=riscoMedia;baseSeg=segMedia;}
+
+    const riscoPerc=((riscoMedia-baseRisco)/baseRisco)*100;
+    const segPerc=((segMedia-baseSeg)/baseSeg)*100;
 
     grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
-    grafico.data.datasets[0].data.push(Number(percRisco.toFixed(2)));
-    grafico.data.datasets[1].data.push(Number(percSeg.toFixed(2)));
+    grafico.data.datasets[0].data.push(riscoPerc.toFixed(2));
+    grafico.data.datasets[1].data.push(segPerc.toFixed(2));
 
     grafico.update();
-  }catch(err){
-    console.log("Erro atualização:", err);
+  }catch(e){
+    console.log("Erro:",e);
   }
 }
 
 // ===== INICIALIZA =====
-atualizarGrafico();
-setInterval(atualizarGrafico, 60000); // 1 minuto
+atualizar();
+setInterval(atualizar,60000);
 </script>
 
 </body>
