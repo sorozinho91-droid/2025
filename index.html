@@ -1,1 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>GPS Macro – Mini Índice</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
+header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
+#relogio{text-align:center;font-size:18px;font-weight:bold;padding:6px;margin:10px auto;width:360px;color:#fff;background:#1f2937;border-radius:6px;}
+
+#layout{display:flex;justify-content:space-between;gap:15px;padding:10px;align-items:flex-start;}
+
+#macro{
+  width:360px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  padding:12px;
+}
+
+#ativos-risco{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+#ativos-risco th{background:#1f2937;color:#fff;padding:6px;}
+#ativos-risco td{padding:6px;border-bottom:1px solid #e5e7eb;font-weight:bold;}
+
+#painel-direito{
+  width:380px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+#mercado,#breaking{
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  overflow:hidden;
+}
+
+.mercado-header,.breaking-header{
+  background:#1f2937;
+  color:#fff;
+  padding:8px;
+  font-weight:bold;
+  text-align:center;
+}
+.breaking-header{background:#b91c1c;}
+
+#mercado-list,#breaking-list{
+  max-height:220px;
+  overflow-y:auto;
+  font-size:13px;
+  padding:6px;
+}
+
+.mercado-item,.breaking-item{
+  padding:8px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+#grafico-container{
+  width:95%;
+  max-width:1200px;
+  margin:20px auto;
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+</style>
+</head>
+
+<body>
+
+<header>📊 GPS Macro – Mini Índice</header>
+<div id="relogio">⏰ --:--:--</div>
+
+<div id="layout">
+
+  <!-- TABELA MACRO -->
+  <div id="macro">
+    <table id="ativos-risco">
+      <tr><th>Ativo</th><th>Preço</th></tr>
+      <tr><td>S&P 500</td><td id="sp">--</td></tr>
+      <tr><td>Nasdaq</td><td id="nasdaq">--</td></tr>
+      <tr><td>Dow Jones</td><td id="dow">--</td></tr>
+      <tr><td>Ibovespa</td><td id="ibov">--</td></tr>
+      <tr><td>Bitcoin</td><td id="btc">--</td></tr>
+      <tr><td>Petróleo</td><td id="oil">--</td></tr>
+      <tr><td>Cobre</td><td id="copper">--</td></tr>
+      <tr><td>VIX</td><td id="vix">--</td></tr>
+      <tr><td>DXY</td><td id="dxy">--</td></tr>
+      <tr><td>USD/BRL</td><td id="usdb">--</td></tr>
+      <tr><td>Ouro</td><td id="gold">--</td></tr>
+      <tr><td>TNX</td><td id="tnx">--</td></tr>
+    </table>
+  </div>
+
+  <!-- NOTÍCIAS -->
+  <div id="painel-direito">
+    <div id="mercado">
+      <div class="mercado-header">📰 Notícias de Mercado</div>
+      <div id="mercado-list">
+        <div class="mercado-item">Aguardando notícias...</div>
+      </div>
+    </div>
+
+    <div id="breaking">
+      <div class="breaking-header">🚨 Breaking News</div>
+      <div id="breaking-list">
+        <div class="breaking-item">Aguardando alertas...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- GRÁFICO -->
+<div id="grafico-container">
+  <canvas id="grafico"></canvas>
+</div>
+
+<script>
+// ===== RELÓGIO =====
+setInterval(()=>{
+  document.getElementById("relogio").innerText =
+    "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
+},1000);
+
+// ===== ATIVOS =====
+const risco = {
+  "^GSPC":"sp","^IXIC":"nasdaq","^DJI":"dow","^BVSP":"ibov",
+  "BTC-USD":"btc","CL=F":"oil","HG=F":"copper"
+};
+const seguranca = {
+  "^VIX":"vix","DX-Y.NYB":"dxy","BRL=X":"usdb","GC=F":"gold","^TNX":"tnx"
+};
+
+// ===== PREÇO =====
+async function preco(symbol){
+  const url="https://api.allorigins.win/raw?url="+
+    encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
+  const r=await fetch(url);const j=await r.json();
+  return j.quoteResponse.result[0].regularMarketPrice;
+}
+
+// ===== GRÁFICO =====
+const grafico=new Chart(document.getElementById("grafico"),{
+  type:"line",
+  data:{labels:[],datasets:[
+    {label:"Risco (%)",data:[],borderColor:"#16a34a",backgroundColor:"rgba(22,163,74,.1)",fill:true,tension:.4},
+    {label:"Segurança (%)",data:[],borderColor:"#dc2626",backgroundColor:"rgba(220,38,38,.1)",fill:true,tension:.4}
+  ]}
+});
+
+let baseR=null,baseS=null;
+
+// ===== ATUALIZA =====
+async function atualizar(){
+  let somaR=0,cR=0,somaS=0,cS=0;
+
+  for(const a in risco){const p=await preco(a);document.getElementById(risco[a]).innerText=p.toFixed(2);somaR+=p;cR++;}
+  for(const a in seguranca){const p=await preco(a);document.getElementById(seguranca[a]).innerText=p.toFixed(2);somaS+=p;cS++;}
+
+  const mR=somaR/cR,mS=somaS/cS;
+  if(baseR===null){baseR=mR;baseS=mS;}
+
+  grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
+  grafico.data.datasets[0].data.push(((mR-baseR)/baseR*100).toFixed(2));
+  grafico.data.datasets[1].data.push(((mS-baseS)/baseS*100).toFixed(2));
+  grafico.update();
+}
+
+atualizar();
+setInterval(atualizar,60000);
+</script>
+
+</body>
+</html>
