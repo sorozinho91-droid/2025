@@ -2,108 +2,134 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard – Risco x Segurança (Tempo Real)</title>
+<title>Dashboard Macro – Risco x Segurança</title>
 
 <!-- Plotly -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-<!-- TradingView Tickers -->
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js"></script>
 
 <style>
 body { margin:0; font-family:Arial,sans-serif; background:#f4f6f8; }
 
 /* ===== TOPO ===== */
-#painel-cotacoes {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:28px;
-  background:#fff;
-  border-bottom:1px solid #ccc;
+#painel-cotacoes{
+  position:fixed; top:0; left:0;
+  width:100%; height:28px;
+  background:#fff; border-bottom:1px solid #ccc;
   z-index:9999;
 }
 
-/* ===== CONTEÚDO ===== */
-#conteudo {
-  margin-top:32px;
+/* ===== HEADER ===== */
+header{
+  margin-top:28px;
+  background:#1f2937;
+  color:#fff;
+  padding:12px;
+  text-align:center;
+}
+
+/* ===== CONTROLES ===== */
+#controls,#compareDates{
+  text-align:center;
   padding:10px;
 }
 
-/* ===== GRÁFICO ===== */
-#grafico {
-  width:95%;
+button{
+  padding:6px 14px;
+  margin:4px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+button.active{ background:#2563eb; color:#fff; }
+
+/* ===== GRAFICO ===== */
+#grafico{
+  width:92%;
   max-width:1200px;
   height:420px;
   margin:20px auto;
   background:#fff;
   border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
 }
 
 /* ===== TABELAS ===== */
-table {
-  width:95%;
+table{
+  width:92%;
   max-width:1200px;
   margin:20px auto;
   border-collapse:collapse;
   background:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
-th, td {
-  padding:8px;
+th,td{
   border:1px solid #ccc;
+  padding:7px;
+  font-size:13px;
   text-align:center;
-  font-size:14px;
 }
-thead th {
+thead th{
   background:#2563eb;
-  color:white;
+  color:#fff;
 }
-.risco { color:green; font-weight:bold; }
-.seguro { color:red; font-weight:bold; }
-.positivo { color:green; }
-.negativo { color:red; }
+
+.risco{ color:green; }
+.seguro{ color:red; }
+.positivo{ color:green; }
+.negativo{ color:red; }
 
 /* ===== BREAKING NEWS ===== */
-#painel-news {
+#painel-news{
   position:fixed;
-  top:32px;
+  top:36px;
   right:10px;
   width:360px;
   background:#111827;
-  color:white;
+  color:#fff;
   border-radius:6px;
-  box-shadow:0 4px 8px rgba(0,0,0,0.3);
   z-index:9998;
 }
-.news-header {
+.news-header{
+  background:#1f2937;
+  padding:8px;
   text-align:center;
   font-weight:bold;
-  padding:8px;
-  background:#1f2937;
 }
-#newsList {
+#newsList{
   max-height:260px;
   overflow-y:auto;
   font-size:13px;
 }
-.news-item {
+.news-item{
   padding:8px;
   border-bottom:1px solid #374151;
 }
-.news-item a {
-  color:#93c5fd;
-  text-decoration:none;
+.news-item a{ color:#93c5fd; }
+
+/* ===== ALERTA MERCADO ===== */
+#alerta-mercado{
+  position:fixed;
+  top:36px;
+  left:8px;
+  width:280px;
+  background:#fff;
+  border-left:5px solid #c00000;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+  font-size:12px;
+  z-index:9998;
 }
-.breaking {
-  animation:piscar 1s infinite;
+.alerta-header{
+  background:#c00000;
+  color:#fff;
+  padding:6px;
+  text-align:center;
+  font-weight:bold;
 }
-@keyframes piscar {
-  0%{background:#7f1d1d;}
-  50%{background:#dc2626;}
-  100%{background:#7f1d1d;}
+#alerta-conteudo{ padding:8px; }
+.piscar{ animation:pisca 1s infinite; }
+@keyframes pisca{
+  0%{background:#fff;}
+  50%{background:#ffe5e5;}
+  100%{background:#fff;}
 }
 </style>
 </head>
@@ -112,150 +138,163 @@ thead th {
 
 <!-- ===== TOPO COTAÇÕES ===== -->
 <div id="painel-cotacoes">
-<script>
-new TradingView.widget({
-  symbols: [
-    { title:"Brent", proName:"ICE:BRN1!" },
-    { title:"WTI", proName:"NYMEX:CL1!" },
-    { title:"DXY", proName:"FOREXCOM:DX1!" },
-    { title:"S&P 500", proName:"INDEX:SPX" },
-    { title:"Dow Jones", proName:"INDEX:DJI" }
+<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
+{
+  "symbols":[
+    {"title":"Brent","proName":"ICE:BRN1!"},
+    {"title":"WTI","proName":"NYMEX:CL1!"},
+    {"title":"DXY","proName":"FOREXCOM:DX1!"},
+    {"title":"S&P 500","proName":"INDEX:SPX"},
+    {"title":"Dow Jones","proName":"INDEX:DJI"}
   ],
-  colorTheme:"light",
-  isTransparent:true,
-  showSymbolLogo:false,
-  locale:"pt",
-  width:"100%",
-  height:28
-});
+  "colorTheme":"light",
+  "isTransparent":true,
+  "locale":"pt",
+  "width":"100%",
+  "height":"28"
+}
 </script>
 </div>
 
-<div id="conteudo">
+<header>
+<h2>Risco x Segurança – Tempo Real (Histórico Diário)</h2>
+</header>
 
-<h2 style="text-align:center;">Risco x Segurança – Tempo Real (Histórico do Dia)</h2>
+<div id="controls">
+<button onclick="setTimeframe(60,this)" class="active">1 min</button>
+<button onclick="setTimeframe(300,this)">5 min</button>
+</div>
 
 <div id="grafico"></div>
 
 <table id="tabelaRisco">
-<thead>
-<tr><th>Ativos de Risco</th><th>Valor</th><th>Variação</th></tr>
-</thead>
+<thead><tr><th>Ativo de Risco</th><th>Valor</th><th>Var %</th></tr></thead>
 <tbody></tbody>
 </table>
 
 <table id="tabelaSeguro">
-<thead>
-<tr><th>Ativos de Segurança</th><th>Valor</th><th>Variação</th></tr>
-</thead>
+<thead><tr><th>Ativo de Segurança</th><th>Valor</th><th>Var %</th></tr></thead>
 <tbody></tbody>
 </table>
-
-</div>
 
 <!-- ===== BREAKING NEWS ===== -->
 <div id="painel-news">
   <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList">
-    <div class="news-item">Aguardando notícias...</div>
-  </div>
+  <div id="newsList"><div class="news-item">Aguardando notícias...</div></div>
 </div>
 
-<!-- ================= SCRIPT PRINCIPAL ================= -->
+<!-- ===== ALERTA ===== -->
+<div id="alerta-mercado">
+  <div class="alerta-header">⚠️ ALERTA MERCADO</div>
+  <div id="alerta-conteudo">Aguardando notícias...</div>
+</div>
+
+<audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
+<audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
 <script>
-// ================= DADOS DO GRÁFICO =================
-let datas = [];
-let risco = [];
-let seguro = [];
+// =================== GRAFICO ===================
+let datas=[], risco=[], seguro=[];
+let valorR=100, valorS=100;
+let timer=null, timeframe=60000;
 
-let valorRisco = 100;
-let valorSeguro = 100;
+// histórico do DIA
+function initDia(){
+  const inicio=new Date();
+  inicio.setHours(0,0,0,0);
+  datas.push(inicio);
+  risco.push(valorR);
+  seguro.push(valorS);
+}
 
-let diaAtual = new Date().toDateString();
-
-// ================= ATIVOS =================
-const ativosRisco = [
-  {nome:"S&P 500", valor:100},
-  {nome:"Nasdaq", valor:100},
-  {nome:"Petróleo", valor:100}
-];
-
-const ativosSeguro = [
-  {nome:"DXY", valor:100},
-  {nome:"VIX", valor:100},
-  {nome:"Ouro", valor:100}
-];
-
-// ================= GRÁFICO =================
-function plotGrafico(){
+function plot(){
   Plotly.react("grafico",[
-    { x:datas, y:risco, mode:"lines", name:"Risco", line:{color:"green", width:2} },
-    { x:datas, y:seguro, mode:"lines", name:"Segurança", line:{color:"red", width:2} }
+    {x:datas,y:risco,name:"Risco",mode:"lines",line:{color:"green"}},
+    {x:datas,y:seguro,name:"Segurança",mode:"lines",line:{color:"red"}}
   ],{
-    xaxis:{ title:"Horário", type:"date" },
-    yaxis:{ title:"Score" },
-    margin:{t:40}
+    margin:{t:40,l:50,r:40,b:50},
+    xaxis:{type:"date"},
+    yaxis:{title:"Índice"}
   });
 }
 
-// ================= TEMPO REAL =================
-function atualizarTempoReal(){
-  const agora = new Date();
-
-  // RESET AUTOMÁTICO AO VIRAR O DIA
-  if(agora.toDateString() !== diaAtual){
-    diaAtual = agora.toDateString();
-    datas = [];
-    risco = [];
-    seguro = [];
-  }
-
-  valorRisco += (Math.random()-0.5)*2;
-  valorSeguro += (Math.random()-0.5)*1;
+function atualizar(){
+  const agora=new Date();
+  valorR+= (Math.random()-0.5)*2;
+  valorS+= (Math.random()-0.5)*1;
 
   datas.push(agora);
-  risco.push(Number(valorRisco.toFixed(2)));
-  seguro.push(Number(valorSeguro.toFixed(2)));
+  risco.push(valorR);
+  seguro.push(valorS);
 
-  plotGrafico();
-
-  atualizarTabelas();
+  plot();
 }
 
-// ================= TABELAS =================
+function setTimeframe(ms,btn){
+  document.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  clearInterval(timer);
+  timer=setInterval(atualizar,ms);
+}
+
+initDia();
+plot();
+timer=setInterval(atualizar,timeframe);
+
+// =================== TABELAS ===================
+const riscoAtivos=[
+  {n:"Ouro",v:2766},{n:"WTI",v:73},{n:"Dow Jones",v:44900}
+];
+const segAtivos=[
+  {n:"DXY",v:107},{n:"VIX",v:17.6}
+];
+
 function atualizarTabelas(){
-  const tr = document.querySelector("#tabelaRisco tbody");
-  const ts = document.querySelector("#tabelaSeguro tbody");
-  tr.innerHTML = "";
-  ts.innerHTML = "";
-
-  ativosRisco.forEach(a=>{
-    const novo = a.valor + (Math.random()-0.5)*2;
-    const varp = ((novo-a.valor)/a.valor)*100;
-    a.valor = novo;
-    tr.innerHTML += `<tr>
-      <td class="risco">${a.nome}</td>
-      <td>${novo.toFixed(2)}</td>
-      <td class="${varp>=0?'positivo':'negativo'}">${varp.toFixed(2)}%</td>
-    </tr>`;
+  const tr=document.querySelector("#tabelaRisco tbody");
+  const ts=document.querySelector("#tabelaSeguro tbody");
+  tr.innerHTML=""; ts.innerHTML="";
+  riscoAtivos.forEach(a=>{
+    let nv=a.v+(Math.random()-0.5);
+    let varp=((nv-a.v)/a.v*100).toFixed(2);
+    a.v=nv;
+    tr.innerHTML+=`<tr><td class="risco">${a.n}</td><td>${a.v.toFixed(2)}</td><td class="${varp>=0?'positivo':'negativo'}">${varp}%</td></tr>`;
   });
-
-  ativosSeguro.forEach(a=>{
-    const novo = a.valor + (Math.random()-0.5)*1;
-    const varp = ((novo-a.valor)/a.valor)*100;
-    a.valor = novo;
-    ts.innerHTML += `<tr>
-      <td class="seguro">${a.nome}</td>
-      <td>${novo.toFixed(2)}</td>
-      <td class="${varp>=0?'positivo':'negativo'}">${varp.toFixed(2)}%</td>
-    </tr>`;
+  segAtivos.forEach(a=>{
+    let nv=a.v+(Math.random()-0.5);
+    let varp=((nv-a.v)/a.v*100).toFixed(2);
+    a.v=nv;
+    ts.innerHTML+=`<tr><td class="seguro">${a.n}</td><td>${a.v.toFixed(2)}</td><td class="${varp>=0?'positivo':'negativo'}">${varp}%</td></tr>`;
   });
 }
+setInterval(atualizarTabelas,60000);
+atualizarTabelas();
 
-// ================= START =================
-plotGrafico();
-atualizarTempoReal();
-setInterval(atualizarTempoReal, 60000); // 1 minuto
+// =================== NEWS ===================
+const palavras=["fed","juros","inflação","war","cpi"];
+async function news(){
+  const q=palavras.join(" OR ");
+  const rss="https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+  const r=await fetch(url); const t=await r.text();
+  const xml=new DOMParser().parseFromString(t,"text/xml");
+  const item=xml.querySelector("item");
+  if(!item)return;
+  document.getElementById("newsList").innerHTML=
+    `<div class="news-item"><strong>${item.querySelector("title").textContent}</strong></div>`;
+}
+news(); setInterval(news,30000);
+
+// =================== ALERTA ===================
+async function alerta(){
+  const rss="https://news.google.com/rss/search?q=presidente+EUA+Brasil+mercado";
+  const url="https://api.allorigins.win/raw?url="+encodeURIComponent(rss);
+  const r=await fetch(url); const t=await r.text();
+  const xml=new DOMParser().parseFromString(t,"text/xml");
+  const item=xml.querySelector("item");
+  if(!item)return;
+  document.getElementById("alerta-conteudo").innerHTML=item.querySelector("title").textContent;
+}
+alerta(); setInterval(alerta,60000);
 </script>
 
 </body>
