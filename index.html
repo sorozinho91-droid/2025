@@ -194,67 +194,63 @@ async function buscarMercado(){
 buscarMercado();
 setInterval(buscarMercado,60000);
 
-// ===== GRÁFICO DINÂMICO COM TRANSIÇÃO SUAVE =====
+// ===== GRÁFICO DINÂMICO COM HISTÓRICO REAL =====
 const ctx=document.getElementById('graficoAtivos').getContext('2d');
 const maxPontos=60;
 let precoInicial={risco:null,seguranca:null};
 let ultimaRisco=null,ultimaSeg=null;
+const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
 
 const grafico=new Chart(ctx,{
   type:'line',
-  data:{
-    labels:[],
-    datasets:[
-      {label:'Ativos de Risco (%)',data:[],borderColor:'#f87171',backgroundColor:'rgba(220,38,38,0.1)',tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6},
-      {label:'Ativos de Segurança (%)',data:[],borderColor:'#34d399',backgroundColor:'rgba(22,163,70,0.1)',tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6}
-    ]
-  },
-  options:{
-    responsive:true,
-    animation:{duration:500,easing:'easeOutQuad'},
-    interaction:{mode:'index',intersect:false},
-    plugins:{
-      legend:{position:'top'},
-      tooltip:{
-        mode:'index',
-        intersect:false,
-        callbacks:{
-          label:function(context){return context.dataset.label + ': ' + context.raw.toFixed(2) + '%';}
-        }
-      }
-    },
+  data:{labels:[],datasets:[
+    {label:'Ativos de Risco (%)',data:[],borderColor:'#f87171',backgroundColor:'rgba(220,38,38,0.1)',tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6},
+    {label:'Ativos de Segurança (%)',data:[],borderColor:'#34d399',backgroundColor:'rgba(22,163,70,0.1)',tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6}
+  ]},
+  options:{responsive:true,animation:{duration:500,easing:'easeOutQuad'},interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top'},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw.toFixed(2)+'%'}}},
     scales:{x:{title:{display:true,text:'Horário'}},y:{title:{display:true,text:'Variação (%)'},beginAtZero:false}}
   }
 });
 
-// Histórico inicial para mostrar linhas desde o início
-for(let i=0;i<10;i++){
-  grafico.data.labels.push('');
-  grafico.data.datasets[0].data.push(0);
-  grafico.data.datasets[1].data.push(0);
+// Função para calcular média do grupo
+async function mediaGrupo(grupo){
+  let soma=0,cont=0;
+  for(let s of grupo){
+    try{
+      const res=await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
+      const data=await res.json();
+      soma+=data.results[s].price;
+      cont++;
+    }catch(err){console.log("Erro:",s);}
+  }
+  return cont>0?soma/cont:0;
 }
 
+// ===== HISTÓRICO INICIAL REAL =====
+async function historicoInicial(){
+  const risco=["^GSPC"];
+  const seguranca=["^VIX","DX-Y.NYB","DI1!"];
+  for(let i=0;i<5;i++){
+    const r=await mediaGrupo(risco);
+    const s=await mediaGrupo(seguranca);
+    if(precoInicial.risco===null) precoInicial.risco=r;
+    if(precoInicial.seguranca===null) precoInicial.seguranca=s;
+    grafico.data.datasets[0].data.push( ((r-precoInicial.risco)/precoInicial.risco*100) );
+    grafico.data.datasets[1].data.push( ((s-precoInicial.seguranca)/precoInicial.seguranca*100) );
+    grafico.data.labels.push('');
+  }
+  grafico.update();
+}
+
+// ===== ATUALIZA GRÁFICO A CADA 60s =====
 async function atualizarGraficoPerc(){
-  const chave="d58a789r01qptoar8c7gd58a789r01qptoar8c80";
   const risco=["^GSPC"];
   const seguranca=["^VIX","DX-Y.NYB","DI1!"];
   const agora=new Date();
   const horario=agora.toLocaleTimeString('pt-BR',{hour12:false});
   grafico.data.labels.push(horario);
   if(grafico.data.labels.length>maxPontos) grafico.data.labels.shift();
-
-  async function mediaGrupo(grupo){
-    let soma=0,cont=0;
-    for(let s of grupo){
-      try{
-        const res=await fetch(`https://api.hgbrasil.com/finance/quote?key=${chave}&symbol=${s}`);
-        const data=await res.json();
-        soma+=data.results[s].price;
-        cont++;
-      }catch(err){console.log("Erro:",s);}
-    }
-    return cont>0?soma/cont:0;
-  }
 
   const mediaRisco=await mediaGrupo(risco);
   const mediaSeg=await mediaGrupo(seguranca);
@@ -282,8 +278,8 @@ async function atualizarGraficoPerc(){
   grafico.update();
 }
 
-atualizarGraficoPerc();
-setInterval(atualizarGraficoPerc,60000); // Atualiza a cada 60 segundos
+// Executa inicialização
+historicoInicial().then(()=>{atualizarGraficoPerc(); setInterval(atualizarGraficoPerc,60000);});
 </script>
 </body>
 </html>
