@@ -2,130 +2,252 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard – Risco x Segurança</title>
+<title>Painel Macro – Risco x Segurança</title>
 
-<!-- Plotly -->
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-<!-- TradingView -->
-<script src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f8}
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f3f4f6;
+}
 
-/* TOPO */
-#topo{position:fixed;top:0;left:0;width:100%;height:28px;z-index:1000;background:#fff;border-bottom:1px solid #ccc}
-#conteudo{margin-top:36px;padding:10px}
+header{
+  background:#111827;
+  color:#fff;
+  padding:12px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
 
-/* GRÁFICO */
-#grafico{width:95%;max-width:1200px;height:420px;margin:20px auto;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+#relogio{
+  background:#1f2937;
+  color:#fff;
+  text-align:center;
+  padding:8px;
+  font-size:16px;
+  font-weight:bold;
+}
 
-/* TABELAS */
-table{width:95%;max-width:1200px;margin:20px auto;border-collapse:collapse;background:#fff}
-th,td{padding:8px;border:1px solid #ddd;text-align:center}
-th{background:#2563eb;color:#fff}
-.risco{color:green;font-weight:bold}
-.seguro{color:red;font-weight:bold}
+#conteudo{
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  gap:20px;
+  padding:20px;
+}
+
+#tabela-central{
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  padding:15px;
+  width:320px;
+}
+
+#tabela-central h3{
+  text-align:center;
+  margin-top:0;
+  background:#1f2937;
+  color:#fff;
+  padding:8px;
+  border-radius:6px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th{
+  background:#1f2937;
+  color:#fff;
+  padding:8px;
+}
+
+td{
+  padding:8px;
+  text-align:center;
+  font-weight:bold;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.alta{background:#dcfce7;color:#065f46;}
+.baixa{background:#fee2e2;color:#7f1d1d;}
+.neutra{background:#fef9c3;color:#78350f;}
+
+#grafico-box{
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  padding:15px;
+  width:700px;
+}
 </style>
 </head>
 
 <body>
 
-<!-- PAINEL COTAÇÕES -->
-<div id="topo">
-<script>
-new TradingView.widget({
-  symbols:[
-    {proName:"FOREXCOM:DX1!",title:"DXY"},
-    {proName:"INDEX:SPX",title:"S&P 500"},
-    {proName:"INDEX:DJI",title:"Dow Jones"},
-    {proName:"ICE:BRN1!",title:"Brent"},
-    {proName:"NYMEX:CL1!",title:"WTI"}
-  ],
-  colorTheme:"light",
-  isTransparent:true,
-  showSymbolLogo:false,
-  locale:"pt",
-  width:"100%",
-  height:28
-});
-</script>
-</div>
+<header>📊 Painel Macro – Ativos de Risco x Segurança</header>
+<div id="relogio">⏰ --:--:--</div>
 
 <div id="conteudo">
 
-<h2 style="text-align:center">📈 Risco x Segurança (Tempo Real)</h2>
+  <!-- TABELA CENTRAL -->
+  <div id="tabela-central">
+    <h3>Visão Macro</h3>
+    <table>
+      <thead>
+        <tr><th>Ativo</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>S&P 500</td><td id="sp" class="neutra">NEUTRO</td></tr>
+        <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
+        <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
+        <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-<div id="grafico"></div>
-
-<!-- TABELA RISCO -->
-<table>
-<thead><tr><th>Ativos de Risco</th><th>Valor</th><th>Variação</th></tr></thead>
-<tbody id="tbRisco"></tbody>
-</table>
-
-<!-- TABELA SEGURANÇA -->
-<table>
-<thead><tr><th>Ativos de Segurança</th><th>Valor</th><th>Variação</th></tr></thead>
-<tbody id="tbSeguro"></tbody>
-</table>
+  <!-- GRÁFICO -->
+  <div id="grafico-box">
+    <canvas id="grafico"></canvas>
+  </div>
 
 </div>
 
 <script>
-/* ===== DADOS ===== */
-let datas=[], risco=[], seguro=[];
-let baseRisco=100, baseSeguro=100;
+/* ================= RELÓGIO ================= */
+function atualizarRelogio(){
+  document.getElementById("relogio").innerHTML =
+    "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
+}
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
 
-const ativosRisco=["S&P 500","Dow Jones","Petróleo","Emergentes","Semicondutores"];
-const ativosSeguro=["DXY","VIX","USD","Treasuries","Iene"];
+/* ================= DADOS ================= */
+let datas = [];
+let risco = [];
+let seguro = [];
 
-/* ===== GRÁFICO ===== */
-function plotar(){
-  Plotly.react("grafico",[
-    {x:datas,y:risco,name:"Risco",mode:"lines",line:{color:"green"}},
-    {x:datas,y:seguro,name:"Segurança",mode:"lines",line:{color:"red"}}
-  ],{
-    margin:{t:40},
-    xaxis:{title:"Horário"},
-    yaxis:{title:"Força Relativa"},
-    legend:{orientation:"h"}
-  });
+let valorRisco = 0;
+let valorSeguro = 0;
+
+/* ================= GRÁFICO ================= */
+const ctx = document.getElementById("grafico").getContext("2d");
+
+const grafico = new Chart(ctx,{
+  type:"line",
+  data:{
+    labels:[],
+    datasets:[
+      {
+        label:"Ativos de Risco",
+        data:[],
+        borderColor:"#16a34a",
+        backgroundColor:"rgba(22,163,74,0.15)",
+        tension:0.4,
+        fill:true
+      },
+      {
+        label:"Ativos de Segurança",
+        data:[],
+        borderColor:"#dc2626",
+        backgroundColor:"rgba(220,38,38,0.15)",
+        tension:0.4,
+        fill:true
+      }
+    ]
+  },
+  options:{
+    responsive:true,
+    interaction:{mode:"index",intersect:false},
+    scales:{
+      x:{title:{display:true,text:"Horário"}},
+      y:{title:{display:true,text:"Força Relativa"}}
+    }
+  }
+});
+
+/* ================= HISTÓRICO DO DIA ================= */
+function gerarHistoricoDia(){
+  datas = [];
+  risco = [];
+  seguro = [];
+
+  const agora = new Date();
+  const inicioDia = new Date();
+  inicioDia.setHours(0,0,0,0);
+
+  let vr = 0;
+  let vs = 0;
+
+  for(let d = new Date(inicioDia); d <= agora; d.setMinutes(d.getMinutes()+1)){
+    vr += (Math.random()-0.5)*0.4;
+    vs += (Math.random()-0.5)*0.3;
+
+    datas.push(new Date(d));
+    risco.push(vr);
+    seguro.push(vs);
+  }
+
+  valorRisco = vr;
+  valorSeguro = vs;
+
+  atualizarGraficoVisual();
 }
 
-/* ===== ATUALIZA ===== */
-function atualizar(){
-  const agora=new Date();
-  baseRisco+= (Math.random()-0.5)*2;
-  baseSeguro+= (Math.random()-0.5)*1;
-
-  datas.push(agora.toLocaleTimeString("pt-BR"));
-  risco.push(+baseRisco.toFixed(2));
-  seguro.push(+baseSeguro.toFixed(2));
-
-  if(datas.length>1440){datas.shift();risco.shift();seguro.shift();}
-
-  plotar();
-  atualizarTabelas();
+/* ================= ATUALIZAÇÃO ================= */
+function atualizarGraficoVisual(){
+  grafico.data.labels = datas.map(d =>
+    d.toLocaleTimeString("pt-BR",{hour12:false})
+  );
+  grafico.data.datasets[0].data = risco;
+  grafico.data.datasets[1].data = seguro;
+  grafico.update();
 }
 
-/* ===== TABELAS ===== */
-function atualizarTabelas(){
-  const r=document.getElementById("tbRisco");
-  const s=document.getElementById("tbSeguro");
-  r.innerHTML=""; s.innerHTML="";
+function atualizarGrafico(){
+  const agora = new Date();
 
-  ativosRisco.forEach(a=>{
-    r.innerHTML+=`<tr><td class="risco">${a}</td><td>${(Math.random()*100).toFixed(2)}</td><td class="risco">+</td></tr>`;
-  });
-  ativosSeguro.forEach(a=>{
-    s.innerHTML+=`<tr><td class="seguro">${a}</td><td>${(Math.random()*100).toFixed(2)}</td><td class="seguro">+</td></tr>`;
-  });
+  if(datas.length > 0){
+    const ultima = datas[datas.length-1];
+    if(ultima.toDateString() !== agora.toDateString()){
+      gerarHistoricoDia();
+      return;
+    }
+  }
+
+  valorRisco += (Math.random()-0.5)*0.4;
+  valorSeguro += (Math.random()-0.5)*0.3;
+
+  datas.push(agora);
+  risco.push(valorRisco);
+  seguro.push(valorSeguro);
+
+  atualizarGraficoVisual();
+  atualizarTabela();
 }
 
-/* ===== START ===== */
-atualizar();
-setInterval(atualizar,60000);
+/* ================= TABELA ================= */
+function definirStatus(el, valor){
+  el.className = valor > 0.2 ? "alta" : valor < -0.2 ? "baixa" : "neutra";
+  el.innerText = valor > 0.2 ? "ALTA" : valor < -0.2 ? "BAIXA" : "NEUTRO";
+}
+
+function atualizarTabela(){
+  definirStatus(document.getElementById("sp"), valorRisco);
+  definirStatus(document.getElementById("vix"), -valorRisco);
+  definirStatus(document.getElementById("dxy"), valorSeguro);
+  definirStatus(document.getElementById("di"), valorSeguro);
+}
+
+/* ================= START ================= */
+gerarHistoricoDia();
+setInterval(atualizarGrafico, 60000); // 1 minuto
 </script>
 
 </body>
