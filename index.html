@@ -2,131 +2,39 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GPS de Mercado – Mini Índice</title>
-
+<title>GPS de Mercado – Painel Completo</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f3f4f6;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
+header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
+#relogio{background:#1f2937;color:#fff;text-align:center;font-size:18px;font-weight:bold;padding:8px;}
 
-/* ===== TOPO ===== */
-header{
-  background:#111827;
-  color:#fff;
-  padding:10px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-}
+#topo{display:flex;justify-content:space-between;gap:12px;padding:12px;}
+.caixa{width:32%;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden;}
+.caixa h3{margin:0;padding:8px;background:#1f2937;color:#fff;text-align:center;font-size:15px;}
+.caixa.breaking h3{background:#b91c1c;}
 
-#relogio{
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-  padding:6px;
-  margin:10px auto;
-  width:300px;
-  color:#fff;
-  background:#1f2937;
-  border-radius:6px;
-}
+.lista{max-height:220px;overflow-y:auto;font-size:14px;}
+.item{padding:8px;border-bottom:1px solid #e5e7eb;}
+.item a{text-decoration:none;color:#1d4ed8;}
+.item.alerta{background:#fee2e2;border-left:4px solid #dc2626;font-weight:bold;}
 
-/* ===== LAYOUT ===== */
-#layout{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:15px;
-  padding:10px;
-}
+#layout{display:flex;justify-content:center;padding:10px;}
+#macro{width:420px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12px;text-align:center;}
 
-/* ===== MACRO ===== */
-#macro{
-  width:360px;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-  padding:12px;
-  text-align:center;
-}
-
-#ativos-risco{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
-}
-
-#ativos-risco th{
-  background:#1f2937;
-  color:#fff;
-  padding:6px;
-}
-
-#ativos-risco td{
-  padding:6px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:center;
-  font-weight:bold;
-}
+#ativos-risco{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:14px;}
+#ativos-risco th{background:#1f2937;color:#fff;padding:8px;}
+#ativos-risco td{padding:6px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:bold;}
 
 .alta{background:#dcfce7;color:#065f46;}
 .baixa{background:#fee2e2;color:#7f1d1d;}
 .neutra{background:#fef9c3;color:#78350f;}
 
-#direcao{
-  font-size:18px;
-  font-weight:bold;
-  padding:10px;
-  margin-top:10px;
-  border-radius:6px;
-}
+#direcao{font-size:20px;font-weight:bold;padding:12px;border-radius:6px;}
 
-/* ===== PAINEL DIREITO ===== */
-#painel-direito{
-  width:380px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-#mercado,#breaking{
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-  overflow:hidden;
-}
-
-.mercado-header,.breaking-header{
-  background:#1f2937;
-  color:#fff;
-  padding:8px;
-  font-weight:bold;
-  text-align:center;
-}
-
-.breaking-header{
-  background:#b91c1c;
-}
-
-#mercado-list,#breaking-list{
-  max-height:200px;
-  overflow-y:auto;
-  font-size:13px;
-  padding:6px;
-}
-
-.mercado-item,.breaking-item{
-  padding:8px;
-  border-bottom:1px solid #e5e7eb;
-}
-
-/* ===== GRÁFICO ===== */
 #grafico-container{
-  width:95%;
+  width:90%;
   max-width:1000px;
   margin:20px auto;
   background:#fff;
@@ -139,40 +47,45 @@ header{
 
 <body>
 
-<header>📊 GPS de Mercado – Mini Índice (WIN)</header>
+<header>📊 GPS de Mercado – Mini Índice</header>
 <div id="relogio">⏰ --:--:--</div>
 
-<div id="layout">
+<!-- TOPO NOTÍCIAS -->
+<div id="topo">
+  <div class="caixa">
+    <h3>📰 Notícias de Mercado</h3>
+    <div class="lista" id="noticias-mercado"><div class="item">Carregando...</div></div>
+  </div>
 
-  <!-- MACRO -->
+  <div class="caixa">
+    <h3>📌 Visão Geral</h3>
+    <div class="lista" style="text-align:center;padding:20px;font-weight:bold;">
+      Painel Macro<br>Atualização contínua
+    </div>
+  </div>
+
+  <div class="caixa breaking">
+    <h3>🚨 Breaking News</h3>
+    <div class="lista" id="breaking-news"><div class="item">Carregando...</div></div>
+  </div>
+</div>
+
+<!-- TABELA ATIVOS -->
+<div id="layout">
   <div id="macro">
     <table id="ativos-risco">
-      <tr><th>Ativo</th><th>Leitura</th></tr>
-      <tr><td>S&P 500</td><td class="neutra">NEUTRO</td></tr>
-      <tr><td>VIX</td><td class="neutra">NEUTRO</td></tr>
-      <tr><td>DXY</td><td class="neutra">NEUTRO</td></tr>
-      <tr><td>DI Futuro</td><td class="neutra">NEUTRO</td></tr>
+      <thead>
+        <tr><th>Ativo</th><th>Leitura</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>S&P 500</td><td id="sp500" class="neutra">NEUTRO</td></tr>
+        <tr><td>VIX</td><td id="vix" class="neutra">NEUTRO</td></tr>
+        <tr><td>DXY</td><td id="dxy" class="neutra">NEUTRO</td></tr>
+        <tr><td>DI Futuro</td><td id="di" class="neutra">NEUTRO</td></tr>
+      </tbody>
     </table>
     <div id="direcao" class="neutra">🟡 NEUTRO</div>
   </div>
-
-  <!-- NOTÍCIAS -->
-  <div id="painel-direito">
-    <div id="mercado">
-      <div class="mercado-header">📰 Notícias de Mercado</div>
-      <div id="mercado-list">
-        <div class="mercado-item">Aguardando notícias...</div>
-      </div>
-    </div>
-
-    <div id="breaking">
-      <div class="breaking-header">🚨 Breaking News</div>
-      <div id="breaking-list">
-        <div class="breaking-item">Aguardando alertas...</div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <!-- GRÁFICO -->
@@ -181,48 +94,86 @@ header{
 </div>
 
 <script>
-/* ===== RELÓGIO ===== */
-setInterval(()=>{
+// ===== RELÓGIO =====
+function atualizarRelogio(){
   document.getElementById("relogio").innerHTML =
-  "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
-},1000);
+    "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
+}
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
 
-/* ===== GRÁFICO ===== */
-const ctx = document.getElementById("grafico");
-const grafico = new Chart(ctx,{
-  type:'line',
+// ===== NOTÍCIAS =====
+async function carregarNoticias(destino, termo, alerta=false){
+  const rss=`https://news.google.com/rss/search?q=${encodeURIComponent(termo)}&hl=pt-BR&gl=BR&ceid=BR:pt`;
+  const url=`https://api.allorigins.win/raw?url=${encodeURIComponent(rss)}`;
+  const res=await fetch(url);
+  const txt=await res.text();
+  const xml=new DOMParser().parseFromString(txt,"text/xml");
+  const items=xml.querySelectorAll("item");
+  destino.innerHTML="";
+  items.forEach((i,idx)=>{
+    if(idx>4) return;
+    const t=i.querySelector("title").textContent;
+    const l=i.querySelector("link").textContent;
+    const div=document.createElement("div");
+    div.className="item"+(alerta?" alerta":"");
+    div.innerHTML=`${t}<br><a href="${l}" target="_blank">Ler</a>`;
+    destino.appendChild(div);
+  });
+}
+
+carregarNoticias(document.getElementById("noticias-mercado"),"mercado financeiro brasil");
+carregarNoticias(document.getElementById("breaking-news"),"ibovespa OR juros OR inflação OR crise",true);
+setInterval(()=>carregarNoticias(document.getElementById("breaking-news"),"ibovespa OR juros OR inflação OR crise",true),30000);
+
+// ===== GRÁFICO (CORES CORRETAS) =====
+const ctx=document.getElementById("grafico").getContext("2d");
+let risco=0,seguranca=0;
+
+const grafico=new Chart(ctx,{
+  type:"line",
   data:{
     labels:[],
     datasets:[
       {
-        label:'Ativos de Risco (%)',
+        label:"Ativos de Risco (%)",
         data:[],
-        borderColor:'#16a34a',
-        backgroundColor:'rgba(22,163,74,0.1)',
+        borderColor:"#16a34a",              // VERDE
+        backgroundColor:"rgba(22,163,74,0.12)",
         tension:0.4,
         fill:true
       },
       {
-        label:'Ativos de Segurança (%)',
+        label:"Ativos de Segurança (%)",
         data:[],
-        borderColor:'#dc2626',
-        backgroundColor:'rgba(220,38,38,0.1)',
+        borderColor:"#dc2626",              // VERMELHO
+        backgroundColor:"rgba(220,38,38,0.12)",
         tension:0.4,
         fill:true
       }
     ]
+  },
+  options:{
+    responsive:true,
+    interaction:{mode:"index",intersect:false},
+    scales:{
+      y:{title:{display:true,text:"Variação (%)"}},
+      x:{title:{display:true,text:"Horário"}}
+    }
   }
 });
 
-let risco=0,seg=0;
-setInterval(()=>{
-  risco += (Math.random()-0.5)*0.2;
-  seg += (Math.random()-0.5)*0.2;
-  grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
-  grafico.data.datasets[0].data.push(risco.toFixed(2));
-  grafico.data.datasets[1].data.push(seg.toFixed(2));
+function atualizarGrafico(){
+  risco += (Math.random()-0.5)*0.15;
+  seguranca += (Math.random()-0.5)*0.1;
+  grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR",{hour12:false}));
+  grafico.data.datasets[0].data.push(Number(risco.toFixed(2)));
+  grafico.data.datasets[1].data.push(Number(seguranca.toFixed(2)));
   grafico.update();
-},60000);
+}
+
+atualizarGrafico();
+setInterval(atualizarGrafico,60000);
 </script>
 
 </body>
