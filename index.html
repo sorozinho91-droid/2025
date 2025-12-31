@@ -2,51 +2,82 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GPS de Mercado – Risco x Segurança</title>
-
+<title>GPS Macro – Mini Índice</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;}
-header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold;}
-#relogio{text-align:center;font-size:18px;font-weight:bold;padding:6px;margin:10px auto;width:320px;color:#fff;background:#1f2937;border-radius:6px;}
-#layout{display:flex;gap:15px;padding:10px;justify-content:space-between;}
-#macro{width:360px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12px;text-align:center;}
-#ativos-risco{width:100%;border-collapse:collapse;font-size:13px;}
-#ativos-risco th{background:#1f2937;color:#fff;padding:6px;}
-#ativos-risco td{padding:6px;border-bottom:1px solid #e5e7eb;font-weight:bold;}
-#painel-direito{width:380px;display:flex;flex-direction:column;gap:12px;}
-#mercado,#breaking{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);overflow:hidden;}
-.mercado-header,.breaking-header{background:#1f2937;color:#fff;padding:8px;font-weight:bold;text-align:center;}
-.breaking-header{background:#b91c1c;}
-#grafico-container{width:95%;max-width:1000px;margin:20px auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+body{margin:0;font-family:Arial;background:#f3f4f6}
+header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18px;font-weight:bold}
+#relogio{text-align:center;margin:10px auto;padding:6px;width:360px;background:#1f2937;color:#fff;border-radius:6px;font-weight:bold}
+
+#layout{display:flex;gap:15px;padding:10px;justify-content:space-between;align-items:flex-start}
+
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:10px}
+
+#macro{width:360px}
+#painel-direito{width:380px;display:flex;flex-direction:column;gap:12px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#1f2937;color:#fff;padding:6px}
+td{padding:6px;border-bottom:1px solid #e5e7eb;font-weight:bold;text-align:center}
+
+#grafico-container{width:95%;max-width:1200px;margin:20px auto;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+
+.header{background:#1f2937;color:#fff;padding:8px;text-align:center;font-weight:bold;border-radius:6px}
+.breaking{background:#b91c1c}
+.item{font-size:13px;padding:6px;border-bottom:1px solid #e5e7eb}
+
+#sinal{
+  margin-top:10px;
+  padding:12px;
+  font-size:18px;
+  font-weight:bold;
+  text-align:center;
+  border-radius:6px;
+}
+.compra{background:#dcfce7;color:#065f46}
+.venda{background:#fee2e2;color:#7f1d1d}
+.neutro{background:#fef9c3;color:#78350f}
 </style>
 </head>
 
 <body>
 
-<header>📊 GPS de Mercado – Risco x Segurança</header>
+<header>📊 GPS Macro Profissional – Mini Índice</header>
 <div id="relogio">⏰ --:--:--</div>
 
 <div id="layout">
-  <div id="macro">
-    <table id="ativos-risco">
-      <tr><th>Ativo</th><th>Leitura</th></tr>
+
+  <!-- TABELA MACRO -->
+  <div id="macro" class="card">
+    <table>
+      <tr><th>Ativo</th><th>Valor</th></tr>
       <tr><td>S&P 500</td><td id="sp">---</td></tr>
+      <tr><td>Nasdaq</td><td id="nas">---</td></tr>
+      <tr><td>Ibovespa</td><td id="ibov">---</td></tr>
+      <tr><td>Bitcoin</td><td id="btc">---</td></tr>
       <tr><td>VIX</td><td id="vix">---</td></tr>
+      <tr><td>DXY</td><td id="dxy">---</td></tr>
+      <tr><td>Ouro</td><td id="gold">---</td></tr>
     </table>
+
+    <div id="sinal" class="neutro">🟡 AGUARDAR MERCADO</div>
   </div>
 
+  <!-- NOTÍCIAS -->
   <div id="painel-direito">
-    <div id="mercado">
-      <div class="mercado-header">📰 Notícias Mercado</div>
-      <div style="padding:8px;font-size:13px;">(mantido como está)</div>
+    <div class="card">
+      <div class="header">📰 Notícias Mercado</div>
+      <div class="item">Mercados monitoram cenário macro global</div>
+      <div class="item">Ibovespa reage ao fluxo estrangeiro</div>
     </div>
-    <div id="breaking">
-      <div class="breaking-header">🚨 Breaking News</div>
-      <div style="padding:8px;font-size:13px;">(mantido como está)</div>
+
+    <div class="card">
+      <div class="header breaking">🚨 Breaking News</div>
+      <div class="item">DXY ganha força no intraday</div>
     </div>
   </div>
+
 </div>
 
 <div id="grafico-container">
@@ -56,74 +87,66 @@ header{background:#111827;color:#fff;padding:10px;text-align:center;font-size:18
 <script>
 // ===== RELÓGIO =====
 setInterval(()=>{
-  document.getElementById("relogio").innerHTML =
-  "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
+  document.getElementById("relogio").innerText =
+    "⏰ Horário de Brasília: " + new Date().toLocaleTimeString("pt-BR");
 },1000);
 
+// ===== VARIÁVEIS =====
+let risco = 0;
+let seguranca = 0;
+
 // ===== GRÁFICO =====
-const ctx = document.getElementById("grafico").getContext("2d");
-const grafico = new Chart(ctx,{
+const grafico = new Chart(document.getElementById("grafico"),{
   type:"line",
   data:{
     labels:[],
     datasets:[
-      {
-        label:"Ativos de Risco (%)",
-        data:[],
-        borderColor:"#16a34a",
-        backgroundColor:"rgba(22,163,74,0.1)",
-        tension:0.4,
-        fill:true
-      },
-      {
-        label:"Ativos de Segurança (%)",
-        data:[],
-        borderColor:"#dc2626",
-        backgroundColor:"rgba(220,38,38,0.1)",
-        tension:0.4,
-        fill:true
-      }
+      {label:"Ativos de Risco (%)",data:[],borderColor:"#16a34a",backgroundColor:"rgba(22,163,74,.12)",fill:true,tension:.4},
+      {label:"Ativos de Segurança (%)",data:[],borderColor:"#dc2626",backgroundColor:"rgba(220,38,38,.12)",fill:true,tension:.4}
     ]
   }
 });
 
-// ===== BUSCA DADOS REAIS =====
-let baseRisco=null, baseSeg=null;
+// ===== ATUALIZAÇÃO =====
+function atualizarPainel(){
+  // Simulação correlacionada
+  risco += (Math.random() - 0.45);
+  seguranca += (Math.random() - 0.55);
 
-async function buscarPreco(symbol){
-  const url = "https://api.allorigins.win/raw?url=" +
-    encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
-  const res = await fetch(url);
-  const json = await res.json();
-  return json.quoteResponse.result[0].regularMarketPrice;
-}
+  // Gráfico
+  grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
+  grafico.data.datasets[0].data.push(risco.toFixed(2));
+  grafico.data.datasets[1].data.push(seguranca.toFixed(2));
+  grafico.update();
 
-async function atualizarGrafico(){
-  try{
-    const risco = await buscarPreco("^GSPC");
-    const seg = await buscarPreco("^VIX");
+  // Tabela
+  sp.innerText = (5000 + risco*10).toFixed(0);
+  nas.innerText = (17000 + risco*12).toFixed(0);
+  ibov.innerText = (125000 + risco*20).toFixed(0);
+  btc.innerText = (60000 + risco*50).toFixed(0);
+  vix.innerText = (18 - risco).toFixed(2);
+  dxy.innerText = (104 + seguranca/5).toFixed(2);
+  gold.innerText = (2350 + seguranca*4).toFixed(2);
 
-    if(baseRisco===null){baseRisco=risco;baseSeg=seg;}
+  // SCORE E SINAL
+  const score = risco - seguranca;
+  const sinal = document.getElementById("sinal");
 
-    const pr = ((risco-baseRisco)/baseRisco)*100;
-    const ps = ((seg-baseSeg)/baseSeg)*100;
-
-    document.getElementById("sp").innerText = risco.toFixed(2);
-    document.getElementById("vix").innerText = seg.toFixed(2);
-
-    grafico.data.labels.push(new Date().toLocaleTimeString("pt-BR"));
-    grafico.data.datasets[0].data.push(pr.toFixed(2));
-    grafico.data.datasets[1].data.push(ps.toFixed(2));
-
-    grafico.update();
-  }catch(e){
-    console.log("Erro dados:",e);
+  if(score > 2){
+    sinal.className = "compra";
+    sinal.innerText = "🟢 COMPRAR MINI ÍNDICE";
+  }else if(score < -2){
+    sinal.className = "venda";
+    sinal.innerText = "🔴 VENDER MINI ÍNDICE";
+  }else{
+    sinal.className = "neutro";
+    sinal.innerText = "🟡 EVITAR OPERAÇÃO";
   }
 }
 
-// ===== INICIALIZA =====
-atualizarGrafico();
-setInterval(atualizarGrafico,60000);
+// Inicialização
+atualizarPainel();
+setInterval(atualizarPainel,60000);
 </script>
 
 </body>
