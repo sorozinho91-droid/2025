@@ -1,104 +1,195 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Tabela de Cotações em Tempo Real</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    th { background-color: #f2f2f2; }
-    td.positivo { color: green; }
-    td.negativo { color: red; }
-  </style>
+<meta charset="UTF-8">
+<title>Dashboard de Mercado - Real Time</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background:#f5f5f5; }
+h2 { margin-top:30px; }
+table { border-collapse: collapse; width: 100%; margin-bottom:20px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+th { background:#333; color:white; }
+td.positivo { color:green; }
+td.negativo { color:red; }
+
+#graficos { display:flex; gap:20px; flex-wrap:wrap; }
+.grafico-container { flex:1 1 45%; background:#fff; padding:10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+
+.news-container { display:flex; gap:20px; flex-wrap:wrap; margin-top:30px; }
+.panel { flex:1 1 45%; background:#fff; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); max-height:400px; overflow-y:auto; }
+.panel-header { background:#2563eb; color:white; text-align:center; font-weight:bold; padding:10px; border-radius:6px 6px 0 0; }
+#breaking { }
+#breaking .panel-header { background:#dc2626; }
+.news-item { padding:8px; border-bottom:1px solid #ccc; }
+.news-item a { text-decoration:none; color:#1e40af; }
+.breaking-alert { animation: piscar 1s infinite; }
+@keyframes piscar {0%{background:#7f1d1d;}50%{background:#dc2626;}100%{background:#7f1d1d;}}
+
+#ultima-atualizacao { margin-top:10px; font-weight:bold; }
+</style>
 </head>
 <body>
-  <h2>Cotações em Tempo Real</h2>
-  <table id="tabela-cotacoes">
-    <thead>
-      <tr>
-        <th>Ativo</th>
-        <th>Último</th>
-        <th>Variação</th>
-        <th>%</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Ibovespa Fut</td><td id="ibov-price">Carregando...</td><td id="ibov-change">-</td><td id="ibov-percent">-</td></tr>
-      <tr><td>Dow Jones Fut</td><td id="dow-price">Carregando...</td><td id="dow-change">-</td><td id="dow-percent">-</td></tr>
-      <tr><td>S&P 500 Fut</td><td id="sp-price">Carregando...</td><td id="sp-change">-</td><td id="sp-percent">-</td></tr>
-      <tr><td>Nasdaq Fut</td><td id="nasdaq-price">Carregando...</td><td id="nasdaq-change">-</td><td id="nasdaq-percent">-</td></tr>
-      <tr><td>Euro Stoxx 50 Fut</td><td id="stoxx-price">Carregando...</td><td id="stoxx-change">-</td><td id="stoxx-percent">-</td></tr>
-      <tr><td>China A50 Fut</td><td id="china-price">Carregando...</td><td id="china-change">-</td><td id="china-percent">-</td></tr>
-      <tr><td>Petróleo WTI</td><td id="wti-price">Carregando...</td><td id="wti-change">-</td><td id="wti-percent">-</td></tr>
-      <tr><td>Petróleo Brent</td><td id="brent-price">Carregando...</td><td id="brent-change">-</td><td id="brent-percent">-</td></tr>
-      <tr><td>Ouro</td><td id="gold-price">Carregando...</td><td id="gold-change">-</td><td id="gold-percent">-</td></tr>
-      <tr><td>Minério de Ferro</td><td id="iron-price">Carregando...</td><td id="iron-change">-</td><td id="iron-percent">-</td></tr>
-      <tr><td>U.S. 10Y Treasury</td><td id="treasury10-price">Carregando...</td><td id="treasury10-change">-</td><td id="treasury10-percent">-</td></tr>
-      <tr><td>U.S. 30Y Treasury</td><td id="treasury30-price">Carregando...</td><td id="treasury30-change">-</td><td id="treasury30-percent">-</td></tr>
-      <tr><td>Dólar (DXY)</td><td id="dxy-price">Carregando...</td><td id="dxy-change">-</td><td id="dxy-percent">-</td></tr>
-    </tbody>
-  </table>
 
-  <script>
-    const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-    const API_URL = "https://suaapi.com/cotacoes?apikey=" + API_KEY; // troque pela URL real da sua API
+<h2>Cotações de Ativos</h2>
 
-    async function atualizarCotacoes() {
-      try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
+<h3>Segurança</h3>
+<table id="tabela-seguranca">
+<thead>
+<tr><th>Ativo</th><th>Último</th><th>Variação</th><th>%</th></tr>
+</thead>
+<tbody>
+<tr><td>Ouro</td><td id="gold-price">-</td><td id="gold-change">-</td><td id="gold-percent">-</td></tr>
+<tr><td>U.S. 10Y Treasury</td><td id="treasury10-price">-</td><td id="treasury10-change">-</td><td id="treasury10-percent">-</td></tr>
+<tr><td>U.S. 30Y Treasury</td><td id="treasury30-price">-</td><td id="treasury30-change">-</td><td id="treasury30-percent">-</td></tr>
+<tr><td>Dólar (DXY)</td><td id="dxy-price">-</td><td id="dxy-change">-</td><td id="dxy-percent">-</td></tr>
+</tbody>
+</table>
 
-        const ativos = [
-          { id: "ibov", key: "ibov" },
-          { id: "dow", key: "dow" },
-          { id: "sp", key: "sp" },
-          { id: "nasdaq", key: "nasdaq" },
-          { id: "stoxx", key: "stoxx" },
-          { id: "china", key: "china" },
-          { id: "wti", key: "wti" },
-          { id: "brent", key: "brent" },
-          { id: "gold", key: "gold" },
-          { id: "iron", key: "iron" },
-          { id: "treasury10", key: "treasury10" },
-          { id: "treasury30", key: "treasury30" },
-          { id: "dxy", key: "dxy" }
-        ];
+<h3>Risco</h3>
+<table id="tabela-risco">
+<thead>
+<tr><th>Ativo</th><th>Último</th><th>Variação</th><th>%</th></tr>
+</thead>
+<tbody>
+<tr><td>Ibovespa Fut</td><td id="ibov-price">-</td><td id="ibov-change">-</td><td id="ibov-percent">-</td></tr>
+<tr><td>Dow Jones Fut</td><td id="dow-price">-</td><td id="dow-change">-</td><td id="dow-percent">-</td></tr>
+<tr><td>S&P 500 Fut</td><td id="sp-price">-</td><td id="sp-change">-</td><td id="sp-percent">-</td></tr>
+<tr><td>Nasdaq Fut</td><td id="nasdaq-price">-</td><td id="nasdaq-change">-</td><td id="nasdaq-percent">-</td></tr>
+<tr><td>Euro Stoxx 50 Fut</td><td id="stoxx-price">-</td><td id="stoxx-change">-</td><td id="stoxx-percent">-</td></tr>
+<tr><td>China A50 Fut</td><td id="china-price">-</td><td id="china-change">-</td><td id="china-percent">-</td></tr>
+<tr><td>Petróleo WTI</td><td id="wti-price">-</td><td id="wti-change">-</td><td id="wti-percent">-</td></tr>
+<tr><td>Petróleo Brent</td><td id="brent-price">-</td><td id="brent-change">-</td><td id="brent-percent">-</td></tr>
+<tr><td>Minério de Ferro</td><td id="iron-price">-</td><td id="iron-change">-</td><td id="iron-percent">-</td></tr>
+</tbody>
+</table>
 
-        ativos.forEach(ativo => {
-          const last = data[ativo.key].last;
-          const change = data[ativo.key].change;
-          const percent = ((change / (last - change)) * 100).toFixed(2);
+<div id="ultima-atualizacao">Última atualização: --:--:--</div>
 
-          const priceCell = document.getElementById(`${ativo.id}-price`);
-          const changeCell = document.getElementById(`${ativo.id}-change`);
-          const percentCell = document.getElementById(`${ativo.id}-percent`);
+<h2>Gráficos Intraday</h2>
+<div id="graficos">
+  <div class="grafico-container" id="grafico-risco" style="height:300px;"></div>
+  <div class="grafico-container" id="grafico-seguranca" style="height:300px;"></div>
+</div>
 
-          priceCell.innerText = last;
-          changeCell.innerText = change;
-          percentCell.innerText = percent + "%";
+<h2>Notícias de Mercado</h2>
+<div class="news-container">
+  <div class="panel" id="relevantes">
+    <div class="panel-header">📰 Notícias Relevantes</div>
+    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
 
-          // cores para alta/baixa
-          if (change > 0) {
-            changeCell.className = "positivo";
-            percentCell.className = "positivo";
-          } else if (change < 0) {
-            changeCell.className = "negativo";
-            percentCell.className = "negativo";
-          } else {
-            changeCell.className = "";
-            percentCell.className = "";
-          }
-        });
+  <div class="panel" id="breaking">
+    <div class="panel-header">🚨 Breaking News</div>
+    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+</div>
 
-      } catch (error) {
-        console.error("Erro ao atualizar cotações:", error);
+<audio id="alertSound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
+<script>
+const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
+const API_URL = "https://suaapi.com/cotacoes?apikey=" + API_KEY;
+
+let historicoRisco = {};
+let historicoSeguranca = {};
+
+// Define ativos
+const risco = ["ibov","dow","sp","nasdaq","stoxx","china","wti","brent","iron"];
+const seguranca = ["gold","treasury10","treasury30","dxy"];
+const todosAtivos = [...risco,...seguranca];
+
+async function atualizarCotacoes() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    const agora = new Date();
+
+    // Atualiza histórico e tabela
+    todosAtivos.forEach(id=>{
+      const last = data[id].last;
+      const change = data[id].change;
+      const percent = ((change / (last-change))*100).toFixed(2);
+
+      document.getElementById(`${id}-price`).innerText = last;
+      document.getElementById(`${id}-change`).innerText = change;
+      document.getElementById(`${id}-percent`).innerText = percent + "%";
+      const cls = change>0?"positivo":(change<0?"negativo":"");
+      document.getElementById(`${id}-change`).className = cls;
+      document.getElementById(`${id}-percent`).className = cls;
+
+      // Atualiza histórico
+      if(risco.includes(id)){
+        if(!historicoRisco[id]) historicoRisco[id]=[];
+        historicoRisco[id].push({hora:agora.toLocaleTimeString(), valor:last});
+      } else {
+        if(!historicoSeguranca[id]) historicoSeguranca[id]=[];
+        historicoSeguranca[id].push({hora:agora.toLocaleTimeString(), valor:last});
       }
-    }
+    });
 
-    // Atualiza a cada 5 segundos
-    setInterval(atualizarCotacoes, 5000);
-    atualizarCotacoes(); // primeira atualização imediata
-  </script>
+    // Atualiza hora
+    document.getElementById("ultima-atualizacao").innerText = "Última atualização: " + agora.toLocaleTimeString();
+
+    // Atualiza gráficos
+    Plotly.react('grafico-risco',[{
+      x: Object.values(historicoRisco)[0]?.map(p=>p.hora) || [],
+      y: Object.values(historicoRisco)[0]?.map(p=>p.valor) || [],
+      type:'scatter', mode:'lines+markers', name:'Risco'
+    }], {title:'Ativos de Risco'});
+
+    Plotly.react('grafico-seguranca',[{
+      x: Object.values(historicoSeguranca)[0]?.map(p=>p.hora) || [],
+      y: Object.values(historicoSeguranca)[0]?.map(p=>p.valor) || [],
+      type:'scatter', mode:'lines+markers', name:'Segurança'
+    }], {title:'Ativos de Segurança'});
+
+  } catch(e){ console.error("Erro ao atualizar cotações:",e);}
+}
+
+// === Notícias ===
+const proxy = "https://api.allorigins.win/raw?url=";
+const keywordsBreaking = ["crash","guerra","urgente","alerta","queda"];
+const keywordsRelevantes = ["juros","banco central","inflação","Ibovespa","câmbio","ações"];
+const breakingList = document.getElementById("breakingList");
+const relevantesList = document.getElementById("relevantesList");
+const alertSound = document.getElementById("alertSound");
+let cacheBreaking = {};
+let cacheRelevantes = {};
+
+async function buscarNoticias(query, container, cacheObj, alert=false){
+  try{
+    const rss="https://news.google.com/rss/search?q="+encodeURIComponent(query)+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+    const res = await fetch(proxy + encodeURIComponent(rss));
+    const text = await res.text();
+    const xml = new DOMParser().parseFromString(text,"text/xml");
+    xml.querySelectorAll("item").forEach(item=>{
+      const title=item.querySelector("title")?.textContent||"";
+      const link=item.querySelector("link")?.textContent||"";
+      if(!title||cacheObj[link]) return;
+      cacheObj[link]=true;
+      const div = document.createElement("div");
+      div.className = "news-item"+(alert?" breaking-alert":"");
+      div.innerHTML=`<strong>${title}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
+      container.prepend(div);
+      if(alert) alertSound.play().catch(()=>{});
+    });
+  }catch(e){console.error("Erro ao buscar notícias:",e);}
+}
+
+function atualizarNoticias(){
+  buscarNoticias(keywordsBreaking.join(" OR "), breakingList, cacheBreaking, true);
+  buscarNoticias(keywordsRelevantes.join(" OR "), relevantesList, cacheRelevantes, false);
+}
+
+// Inicializa
+atualizarCotacoes();
+atualizarNoticias();
+setInterval(atualizarCotacoes, 5000);
+setInterval(atualizarNoticias, 30000);
+</script>
+
 </body>
 </html>
