@@ -25,6 +25,19 @@ th { background-color: #333; color: white; }
 </head>
 <body>
 
+<h2>Noticias de Mercado</h2>
+<div class="news-container">
+  <div class="panel" id="relevantes">
+    <div class="panel-header">📰 Notícias Relevantes</div>
+    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+
+  <div class="panel" id="breaking">
+    <div class="panel-header">🚨 Breaking News</div>
+    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+</div>
+
 <h2>GERIS PRE-MARKET: Correlação de Índice Futuro</h2>
 <div class="termometro" id="termometro">NEUTRO</div>
 
@@ -49,19 +62,6 @@ th { background-color: #333; color: white; }
 
 <h3>Direção do Mercado Intraday</h3>
 <div id="grafico"></div>
-
-<h3>Noticias de Mercado</h3>
-<div class="news-container">
-  <div class="panel" id="relevantes">
-    <div class="panel-header">📰 Notícias Relevantes</div>
-    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
-  </div>
-
-  <div class="panel" id="breaking">
-    <div class="panel-header">🚨 Breaking News</div>
-    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
-  </div>
-</div>
 
 <audio id="alertSound">
   <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
@@ -99,7 +99,6 @@ indicadores.forEach((item, idx) => {
 /* === Gráfico === */
 let datasGrafico = [];
 let valoresGrafico = [];
-let coresGrafico = [];
 
 /* === Notícias === */
 const proxy = "https://api.allorigins.win/raw?url=";
@@ -128,25 +127,23 @@ function atualizarDados() {
   // Atualiza gráfico
   datasGrafico.push(agora.toLocaleTimeString());
   valoresGrafico.push(soma.toFixed(2));
-
-  // Define cor do ponto: vermelho=negativo, azul=neutro, verde=positivo
-  let cor;
-  if(soma<=-8) cor='red';
-  else if(soma>=8) cor='green';
-  else cor='blue';
-  coresGrafico.push(cor);
-
   if(datasGrafico.length>1440){
-    datasGrafico.shift(); valoresGrafico.shift(); coresGrafico.shift();
+    datasGrafico.shift(); valoresGrafico.shift();
   }
+
+  // Define cor da linha
+  let corLinha;
+  if(soma<=-8) corLinha='red';
+  else if(soma>=8) corLinha='green';
+  else corLinha='blue';
 
   Plotly.react('grafico',[{
     x: datasGrafico,
     y: valoresGrafico,
     type: 'scatter',
     mode: 'lines+markers',
-    marker:{color:coresGrafico, size:8},
-    line:{color:'gray'} // a linha geral continua cinza, os pontos mostram tendência
+    line:{color:corLinha, width:2},
+    marker:{color:corLinha, size:6}
   }],{
     title:'Direção do Mercado Intraday',
     xaxis:{title:'Hora'},
