@@ -2,21 +2,30 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Mini Índice + Direção do Mercado</title>
+<title>Dashboard Mercado</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; background:#f4f4f4; }
-  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-  th { background-color: #333; color: white; }
-  .termometro { height: 40px; width: 100%; text-align: center; color: white; font-weight: bold; border-radius:5px; line-height:40px; transition: background 0.5s; margin-bottom:20px;}
-  #grafico { width:100%; max-width:1200px; height:300px; margin-bottom:30px; }
+body { font-family: Arial, sans-serif; padding: 20px; background:#f4f4f4; }
+h2,h3 { margin-top: 30px; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+th { background-color: #333; color: white; }
+.termometro { height: 40px; width: 100%; text-align: center; color: white; font-weight: bold; border-radius:5px; line-height:40px; transition: background 0.5s; margin-bottom:20px;}
+#grafico { width:100%; max-width:1200px; height:300px; margin-bottom:30px; }
+.news-container { display:flex; flex-wrap:wrap; gap:20px; margin-bottom:40px; }
+.panel { flex:1 1 45%; background:#fff; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); max-height:400px; overflow-y:auto; font-size:14px; }
+.panel-header { background:#2563eb; color:white; text-align:center; font-weight:bold; padding:10px; border-radius:6px 6px 0 0; }
+#breaking { background:#111827; color:white; }
+#breaking .panel-header { background:#dc2626; }
+.news-item { padding:8px; border-bottom:1px solid #ccc; }
+.news-item a { color:#93c5fd; text-decoration:none; }
+.breaking-alert { animation: piscar 1s infinite; }
+@keyframes piscar { 0%{background:#7f1d1d;}50%{background:#dc2626;}100%{background:#7f1d1d;} }
 </style>
 </head>
 <body>
 
 <h2>GERIS PRE-MARKET: Correlação de Índice Futuro</h2>
-
 <div class="termometro" id="termometro">NEUTRO</div>
 
 <table id="painel">
@@ -38,117 +47,163 @@
   <strong>Classificação do Mercado: </strong><span id="classificacao">NEUTRO</span>
 </div>
 
-<h3>Direção do Mercado (Intraday)</h3>
+<h3>Direção do Mercado Intraday</h3>
 <div id="grafico"></div>
 
+<h3>Noticias de Mercado</h3>
+<div class="news-container">
+  <div class="panel" id="relevantes">
+    <div class="panel-header">📰 Notícias Relevantes</div>
+    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+
+  <div class="panel" id="breaking">
+    <div class="panel-header">🚨 Breaking News</div>
+    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+</div>
+
+<audio id="alertSound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
 <script>
+/* === Pré-Market === */
 const indicadores = [
-  {categoria: 'Internos', indicador: 'Taxa Selic', peso: 0.12, correlacao: -1},
-  {categoria: 'Internos', indicador: 'Juros Futuros DI1', peso: 0.12, correlacao: -1},
-  {categoria: 'Internos', indicador: 'Fluxo Estrangeiro B3', peso: 0.15, correlacao: 1},
-  {categoria: 'Internos', indicador: 'Ibovespa Spot', peso: 0.18, correlacao: 1},
-  {categoria: 'Acoes Especificas', indicador: 'PETR4', peso: 0.08, correlacao: 1},
-  {categoria: 'Acoes Especificas', indicador: 'VALE3', peso: 0.10, correlacao: 1},
-  {categoria: 'Acoes Especificas', indicador: 'ITUB4', peso: 0.07, correlacao: 1},
-  {categoria: 'Acoes Especificas', indicador: 'BBDC4', peso: 0.06, correlacao: 1},
-  {categoria: 'Externos', indicador: 'S&P 500', peso: 0.14, correlacao: 1},
-  {categoria: 'Externos', indicador: 'Nasdaq', peso: 0.10, correlacao: 1},
-  {categoria: 'Externos', indicador: 'VIX', peso: 0.12, correlacao: -1},
-  {categoria: 'Externos', indicador: 'Petroleo WTI', peso: 0.08, correlacao: 1},
-  {categoria: 'Externos', indicador: 'Minerio de Ferro', peso: 0.09, correlacao: 1},
-  {categoria: 'Externos', indicador: 'Ouro', peso: 0.06, correlacao: -1},
-  {categoria: 'Externos', indicador: 'DXY - Dolar', peso: 0.11, correlacao: -1},
-  {categoria: 'Emergentes', indicador: 'EWZ', peso: 0.13, correlacao: 1},
-  {categoria: 'Emergentes', indicador: 'MSCI Emergentes', peso: 0.11, correlacao: 1}
+  {categoria:'Internos',indicador:'Taxa Selic',peso:0.12,correlacao:-1},
+  {categoria:'Internos',indicador:'Juros Futuros DI1',peso:0.12,correlacao:-1},
+  {categoria:'Internos',indicador:'Fluxo Estrangeiro B3',peso:0.15,correlacao:1},
+  {categoria:'Internos',indicador:'Ibovespa Spot',peso:0.18,correlacao:1},
+  {categoria:'Acoes Especificas',indicador:'PETR4',peso:0.08,correlacao:1},
+  {categoria:'Acoes Especificas',indicador:'VALE3',peso:0.10,correlacao:1},
+  {categoria:'Acoes Especificas',indicador:'ITUB4',peso:0.07,correlacao:1},
+  {categoria:'Acoes Especificas',indicador:'BBDC4',peso:0.06,correlacao:1},
+  {categoria:'Externos',indicador:'S&P 500',peso:0.14,correlacao:1},
+  {categoria:'Externos',indicador:'Nasdaq',peso:0.10,correlacao:1},
+  {categoria:'Externos',indicador:'VIX',peso:0.12,correlacao:-1},
+  {categoria:'Externos',indicador:'Petroleo WTI',peso:0.08,correlacao:1},
+  {categoria:'Externos',indicador:'Minerio de Ferro',peso:0.09,correlacao:1},
+  {categoria:'Externos',indicador:'Ouro',peso:0.06,correlacao:-1},
+  {categoria:'Externos',indicador:'DXY - Dolar',peso:0.11,correlacao:-1},
+  {categoria:'Emergentes',indicador:'EWZ',peso:0.13,correlacao:1},
+  {categoria:'Emergentes',indicador:'MSCI Emergentes',peso:0.11,correlacao:1}
 ];
 
-// Criação das linhas da tabela
 const tbody = document.querySelector('#painel tbody');
 indicadores.forEach((item, idx) => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${item.categoria}</td>
-    <td>${item.indicador}</td>
-    <td>${item.peso}</td>
-    <td>${item.correlacao}</td>
-    <td id='var_${idx}'>0</td>
-    <td id='impact_${idx}'>0</td>
-  `;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${item.categoria}</td><td>${item.indicador}</td><td>${item.peso}</td><td>${item.correlacao}</td><td id='var_${idx}'>0</td><td id='impact_${idx}'>0</td>`;
   tbody.appendChild(tr);
 });
 
-// Variáveis do gráfico
+/* === Gráfico === */
 let datasGrafico = [];
 let valoresGrafico = [];
+let coresGrafico = [];
 
-// Função que gera variações aleatórias e atualiza tudo
-function atualizar() {
+/* === Notícias === */
+const proxy = "https://api.allorigins.win/raw?url=";
+const keywordsBreaking = ["crash","guerra","urgente","alerta","queda"];
+const keywordsRelevantes = ["juros","banco central","inflação","Ibovespa","câmbio","ações"];
+const breakingList = document.getElementById("breakingList");
+const relevantesList = document.getElementById("relevantesList");
+const alertSound = document.getElementById("alertSound");
+let cacheBreaking = {};
+let cacheRelevantes = {};
+
+/* ==== Funções ==== */
+function atualizarDados() {
   let soma = 0;
   const agora = new Date();
-
-  indicadores.forEach((item, idx) => {
-    const variacao = (Math.random()*10 - 5).toFixed(2); // -5% a +5%
-    document.getElementById(`var_${idx}`).innerText = variacao;
-    const impacto = item.peso * item.correlacao * variacao;
-    document.getElementById(`impact_${idx}`).innerText = impacto.toFixed(3);
+  indicadores.forEach((item, idx)=>{
+    const variacao = (Math.random()*10-5).toFixed(2);
+    document.getElementById(`var_${idx}`).innerText=variacao;
+    const impacto = item.peso*item.correlacao*variacao;
+    document.getElementById(`impact_${idx}`).innerText=impacto.toFixed(3);
     soma += impacto;
   });
-
-  document.getElementById('somaImpactos').innerText = soma.toFixed(3);
+  document.getElementById('somaImpactos').innerText=soma.toFixed(3);
   atualizarTermometro(soma);
 
   // Atualiza gráfico
   datasGrafico.push(agora.toLocaleTimeString());
   valoresGrafico.push(soma.toFixed(2));
-  if (datasGrafico.length > 50) { // mantém últimos 50 pontos
-    datasGrafico.shift();
-    valoresGrafico.shift();
+
+  // Define cor do ponto: vermelho=negativo, azul=neutro, verde=positivo
+  let cor;
+  if(soma<=-8) cor='red';
+  else if(soma>=8) cor='green';
+  else cor='blue';
+  coresGrafico.push(cor);
+
+  if(datasGrafico.length>1440){
+    datasGrafico.shift(); valoresGrafico.shift(); coresGrafico.shift();
   }
-  Plotly.react('grafico', [{
+
+  Plotly.react('grafico',[{
     x: datasGrafico,
     y: valoresGrafico,
     type: 'scatter',
     mode: 'lines+markers',
-    line: {color: 'blue'}
-  }], {
-    title: 'Direção do Mercado Intraday',
-    xaxis: {title: 'Hora'},
-    yaxis: {title: 'Soma dos Impactos'},
-    margin: {t:40, l:50, r:30, b:50}
+    marker:{color:coresGrafico, size:8},
+    line:{color:'gray'} // a linha geral continua cinza, os pontos mostram tendência
+  }],{
+    title:'Direção do Mercado Intraday',
+    xaxis:{title:'Hora'},
+    yaxis:{title:'Soma dos Impactos'},
+    margin:{t:40,l:50,r:30,b:50}
   });
 }
 
-// Termômetro com gradiente
-function atualizarTermometro(valor) {
-  const term = document.getElementById('termometro');
-  document.getElementById('classificacao').innerText = '';
-
-  let r=0, g=0, b=0;
-  if(valor < 0){
-    const ratio = Math.max(Math.min(valor/(-50),1),0);
-    r = 204;
-    g = Math.round(204*ratio);
-    b = 0;
-  } else {
-    const ratio = Math.max(Math.min(valor/50,1),0);
-    r = Math.round(204*(1-ratio));
-    g = 204;
-    b = 0;
-  }
-  term.style.background = `rgb(${r},${g},${b})`;
-
-  if (valor <= -25) { term.innerText = 'VENDA FORTE'; }
-  else if (valor > -25 && valor <= -8) { term.innerText = 'VENDA'; }
-  else if (valor > -8 && valor <= 8) { term.innerText = 'NEUTRO'; }
-  else if (valor > 8 && valor <= 25) { term.innerText = 'COMPRA'; }
-  else { term.innerText = 'COMPRA FORTE'; }
-
-  document.getElementById('classificacao').innerText = term.innerText;
+function atualizarTermometro(valor){
+  const term=document.getElementById('termometro');
+  document.getElementById('classificacao').innerText='';
+  let r=0,g=0,b=0;
+  if(valor<0){ const ratio=Math.max(Math.min(valor/(-50),1),0); r=204; g=Math.round(204*ratio); b=0;}
+  else{ const ratio=Math.max(Math.min(valor/50,1),0); r=Math.round(204*(1-ratio)); g=204; b=0;}
+  term.style.background=`rgb(${r},${g},${b})`;
+  if(valor<=-25) term.innerText='VENDA FORTE';
+  else if(valor>-25 && valor<=-8) term.innerText='VENDA';
+  else if(valor>-8 && valor<=8) term.innerText='NEUTRO';
+  else if(valor>8 && valor<=25) term.innerText='COMPRA';
+  else term.innerText='COMPRA FORTE';
+  document.getElementById('classificacao').innerText=term.innerText;
 }
 
-// Atualiza a cada 2 segundos
-setInterval(atualizar, 2000);
-atualizar();
+async function buscarNoticias(query, callback, cacheObj, alert=false){
+  try{
+    const rss="https://news.google.com/rss/search?q="+encodeURIComponent(query)+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+    const res = await fetch(proxy + encodeURIComponent(rss));
+    const text = await res.text();
+    const xml = new DOMParser().parseFromString(text,"text/xml");
+    xml.querySelectorAll("item").forEach(item=>{
+      const title=item.querySelector("title")?.textContent||"";
+      const link=item.querySelector("link")?.textContent||"";
+      if(!title||cacheObj[link]) return;
+      const lower = title.toLowerCase();
+      if(!query.toLowerCase().split(" OR ").some(k=>lower.includes(k))) return;
+      cacheObj[link]=true;
+      const div=document.createElement("div");
+      div.className="news-item"+(alert?" breaking-alert":"");
+      div.innerHTML=`<strong>${title}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
+      callback.prepend(div);
+      if(alert) alertSound.play().catch(()=>{});
+    });
+  }catch(e){console.error("Erro ao buscar notícias:",e);}
+}
+
+function atualizarNoticias(){
+  buscarNoticias(keywordsBreaking.join(" OR "), breakingList, cacheBreaking, true);
+  buscarNoticias(keywordsRelevantes.join(" OR "), relevantesList, cacheRelevantes, false);
+}
+
+/* ==== Inicialização ==== */
+atualizarDados();
+atualizarNoticias();
+
+// Atualiza dados a cada 1 minuto
+setInterval(atualizarDados, 60000);
+setInterval(atualizarNoticias, 30000);
 </script>
 
 </body>
