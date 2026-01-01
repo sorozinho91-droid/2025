@@ -1,1 +1,347 @@
-<!DOCTYPE html> <html lang="pt-BR"> <head> <meta charset="UTF-8"> <title>Dashboard – Risco x Segurança Intraday + Notícias</title> <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <style> body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; } header { background:#1f2937; color:white; padding:15px; text-align:center; } #controls { text-align:center; padding:10px; } button { margin:5px; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#e5e7eb; } button.active { background:#2563eb; color:white; } #grafico { width:90%; max-width:1200px; height:400px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);} table { width:90%; max-width:1200px; margin:20px auto; border-collapse: collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.05);} th, td { padding:8px; border:1px solid #ccc; text-align:center; font-size:14px;} thead th { background:#2563eb; color:white;} .risco { color:green; } .seguro { color:red; } .positivo { color:green; } .negativo { color:red; } /* ===== BREAKING NEWS ===== */ #painel-news{ position:fixed; top:0; right:10px; width:360px; background:#111827; color:white; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.3); z-index:9999; max-height:500px; overflow-y:auto; font-size:13px; } .news-header{ text-align:center; font-weight:bold; padding:8px; background:#1f2937; border-radius:6px 6px 0 0; } .news-item{ padding:8px; border-bottom:1px solid #374151; } .news-item a{ color:#93c5fd; text-decoration:none; } .breaking{ animation:piscar 1s infinite; } @keyframes piscar{ 0%{background:#7f1d1d;} 50%{background:#dc2626;} 100%{background:#7f1d1d;} } /* ===== ALERTA POLÍTICO-MERCADO ===== */ #alerta-mercado { position: fixed; top: 520px; /* ajuste conforme painel de notícias */ right: 10px; width: 360px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index: 9999; } .alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 13px; } #alerta-conteudo { padding: 8px; line-height: 1.3; } .piscar-alerta { animation: pisca 1s infinite; } </style> </head> <body> <header> <h2>Risco x Segurança – Linha do Tempo Intraday</h2> </header> <div id="controls"> <button onclick="setTimeframe(60,this)" class="active">1min</button> <button onclick="setTimeframe(300,this)">5min</button> <button onclick="setTimeframe(600,this)">10min</button> </div> <div id="grafico"></div> <!-- TABELAS DE ATIVOS --> <table id="tabelaRisco"> <thead> <tr><th>Ativo de Risco</th><th>Valor Atual</th><th>Variação (%)</th></tr> </thead> <tbody></tbody> </table> <table id="tabelaSeguro"> <thead> <tr><th>Ativo de Segurança</th><th>Valor Atual</th><th>Variação (%)</th></tr> </thead> <tbody></tbody> </table> <!-- PAINEL DE NOTÍCIAS MACRO --> <div id="painel-news"> <div class="news-header">🚨 BREAKING NEWS – Macro</div> <div id="newsList"> <div id="aguardando" class="news-item">Aguardando notícias...</div> </div> </div> <audio id="alertSound"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3" type="audio/mpeg"> </audio> <!-- PAINEL ALERTA POLÍTICO-MERCADO --> <div id="alerta-mercado"> <div class="alerta-header">⚠️ ALERTA MERCADO</div> <div id="alerta-conteudo">Aguardando notícias...</div> </div> <audio id="alerta-som"> <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg"> </audio> <script> // ==== VARIAVEIS ATIVOS ==== let valorRisco=100, valorSeguro=100, timer=null, timeframe=60; let ativosRisco = [ {nome:"Ouro Futuros", valor:2766.2},{nome:"Cobre Futuros", valor:4.2315},{nome:"Petróleo WTI", valor:73.17}, {nome:"Minério de Ferro", valor:56.72},{nome:"Vale SA ADR", valor:9.16},{nome:"Petrobras ADR", valor:13.88}, {nome:"Soja Chicago", valor:1045},{nome:"Oslo All Share", valor:1709.43},{nome:"Dow Jones Futuros", valor:44904}, {nome:"The Global Dow USD", valor:5079.14},{nome:"BSE Sensex 30", valor:75366.17},{nome:"Hang Seng Futuros", valor:20430.5}, {nome:"China A50 Futuros", valor:12983},{nome:"SZSE Component", valor:10292.73},{nome:"Shanghai Composite", valor:3252.63}, {nome:"Financial Select Sector", valor:51.41},{nome:"Consumer Staples", valor:80.01},{nome:"Energy Select Sector", valor:90.36}, {nome:"SPDR Metals & Mining", valor:58.68},{nome:"iShares MSCI Emerging Markets", valor:42.17},{nome:"iShares Semiconductor ETF", valor:212.55} ]; let ativosSeguranca = [ {nome:"DXY - Índice Dólar", valor:107.16},{nome:"EUR/BRL", valor:6.1843},{nome:"S&P 500 VIX Futuros", valor:17.61}, {nome:"USD/MXN", valor:20.665},{nome:"USD/NOK", valor:11.2378},{nome:"USD/NZD", valor:1.7565}, {nome:"USD/AUD", valor:1.5892},{nome:"USD/KRW", valor:1432.84},{nome:"USD/CNY", valor:7.2509} ]; let datasGrafico=[], serieRisco=[], serieSeguranca=[]; // ==== HISTORICO INTRADAY ==== function gerarHistoricoDia(){ const agora = new Date(); const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0,0,0); datasGrafico=[]; serieRisco=[]; serieSeguranca=[]; let valR = valorRisco, valS = valorSeguro; for(let d=new Date(inicioDia); d<=agora; d.setMinutes(d.getMinutes()+1)){ valR += (Math.random()-0.5)*2; valS += (Math.random()-0.5)*1; datasGrafico.push(new Date(d)); serieRisco.push(valR); serieSeguranca.push(valS); } } // ==== ATUALIZAR TABELAS ==== function atualizarTabelas(){ const tbodyR=document.querySelector("#tabelaRisco tbody"); tbodyR.innerHTML=""; ativosRisco.forEach(a=>{ let variacao = a.variacao?.toFixed(2)||0; let tr = document.createElement("tr"); tr.innerHTML=<td class="risco">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>; tbodyR.appendChild(tr); }); const tbodyS=document.querySelector("#tabelaSeguro tbody"); tbodyS.innerHTML=""; ativosSeguranca.forEach(a=>{ let variacao = a.variacao?.toFixed(2)||0; let tr=document.createElement("tr"); tr.innerHTML=<td class="seguro">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>; tbodyS.appendChild(tr); }); } // ==== PLOTAR GRAFICO ==== function plotarGrafico(){ Plotly.react("grafico",[ {x:datasGrafico, y:serieRisco, mode:"lines", name:"Ativos de Risco", line:{color:"green", width:3}}, {x:datasGrafico, y:serieSeguranca, mode:"lines", name:"Ativos de Segurança", line:{color:"red", width:3}} ],{ title:"Risco x Segurança Intraday", xaxis:{title:"Hora", type:"date"}, yaxis:{title:"Valor"}, margin:{t:40,l:50,r:30,b:50}, legend:{orientation:"h",y:1.15} }); } // ==== ATUALIZAÇÃO REAL-TIME ==== function atualizarGrafico(){ const agora = new Date(); // Atualiza ativos com pequenas variações ativosRisco.forEach(a=>{let novo=a.valor+(Math.random()-0.5)*2;a.variacao=((novo-a.valor)/a.valor)*100;a.valor=novo;}); ativosSeguranca.forEach(a=>{let novo=a.valor+(Math.random()-0.5)*1;a.variacao=((novo-a.valor)/a.valor)*100;a.valor=novo;}); atualizarTabelas(); // Atualiza gráfico intraday const mediaR = ativosRisco.reduce((sum,a)=>sum+a.variacao,0)/ativosRisco.length; const mediaS = ativosSeguranca.reduce((sum,a)=>sum+a.variacao,0)/ativosSeguranca.length; datasGrafico.push(agora); serieRisco.push(mediaR); serieSeguranca.push(mediaS); if(datasGrafico.length>1440){datasGrafico.shift(); serieRisco.shift(); serieSeguranca.shift();} plotarGrafico(); } // ==== TIMEFRAME ==== function setTimeframe(segundos,botao){ timeframe=segundos; document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active')); botao.classList.add('active'); if(timer) clearInterval(timer); timer=setInterval(atualizarGrafico,timeframe*1000); } // ==== BREAKING NEWS MACRO ==== const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"]; const lista = document.getElementById("newsList"); const painel = document.getElementById("painel-news"); const header = document.querySelector(".news-header"); const som = document.getElementById("alertSound"); let cache = {}; let alertaAtivo = false; async function buscarNoticiasMacro(){ const query = palavras.join(" OR "); const rss = "https://news.google.com/rss/search?q="+encodeURIComponent(query)+"&hl=pt-BR&gl=BR&ceid=BR:pt"; const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss); try{ const res = await fetch(url); const text = await res.text(); const xml = new DOMParser().parseFromString(text,"text/xml"); const items = xml.querySelectorAll("item"); items.forEach(item=>{ const titulo = item.querySelector("title")?.textContent || ""; const link = item.querySelector("link")?.textContent || ""; if(!titulo || cache[link]) return; const t = titulo.toLowerCase(); if(!palavras.some(p => t.includes(p))) return; cache[link] = true; document.getElementById("aguardando")?.remove(); const div = document.createElement("div"); div.className = "news-item"; div.innerHTML = <strong>🚨 ${titulo}</strong><br><a href="${link}" target="_blank">Ler notícia</a>; lista.prepend(div); if(!alertaAtivo){ alertaAtivo=true; painel.classList.add("breaking"); header.classList.add("breaking"); som.play().catch(()=>{}); setTimeout(()=>{painel.classList.remove("breaking"); header.classList.remove("breaking"); alertaAtivo=false;},12000); } }); }catch(e){console.error("Erro news macro:", e);} } // ==== ALERTA POLÍTICO-MERCADO ==== const alertaConteudo = document.getElementById("alerta-conteudo"); const alertaBox = document.getElementById("alerta-mercado"); const somAlerta = document.getElementById("alerta-som"); const rssUrl = "https://news.google.com/rss/search?q=presidente+EUA+OR+presidente+Brasil+juros+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt"; const proxy = "https://api.allorigins.win/raw?url="; let ultimaNoticia = ""; async function buscarNoticiasAlerta(){ try{ const res = await fetch(proxy + encodeURIComponent(rssUrl)); const texto = await res.text(); const xml = new DOMParser().parseFromString(texto,"text/xml"); const item = xml.querySelector("item"); if(!item) return; const titulo = item.querySelector("title").textContent; const link = item.querySelector("link").textContent; if(titulo !== ultimaNoticia){ ultimaNoticia = titulo; alertaConteudo.innerHTML = '📰 <a href="'+link+'" target="_blank" style="color:#000;text-decoration:none;">'+titulo+'</a>'; alertaBox.classList.add("piscar-alerta"); somAlerta.play().catch(()=>{}); setTimeout(()=>alertaBox.classList.remove("piscar-alerta"),15000); } }catch(e){console.log("Erro alerta noticias");} } // ==== INICIALIZAÇÃO ==== gerarHistoricoDia(); plotarGrafico(); atualizarTabelas(); timer=setInterval(atualizarGrafico,timeframe*1000); buscarNoticiasMacro(); setInterval(buscarNoticiasMacro,30000); buscarNoticiasAlerta(); setInterval(buscarNoticiasAlerta,60000); window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');}); </script> </body> </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard – Risco x Segurança Intraday + Notícias</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
+header { background:#1f2937; color:white; padding:15px; text-align:center; }
+#controls { text-align:center; padding:10px; }
+button { margin:5px; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#e5e7eb; }
+button.active { background:#2563eb; color:white; }
+
+/* FLEX CONTAINER PARA GRAFICO + TABELAS NOTICIAS */
+#mainContainer {
+    display: flex;
+    justify-content: space-between;
+    width: 95%;
+    max-width: 1400px;
+    margin: 20px auto;
+    gap: 20px;
+}
+
+#grafico { flex: 2; height:400px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+
+#newsContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+table { width:100%; border-collapse: collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+th, td { padding:8px; border:1px solid #ccc; text-align:center; font-size:14px;}
+thead th { background:#2563eb; color:white;}
+.risco { color:green; }        
+.seguro { color:red; }         
+.positivo { color:green; }
+.negativo { color:red; }
+
+/* ===== PAINEL DE NOTÍCIAS FIXO (MACRO) ===== */
+#painel-news{
+  position:fixed;
+  top:0;
+  right:10px;
+  width:360px;
+  background:#111827;
+  color:white;
+  border-radius:6px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+  z-index:9999;
+  max-height:500px;
+  overflow-y:auto;
+  font-size:13px;
+}
+
+.news-header{
+  text-align:center;
+  font-weight:bold;
+  padding:8px;
+  background:#1f2937;
+  border-radius:6px 6px 0 0;
+}
+
+.news-item{
+  padding:8px;
+  border-bottom:1px solid #374151;
+}
+
+.news-item a{
+  color:#93c5fd;
+  text-decoration:none;
+}
+
+.breaking{
+  animation:piscar 1s infinite;
+}
+
+@keyframes piscar{
+  0%{background:#7f1d1d;}
+  50%{background:#dc2626;}
+  100%{background:#7f1d1d;}
+}
+
+/* ===== ALERTA POLÍTICO-MERCADO ===== */
+#alerta-mercado {
+  position: fixed;
+  top: 520px; /* ajuste conforme painel de notícias */
+  right: 10px;
+  width: 360px;
+  background: #ffffff;
+  border-left: 5px solid #c00000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  z-index: 9999;
+}
+
+.alerta-header {
+  background: #c00000;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  padding: 6px;
+  font-size: 13px;
+}
+
+#alerta-conteudo {
+  padding: 8px;
+  line-height: 1.3;
+}
+
+.piscar-alerta {
+  animation: pisca 1s infinite;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h2>Risco x Segurança – Linha do Tempo Intraday</h2>
+</header>
+
+<div id="controls">
+<button onclick="setTimeframe(60,this)" class="active">1min</button>
+<button onclick="setTimeframe(300,this)">5min</button>
+<button onclick="setTimeframe(600,this)">10min</button>
+</div>
+
+<!-- CONTAINER PRINCIPAL: GRAFICO + TABELAS -->
+<div id="mainContainer">
+    <div id="grafico"></div>
+
+    <div id="newsContainer">
+        <!-- TABELAS DE ATIVOS -->
+        <table id="tabelaRisco">
+        <thead>
+        <tr><th>Ativo de Risco</th><th>Valor Atual</th><th>Variação (%)</th></tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+
+        <table id="tabelaSeguro">
+        <thead>
+        <tr><th>Ativo de Segurança</th><th>Valor Atual</th><th>Variação (%)</th></tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PAINEL DE NOTÍCIAS MACRO -->
+<div id="painel-news">
+  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
+  <div id="newsList">
+    <div id="aguardando" class="news-item">Aguardando notícias...</div>
+  </div>
+</div>
+
+<audio id="alertSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3" type="audio/mpeg">
+</audio>
+
+<!-- PAINEL ALERTA POLÍTICO-MERCADO -->
+<div id="alerta-mercado">
+  <div class="alerta-header">⚠️ ALERTA MERCADO</div>
+  <div id="alerta-conteudo">Aguardando notícias...</div>
+</div>
+
+<audio id="alerta-som">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
+<script>
+// ==== VARIAVEIS ATIVOS ====
+let valorRisco=100, valorSeguro=100, timer=null, timeframe=60;
+let ativosRisco = [
+    {nome:"Ouro Futuros", valor:2766.2},{nome:"Cobre Futuros", valor:4.2315},{nome:"Petróleo WTI", valor:73.17},
+    {nome:"Minério de Ferro", valor:56.72},{nome:"Vale SA ADR", valor:9.16},{nome:"Petrobras ADR", valor:13.88},
+    {nome:"Soja Chicago", valor:1045},{nome:"Oslo All Share", valor:1709.43},{nome:"Dow Jones Futuros", valor:44904},
+    {nome:"The Global Dow USD", valor:5079.14},{nome:"BSE Sensex 30", valor:75366.17},{nome:"Hang Seng Futuros", valor:20430.5},
+    {nome:"China A50 Futuros", valor:12983},{nome:"SZSE Component", valor:10292.73},{nome:"Shanghai Composite", valor:3252.63},
+    {nome:"Financial Select Sector", valor:51.41},{nome:"Consumer Staples", valor:80.01},{nome:"Energy Select Sector", valor:90.36},
+    {nome:"SPDR Metals & Mining", valor:58.68},{nome:"iShares MSCI Emerging Markets", valor:42.17},{nome:"iShares Semiconductor ETF", valor:212.55}
+];
+let ativosSeguranca = [
+    {nome:"DXY - Índice Dólar", valor:107.16},{nome:"EUR/BRL", valor:6.1843},{nome:"S&P 500 VIX Futuros", valor:17.61},
+    {nome:"USD/MXN", valor:20.665},{nome:"USD/NOK", valor:11.2378},{nome:"USD/NZD", valor:1.7565},
+    {nome:"USD/AUD", valor:1.5892},{nome:"USD/KRW", valor:1432.84},{nome:"USD/CNY", valor:7.2509}
+];
+
+let datasGrafico=[], serieRisco=[], serieSeguranca=[];
+
+// ==== HISTORICO INTRADAY ====
+function gerarHistoricoDia(){
+    const agora = new Date();
+    const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0,0,0);
+    datasGrafico=[]; serieRisco=[]; serieSeguranca=[];
+    let valR = valorRisco, valS = valorSeguro;
+    for(let d=new Date(inicioDia); d<=agora; d.setMinutes(d.getMinutes()+1)){
+        valR += (Math.random()-0.5)*2;
+        valS += (Math.random()-0.5)*1;
+        datasGrafico.push(new Date(d));
+        serieRisco.push(valR);
+        serieSeguranca.push(valS);
+    }
+}
+
+// ==== ATUALIZAR TABELAS ====
+function atualizarTabelas(){
+    const tbodyR=document.querySelector("#tabelaRisco tbody");
+    tbodyR.innerHTML="";
+    ativosRisco.forEach(a=>{
+        let variacao = a.variacao?.toFixed(2)||0;
+        let tr = document.createElement("tr");
+        tr.innerHTML=`<td class="risco">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>`;
+        tbodyR.appendChild(tr);
+    });
+    const tbodyS=document.querySelector("#tabelaSeguro tbody");
+    tbodyS.innerHTML="";
+    ativosSeguranca.forEach(a=>{
+        let variacao = a.variacao?.toFixed(2)||0;
+        let tr=document.createElement("tr");
+        tr.innerHTML=`<td class="seguro">${a.nome}</td><td>${a.valor.toFixed(2)}</td><td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>`;
+        tbodyS.appendChild(tr);
+    });
+}
+
+// ==== PLOTAR GRAFICO ====
+function plotarGrafico(){
+    Plotly.react("grafico",[
+        {x:datasGrafico, y:serieRisco, mode:"lines", name:"Ativos de Risco", line:{color:"green", width:3}},
+        {x:datasGrafico, y:serieSeguranca, mode:"lines", name:"Ativos de Segurança", line:{color:"red", width:3}}
+    ],{
+        title:"Risco x Segurança Intraday",
+        xaxis:{title:"Hora", type:"date"},
+        yaxis:{title:"Valor"},
+        margin:{t:40,l:50,r:30,b:50},
+        legend:{orientation:"h",y:1.15}
+    });
+}
+
+// ==== ATUALIZAÇÃO REAL-TIME ====
+function atualizarGrafico(){
+    const agora = new Date();
+    ativosRisco.forEach(a=>{let novo=a.valor+(Math.random()-0.5)*2;a.variacao=((novo-a.valor)/a.valor)*100;a.valor=novo;});
+    ativosSeguranca.forEach(a=>{let novo=a.valor+(Math.random()-0.5)*1;a.variacao=((novo-a.valor)/a.valor)*100;a.valor=novo;});
+    atualizarTabelas();
+
+    const mediaR = ativosRisco.reduce((sum,a)=>sum+a.variacao,0)/ativosRisco.length;
+    const mediaS = ativosSeguranca.reduce((sum,a)=>sum+a.variacao,0)/ativosSeguranca.length;
+    datasGrafico.push(agora); serieRisco.push(mediaR); serieSeguranca.push(mediaS);
+    if(datasGrafico.length>1440){datasGrafico.shift(); serieRisco.shift(); serieSeguranca.shift();}
+    plotarGrafico();
+}
+
+// ==== TIMEFRAME ====
+function setTimeframe(segundos,botao){
+    timeframe=segundos;
+    document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
+    botao.classList.add('active');
+    if(timer) clearInterval(timer);
+    timer=setInterval(atualizarGrafico,timeframe*1000);
+}
+
+// ==== BREAKING NEWS MACRO ====
+const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"];
+const lista = document.getElementById("newsList");
+const painel = document.getElementById("painel-news");
+const header = document.querySelector(".news-header");
+const som = document.getElementById("alertSound");
+let cache = {};
+let alertaAtivo = false;
+
+async function buscarNoticiasMacro(){
+    const query = palavras.join(" OR ");
+    const rss = "https://news.google.com/rss/search?q="+encodeURIComponent(query)+"&hl=pt-BR&gl=BR&ceid=BR:pt";
+    const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
+    try{
+        const res = await fetch(url);
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text,"text/xml");
+        const items = xml.querySelectorAll("item");
+        items.forEach(item=>{
+            const titulo = item.querySelector("title")?.textContent || "";
+            const link = item.querySelector("link")?.textContent || "";
+            if(!titulo || cache[link]) return;
+            const t = titulo.toLowerCase();
+            if(!palavras.some(p => t.includes(p))) return;
+            cache[link] = true;
+            document.getElementById("aguardando")?.remove();
+            const div = document.createElement("div");
+            div.className = "news-item";
+            div.innerHTML = `<strong>🚨 ${titulo}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
+            lista.prepend(div);
+            if(!alertaAtivo){
+                alertaAtivo=true;
+                painel.classList.add("breaking");
+                header.classList.add("breaking");
+                som.play().catch(()=>{});
+                setTimeout(()=>{painel.classList.remove("breaking"); header.classList.remove("breaking"); alertaAtivo=false;},12000);
+            }
+        });
+    }catch(e){console.error("Erro news macro:", e);}
+}
+
+// ==== ALERTA POLÍTICO-MERCADO ====
+const alertaConteudo = document.getElementById("alerta-conteudo");
+const alertaBox = document.getElementById("alerta-mercado");
+const somAlerta = document.getElementById("alerta-som");
+const rssUrl = "https://news.google.com/rss/search?q=presidente+EUA+OR+presidente+Brasil+juros+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
+const proxy = "https://api.allorigins.win/raw?url=";
+let ultimaNoticia = "";
+
+async function buscarNoticiasAlerta(){
+    try{
+        const res = await fetch(proxy + encodeURIComponent(rssUrl));
+        const texto = await res.text();
+        const xml = new DOMParser().parseFromString(texto,"text/xml");
+        const item = xml.querySelector("item");
+        if(!item) return;
+        const titulo = item.querySelector("title").textContent;
+        const link = item.querySelector("link").textContent;
+        if(titulo !== ultimaNoticia){
+            ultimaNoticia = titulo;
+            alertaConteudo.innerHTML = '📰 <a href="'+link+'" target="_blank" style="color:#000;text-decoration:none;">'+titulo+'</a>';
+            alertaBox.classList.add("piscar-alerta");
+            somAlerta.play().catch(()=>{});
+            setTimeout(()=>alertaBox.classList.remove("piscar-alerta"),15000);
+        }
+    }catch(e){console.log("Erro alerta noticias");}
+}
+
+// ==== INICIALIZAÇÃO ====
+gerarHistoricoDia();
+plotarGrafico();
+atualizarTabelas();
+timer=setInterval(atualizarGrafico,timeframe*1000);
+buscarNoticiasMacro();
+setInterval(buscarNoticiasMacro,30000);
+buscarNoticiasAlerta();
+setInterval(buscarNoticiasAlerta,60000);
+window.addEventListener('resize',()=>{Plotly.Plots.resize('grafico');});
+</script>
+
+</body>
+</html>
