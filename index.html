@@ -21,51 +21,28 @@ thead th { background:#2563eb; color:white;}
 .positivo { color:green; }
 .negativo { color:red; }
 
-/* ===== PAINÉIS DE NOTÍCIAS ABAIXO DO GRÁFICO ===== */
-#noticiasContainer {
-    width:90%;
-    max-width:1200px;
-    margin:10px auto 30px auto;
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
+/* ===== BREAKING NEWS ===== */
+#painel-news{
+  position:fixed;
+  top:10px;
+  right:10px;
+  width:360px;
+  background:#111827;
+  color:white;
+  border-radius:6px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+  z-index:9999;
+  max-height:300px;
+  overflow-y:auto;
+  font-size:13px;
 }
 
-#painel-news, #alerta-mercado {
-    flex: 1;
-    min-width: 360px;
-    background:#111827;
-    color:white;
-    border-radius:6px;
-    box-shadow:0 4px 8px rgba(0,0,0,0.3);
-    max-height:300px;
-    overflow-y:auto;
-    font-size:13px;
-}
-
-/* ALERTA MERCADO ESTILO DIFERENTE */
-#alerta-mercado {
-    background: #ffffff;
-    border-left: 5px solid #c00000;
-    color: #000;
-    font-size:12px;
-}
-
-.news-header, .alerta-header {
-    text-align:center;
-    font-weight:bold;
-    padding:8px;
-    border-radius:6px 6px 0 0;
-}
-
-.news-header {
-    background:#1f2937;
-    color:white;
-}
-
-.alerta-header {
-    background:#c00000;
-    color:white;
+.news-header{
+  text-align:center;
+  font-weight:bold;
+  padding:8px;
+  background:#1f2937;
+  border-radius:6px 6px 0 0;
 }
 
 .news-item{
@@ -82,14 +59,42 @@ thead th { background:#2563eb; color:white;}
   animation:piscar 1s infinite;
 }
 
-.piscar-alerta {
-  animation: pisca 1s infinite;
-}
-
 @keyframes piscar{
   0%{background:#7f1d1d;}
   50%{background:#dc2626;}
   100%{background:#7f1d1d;}
+}
+
+/* ===== ALERTA POLÍTICO-MERCADO ===== */
+#alerta-mercado {
+  position: fixed;
+  top: 320px; /* logo abaixo do painel de notícias */
+  right: 10px;
+  width: 360px;
+  background: #ffffff;
+  border-left: 5px solid #c00000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  z-index: 9999;
+}
+
+.alerta-header {
+  background: #c00000;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  padding: 6px;
+  font-size: 13px;
+}
+
+#alerta-conteudo {
+  padding: 8px;
+  line-height: 1.3;
+}
+
+.piscar-alerta {
+  animation: pisca 1s infinite;
 }
 </style>
 </head>
@@ -107,22 +112,7 @@ thead th { background:#2563eb; color:white;}
 
 <div id="grafico"></div>
 
-<!-- PAINÉIS DE NOTÍCIAS ABAIXO DO GRÁFICO -->
-<div id="noticiasContainer">
-    <div id="painel-news">
-      <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-      <div id="newsList">
-        <div id="aguardando" class="news-item">Aguardando notícias...</div>
-      </div>
-    </div>
-
-    <div id="alerta-mercado">
-      <div class="alerta-header">⚠️ ALERTA MERCADO</div>
-      <div id="alerta-conteudo">Aguardando notícias...</div>
-    </div>
-</div>
-
-<!-- TABELAS DE ATIVOS -->
+<!-- TABELAS DE ATIVOS (permanece central, sem alterações) -->
 <table id="tabelaRisco">
 <thead>
 <tr><th>Ativo de Risco</th><th>Valor Atual</th><th>Variação (%)</th></tr>
@@ -137,16 +127,30 @@ thead th { background:#2563eb; color:white;}
 <tbody></tbody>
 </table>
 
+<!-- PAINEL DE NOTÍCIAS MACRO (TOPO DIREITA) -->
+<div id="painel-news">
+  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
+  <div id="newsList">
+    <div id="aguardando" class="news-item">Aguardando notícias...</div>
+  </div>
+</div>
+
 <audio id="alertSound">
   <source src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3" type="audio/mpeg">
 </audio>
+
+<!-- PAINEL ALERTA POLÍTICO-MERCADO (TOPO DIREITA, logo abaixo) -->
+<div id="alerta-mercado">
+  <div class="alerta-header">⚠️ ALERTA MERCADO</div>
+  <div id="alerta-conteudo">Aguardando notícias...</div>
+</div>
 
 <audio id="alerta-som">
   <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
 </audio>
 
 <script>
-// ==== VARIÁVEIS ATIVOS ====
+// ==== VARIAVEIS ATIVOS ====
 let valorRisco=100, valorSeguro=100, timer=null, timeframe=60;
 let ativosRisco = [
     {nome:"Ouro Futuros", valor:2766.2},{nome:"Cobre Futuros", valor:4.2315},{nome:"Petróleo WTI", valor:73.17},
@@ -165,14 +169,13 @@ let ativosSeguranca = [
 
 let datasGrafico=[], serieRisco=[], serieSeguranca=[];
 
-// ==== FUNÇÕES ====
-function gerarHistoricoDia(){ /* código igual ao anterior */ }
-function atualizarTabelas(){ /* código igual ao anterior */ }
-function plotarGrafico(){ /* código igual ao anterior */ }
-function atualizarGrafico(){ /* código igual ao anterior */ }
-function setTimeframe(segundos,botao){ /* código igual ao anterior */ }
+// ==== FUNÇÕES DE ATUALIZAÇÃO (mesmas do seu código original) ====
+function gerarHistoricoDia(){ /* ... */ }
+function atualizarTabelas(){ /* ... */ }
+function plotarGrafico(){ /* ... */ }
+function atualizarGrafico(){ /* ... */ }
+function setTimeframe(segundos,botao){ /* ... */ }
 
-// ==== NOTÍCIAS ====
 const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"];
 const lista = document.getElementById("newsList");
 const painel = document.getElementById("painel-news");
@@ -181,7 +184,7 @@ const som = document.getElementById("alertSound");
 let cache = {};
 let alertaAtivo = false;
 
-async function buscarNoticiasMacro(){ /* código igual ao anterior */ }
+async function buscarNoticiasMacro(){ /* ... */ }
 
 const alertaConteudo = document.getElementById("alerta-conteudo");
 const alertaBox = document.getElementById("alerta-mercado");
@@ -190,7 +193,7 @@ const rssUrl = "https://news.google.com/rss/search?q=presidente+EUA+OR+president
 const proxy = "https://api.allorigins.win/raw?url=";
 let ultimaNoticia = "";
 
-async function buscarNoticiasAlerta(){ /* código igual ao anterior */ }
+async function buscarNoticiasAlerta(){ /* ... */ }
 
 // ==== INICIALIZAÇÃO ====
 gerarHistoricoDia();
