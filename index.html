@@ -2,23 +2,23 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Mini Índice</title>
+<title>Painel Mini Índice + Direção do Mercado</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; background:#f4f4f4; }
   table { border-collapse: collapse; width: 100%; margin-bottom: 20px; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background-color: #333; color: white; }
-  .termometro { height: 40px; width: 100%; text-align: center; color: white; font-weight: bold; border-radius:5px; line-height:40px; }
-  .venda-forte { background-color: #cc0000; }
-  .venda { background-color: #ff6600; }
-  .neutro { background-color: #999900; color: black; }
-  .compra { background-color: #00cc00; }
-  .compra-forte { background-color: #009900; }
+  .termometro { height: 40px; width: 100%; text-align: center; color: white; font-weight: bold; border-radius:5px; line-height:40px; transition: background 0.5s; margin-bottom:20px;}
+  #grafico { width:100%; max-width:1200px; height:300px; margin-bottom:30px; }
 </style>
 </head>
 <body>
 
 <h2>GERIS PRE-MARKET: Correlação de Índice Futuro</h2>
+
+<div class="termometro" id="termometro">NEUTRO</div>
+
 <table id="painel">
   <thead>
     <tr>
@@ -30,16 +30,16 @@
       <th>Impacto</th>
     </tr>
   </thead>
-  <tbody>
-    <!-- Linhas serão inseridas via JS -->
-  </tbody>
+  <tbody></tbody>
 </table>
 
 <div>
   <strong>Soma dos Impactos: </strong><span id="somaImpactos">0</span><br>
   <strong>Classificação do Mercado: </strong><span id="classificacao">NEUTRO</span>
 </div>
-<div class="termometro" id="termometro">NEUTRO</div>
+
+<h3>Direção do Mercado (Intraday)</h3>
+<div id="grafico"></div>
 
 <script>
 const indicadores = [
@@ -77,36 +77,78 @@ indicadores.forEach((item, idx) => {
   tbody.appendChild(tr);
 });
 
-// Função que gera variações aleatórias simulando dados de pré-market
-function atualizarVariacoes() {
+// Variáveis do gráfico
+let datasGrafico = [];
+let valoresGrafico = [];
+
+// Função que gera variações aleatórias e atualiza tudo
+function atualizar() {
   let soma = 0;
+  const agora = new Date();
+
   indicadores.forEach((item, idx) => {
-    // Simula variação entre -5% e +5%
-    const variacao = (Math.random()*10 - 5).toFixed(2);
+    const variacao = (Math.random()*10 - 5).toFixed(2); // -5% a +5%
     document.getElementById(`var_${idx}`).innerText = variacao;
     const impacto = item.peso * item.correlacao * variacao;
     document.getElementById(`impact_${idx}`).innerText = impacto.toFixed(3);
     soma += impacto;
   });
+
   document.getElementById('somaImpactos').innerText = soma.toFixed(3);
   atualizarTermometro(soma);
+
+  // Atualiza gráfico
+  datasGrafico.push(agora.toLocaleTimeString());
+  valoresGrafico.push(soma.toFixed(2));
+  if (datasGrafico.length > 50) { // mantém últimos 50 pontos
+    datasGrafico.shift();
+    valoresGrafico.shift();
+  }
+  Plotly.react('grafico', [{
+    x: datasGrafico,
+    y: valoresGrafico,
+    type: 'scatter',
+    mode: 'lines+markers',
+    line: {color: 'blue'}
+  }], {
+    title: 'Direção do Mercado Intraday',
+    xaxis: {title: 'Hora'},
+    yaxis: {title: 'Soma dos Impactos'},
+    margin: {t:40, l:50, r:30, b:50}
+  });
 }
 
+// Termômetro com gradiente
 function atualizarTermometro(valor) {
   const term = document.getElementById('termometro');
-  if (valor <= -25) { term.className = 'termometro venda-forte'; term.innerText = 'VENDA FORTE'; }
-  else if (valor > -25 && valor <= -8) { term.className = 'termometro venda'; term.innerText = 'VENDA'; }
-  else if (valor > -8 && valor <= 8) { term.className = 'termometro neutro'; term.innerText = 'NEUTRO'; }
-  else if (valor > 8 && valor <= 25) { term.className = 'termometro compra'; term.innerText = 'COMPRA'; }
-  else { term.className = 'termometro compra-forte'; term.innerText = 'COMPRA FORTE'; }
+  document.getElementById('classificacao').innerText = '';
+
+  let r=0, g=0, b=0;
+  if(valor < 0){
+    const ratio = Math.max(Math.min(valor/(-50),1),0);
+    r = 204;
+    g = Math.round(204*ratio);
+    b = 0;
+  } else {
+    const ratio = Math.max(Math.min(valor/50,1),0);
+    r = Math.round(204*(1-ratio));
+    g = 204;
+    b = 0;
+  }
+  term.style.background = `rgb(${r},${g},${b})`;
+
+  if (valor <= -25) { term.innerText = 'VENDA FORTE'; }
+  else if (valor > -25 && valor <= -8) { term.innerText = 'VENDA'; }
+  else if (valor > -8 && valor <= 8) { term.innerText = 'NEUTRO'; }
+  else if (valor > 8 && valor <= 25) { term.innerText = 'COMPRA'; }
+  else { term.innerText = 'COMPRA FORTE'; }
+
   document.getElementById('classificacao').innerText = term.innerText;
 }
 
-// Atualiza automaticamente a cada 2 segundos
-setInterval(atualizarVariacoes, 2000);
-
-// Inicializa na primeira execução
-atualizarVariacoes();
+// Atualiza a cada 2 segundos
+setInterval(atualizar, 2000);
+atualizar();
 </script>
 
 </body>
