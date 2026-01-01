@@ -2,34 +2,45 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard de Mercado - Real Time</title>
+<title>Dashboard Mercado - Notícias no Topo</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; background:#f5f5f5; }
-h2 { margin-top:30px; }
+body { font-family: Arial, sans-serif; margin:20px; background:#f5f5f5; }
+h2,h3 { margin-top:20px; }
 table { border-collapse: collapse; width: 100%; margin-bottom:20px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 th, td { border:1px solid #ccc; padding:8px; text-align:center; }
 th { background:#333; color:white; }
 td.positivo { color:green; }
 td.negativo { color:red; }
 
-#graficos { display:flex; gap:20px; flex-wrap:wrap; }
-.grafico-container { flex:1 1 45%; background:#fff; padding:10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-
-.news-container { display:flex; gap:20px; flex-wrap:wrap; margin-top:30px; }
+#news-top { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:30px; }
 .panel { flex:1 1 45%; background:#fff; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); max-height:400px; overflow-y:auto; }
 .panel-header { background:#2563eb; color:white; text-align:center; font-weight:bold; padding:10px; border-radius:6px 6px 0 0; }
-#breaking { }
 #breaking .panel-header { background:#dc2626; }
 .news-item { padding:8px; border-bottom:1px solid #ccc; }
 .news-item a { text-decoration:none; color:#1e40af; }
 .breaking-alert { animation: piscar 1s infinite; }
 @keyframes piscar {0%{background:#7f1d1d;}50%{background:#dc2626;}100%{background:#7f1d1d;}}
 
+#graficos { display:flex; gap:20px; flex-wrap:wrap; margin-top:20px; }
+.grafico-container { flex:1 1 45%; background:#fff; padding:10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+
 #ultima-atualizacao { margin-top:10px; font-weight:bold; }
 </style>
 </head>
 <body>
+
+<h2>Notícias de Mercado</h2>
+<div id="news-top">
+  <div class="panel" id="relevantes">
+    <div class="panel-header">📰 Notícias Relevantes</div>
+    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+  <div class="panel" id="breaking">
+    <div class="panel-header">🚨 Breaking News</div>
+    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
+  </div>
+</div>
 
 <h2>Cotações de Ativos</h2>
 
@@ -72,19 +83,6 @@ td.negativo { color:red; }
   <div class="grafico-container" id="grafico-seguranca" style="height:300px;"></div>
 </div>
 
-<h2>Notícias de Mercado</h2>
-<div class="news-container">
-  <div class="panel" id="relevantes">
-    <div class="panel-header">📰 Notícias Relevantes</div>
-    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
-  </div>
-
-  <div class="panel" id="breaking">
-    <div class="panel-header">🚨 Breaking News</div>
-    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
-  </div>
-</div>
-
 <audio id="alertSound">
   <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
 </audio>
@@ -96,7 +94,6 @@ const API_URL = "https://suaapi.com/cotacoes?apikey=" + API_KEY;
 let historicoRisco = {};
 let historicoSeguranca = {};
 
-// Define ativos
 const risco = ["ibov","dow","sp","nasdaq","stoxx","china","wti","brent","iron"];
 const seguranca = ["gold","treasury10","treasury30","dxy"];
 const todosAtivos = [...risco,...seguranca];
@@ -107,20 +104,18 @@ async function atualizarCotacoes() {
     const data = await res.json();
     const agora = new Date();
 
-    // Atualiza histórico e tabela
     todosAtivos.forEach(id=>{
       const last = data[id].last;
       const change = data[id].change;
-      const percent = ((change / (last-change))*100).toFixed(2);
+      const percent = ((change/(last-change))*100).toFixed(2);
 
       document.getElementById(`${id}-price`).innerText = last;
       document.getElementById(`${id}-change`).innerText = change;
-      document.getElementById(`${id}-percent`).innerText = percent + "%";
+      document.getElementById(`${id}-percent`).innerText = percent+"%";
       const cls = change>0?"positivo":(change<0?"negativo":"");
       document.getElementById(`${id}-change`).className = cls;
       document.getElementById(`${id}-percent`).className = cls;
 
-      // Atualiza histórico
       if(risco.includes(id)){
         if(!historicoRisco[id]) historicoRisco[id]=[];
         historicoRisco[id].push({hora:agora.toLocaleTimeString(), valor:last});
@@ -130,23 +125,22 @@ async function atualizarCotacoes() {
       }
     });
 
-    // Atualiza hora
-    document.getElementById("ultima-atualizacao").innerText = "Última atualização: " + agora.toLocaleTimeString();
+    document.getElementById("ultima-atualizacao").innerText = "Última atualização: "+agora.toLocaleTimeString();
 
-    // Atualiza gráficos
+    // Gráficos simplificados (apenas primeiro ativo de cada grupo)
     Plotly.react('grafico-risco',[{
-      x: Object.values(historicoRisco)[0]?.map(p=>p.hora) || [],
-      y: Object.values(historicoRisco)[0]?.map(p=>p.valor) || [],
+      x:Object.values(historicoRisco)[0]?.map(p=>p.hora)||[],
+      y:Object.values(historicoRisco)[0]?.map(p=>p.valor)||[],
       type:'scatter', mode:'lines+markers', name:'Risco'
-    }], {title:'Ativos de Risco'});
+    }],{title:'Ativos de Risco'});
 
     Plotly.react('grafico-seguranca',[{
-      x: Object.values(historicoSeguranca)[0]?.map(p=>p.hora) || [],
-      y: Object.values(historicoSeguranca)[0]?.map(p=>p.valor) || [],
+      x:Object.values(historicoSeguranca)[0]?.map(p=>p.hora)||[],
+      y:Object.values(historicoSeguranca)[0]?.map(p=>p.valor)||[],
       type:'scatter', mode:'lines+markers', name:'Segurança'
-    }], {title:'Ativos de Segurança'});
+    }],{title:'Ativos de Segurança'});
 
-  } catch(e){ console.error("Erro ao atualizar cotações:",e);}
+  } catch(e){ console.error(e); }
 }
 
 // === Notícias ===
@@ -170,13 +164,13 @@ async function buscarNoticias(query, container, cacheObj, alert=false){
       const link=item.querySelector("link")?.textContent||"";
       if(!title||cacheObj[link]) return;
       cacheObj[link]=true;
-      const div = document.createElement("div");
-      div.className = "news-item"+(alert?" breaking-alert":"");
+      const div=document.createElement("div");
+      div.className="news-item"+(alert?" breaking-alert":"");
       div.innerHTML=`<strong>${title}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
       container.prepend(div);
       if(alert) alertSound.play().catch(()=>{});
     });
-  }catch(e){console.error("Erro ao buscar notícias:",e);}
+  }catch(e){console.error(e);}
 }
 
 function atualizarNoticias(){
@@ -184,11 +178,11 @@ function atualizarNoticias(){
   buscarNoticias(keywordsRelevantes.join(" OR "), relevantesList, cacheRelevantes, false);
 }
 
-// Inicializa
+// Inicialização
 atualizarCotacoes();
 atualizarNoticias();
-setInterval(atualizarCotacoes, 5000);
-setInterval(atualizarNoticias, 30000);
+setInterval(atualizarCotacoes,5000);
+setInterval(atualizarNoticias,30000);
 </script>
 
 </body>
