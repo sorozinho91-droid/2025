@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Tendência Intraday do Dólar</title>
+
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
 <style>
@@ -23,46 +24,111 @@ body {
 <body>
 
 <h2>Tendência Intraday do Dólar</h2>
-<p>Atualização automática a cada 60 segundos</p>
+<p>Atualização automática a cada 60 segundos (dados manuais)</p>
+
 <div id="grafico"></div>
 
 <script>
-const API_URL = "https://SEU-BACKEND-AQUI/api/score";
+/* =========================
+   DADOS DA SUA CARTEIRA
+   (OS QUE VOCÊ PASSOU)
+========================= */
 
+// +1 = alta | 0 = neutro | -1 = queda
+const ativos = [
+  // ATIVOS DE RISCO (se sobem, dólar cai)
+  {nome:"Ouro", tipo:"risco", valor:-1},
+  {nome:"Cobre", tipo:"risco", valor:-1},
+  {nome:"WTI", tipo:"risco", valor:0},
+  {nome:"Oslo All Share", tipo:"risco", valor:-1},
+  {nome:"Soja", tipo:"risco", valor:0},
+  {nome:"Dow Futuro", tipo:"risco", valor:0},
+  {nome:"Global Dow", tipo:"risco", valor:0},
+  {nome:"Minério de Ferro", tipo:"risco", valor:0},
+  {nome:"Vale", tipo:"risco", valor:1},
+  {nome:"Petrobras", tipo:"risco", valor:0},
+  {nome:"EWZ", tipo:"risco", valor:-1},
+  {nome:"XLF", tipo:"risco", valor:0},
+  {nome:"XLP", tipo:"risco", valor:1},
+  {nome:"XLE", tipo:"risco", valor:1},
+  {nome:"XME", tipo:"risco", valor:0},
+  {nome:"EEM", tipo:"risco", valor:0},
+  {nome:"SOXX", tipo:"risco", valor:0},
+  {nome:"Sensex", tipo:"risco", valor:-1},
+  {nome:"China", tipo:"risco", valor:1},
+
+  // ATIVOS DE SEGURANÇA (se sobem, dólar sobe)
+  {nome:"DXY", tipo:"seguranca", valor:1},
+  {nome:"VIX", tipo:"seguranca", valor:0},
+  {nome:"USD/MXN", tipo:"seguranca", valor:-1},
+  {nome:"USD/NOK", tipo:"seguranca", valor:1},
+  {nome:"USD/NZD", tipo:"seguranca", valor:1},
+  {nome:"USD/AUD", tipo:"seguranca", valor:1},
+  {nome:"USD/KRW", tipo:"seguranca", valor:1},
+  {nome:"USD/CNY", tipo:"seguranca", valor:0},
+  {nome:"EUR/BRL", tipo:"seguranca", valor:-1}
+];
+
+/* =========================
+   CÁLCULO DO SCORE
+========================= */
+function calcularScore() {
+  let score = 0;
+  let total = 0;
+
+  ativos.forEach(a => {
+    if (a.valor !== 0) {
+      total++;
+      if (a.tipo === "seguranca") score += a.valor;
+      else score -= a.valor;
+    }
+  });
+
+  return total ? +(score / total).toFixed(2) : 0;
+}
+
+/* =========================
+   GRÁFICO
+========================= */
 const chart = echarts.init(document.getElementById("grafico"));
+let historico = [];
 
 function atualizar() {
-  fetch(API_URL)
-    .then(r => r.json())
-    .then(d => {
-      chart.setOption({
-        backgroundColor:"#111",
-        xAxis:{
-          type:"category",
-          data:d.historico.map(x=>x.hora),
-          axisLabel:{color:"#aaa"}
-        },
-        yAxis:{
-          min:-1,
-          max:1,
-          axisLabel:{color:"#aaa"}
-        },
-        visualMap:{
-          show:false,
-          pieces:[
-            {gt:d.zona_alta, color:"#00c853"},
-            {gte:d.zona_baixa, lte:d.zona_alta, color:"#9e9e9e"},
-            {lt:d.zona_baixa, color:"#d50000"}
-          ]
-        },
-        series:[{
-          type:"line",
-          smooth:true,
-          data:d.historico.map(x=>x.score),
-          symbolSize:6
-        }]
-      });
-    });
+  const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  const score = calcularScore();
+
+  historico.push({hora, score});
+  if (historico.length > 120) historico.shift();
+
+  chart.setOption({
+    backgroundColor:"#111",
+    xAxis:{
+      type:"category",
+      data:historico.map(h=>h.hora),
+      axisLabel:{color:"#aaa"}
+    },
+    yAxis:{
+      min:-1,
+      max:1,
+      axisLabel:{color:"#aaa"},
+      splitLine:{lineStyle:{color:"#222"}}
+    },
+    visualMap:{
+      show:false,
+      pieces:[
+        {gt:0.25, color:"#00c853"},
+        {gte:-0.25, lte:0.25, color:"#9e9e9e"},
+        {lt:-0.25, color:"#d50000"}
+      ]
+    },
+    series:[{
+      type:"line",
+      smooth:true,
+      data:historico.map(h=>h.score),
+      symbolSize:6,
+      lineStyle:{width:2}
+    }]
+  });
 }
 
 atualizar();
