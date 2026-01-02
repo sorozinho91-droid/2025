@@ -2,24 +2,22 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Comparação Risco x Segurança - Intraday</title>
-
+<title>Comparação Intraday - Segurança x Risco</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
-
 <style>
-body{
+body {
   background:#0e0e0e;
   color:#e0e0e0;
   font-family:Arial, Helvetica, sans-serif;
   margin:20px;
 }
-#grafico{
+#grafico {
   width:100%;
   height:520px;
   background:#111;
   border-radius:8px;
 }
-#sinal{
+#sinal {
   font-size:22px;
   font-weight:bold;
   margin-top:10px;
@@ -29,10 +27,9 @@ body{
 .neutro{color:#ffeb3b}
 </style>
 </head>
-
 <body>
 
-<h2>Comparação Intraday - Risco x Segurança</h2>
+<h2>Comparação Intraday - Segurança x Risco</h2>
 <p>Atualização a cada 60s • Histórico intraday</p>
 
 <div id="grafico"></div>
@@ -43,15 +40,15 @@ const chart = echarts.init(document.getElementById("grafico"));
 
 // Histórico intraday
 let eixoX = [];
-let ativosSeguranca = ["USD-BRL", "Ouro"];
-let ativosRisco = ["BTC-BRL", "ETF-ACAO"];
+let ativosSeguranca = ["USD-BRL","Ouro"];
+let ativosRisco = ["BTC-BRL","ETF-ACAO"];
 let ultimoValores = {};
-let serieRisco = [];
 let serieSeguranca = [];
+let serieRisco = [];
 let serieDiff = [];
 
 /* =========================
-   Pega preço real ou simulado
+   Função para pegar preço real ou simulado
 ========================= */
 async function pegarValorAtivo(ativo){
   try{
@@ -59,16 +56,16 @@ async function pegarValorAtivo(ativo){
       const res = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
       const data = await res.json();
       return parseFloat(data.USDBRL.bid);
-    }else if(ativo === "BTC-BRL"){
+    } else if(ativo === "BTC-BRL"){
       const res = await fetch('https://economia.awesomeapi.com.br/json/last/BTC-BRL');
       const data = await res.json();
       return parseFloat(data.BTCBRL.bid);
-    }else if(ativo === "Ouro"){
+    } else if(ativo === "Ouro"){
       return 325 + Math.random()*2-1; // simulado
-    }else if(ativo === "ETF-ACAO"){
+    } else if(ativo === "ETF-ACAO"){
       return 100 + Math.random()*2-1; // simulado
     }
-  }catch(err){
+  } catch(err){
     console.error("Erro ao buscar ativo", ativo, err);
     return null;
   }
@@ -87,40 +84,44 @@ function calcularVariacao(valorAtual, ativo){
 }
 
 /* =========================
-   Atualiza gráfico comparativo
+   Atualiza gráfico intraday comparativo
 ========================= */
 async function atualizarGrafico(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   eixoX.push(hora);
-  if(eixoX.length > 480) eixoX.shift(); // histórico intraday
+  if(eixoX.length > 480) eixoX.shift(); // histórico intraday ~8h
 
-  let riscoTotal=0, segurancaTotal=0;
-
-  // Média dos ativos de segurança
+  // Soma ou média dos ativos de cada grupo
+  let somaSeguranca = 0;
   for(let ativo of ativosSeguranca){
     const valor = await pegarValorAtivo(ativo);
     if(valor===null) continue;
-    segurancaTotal += calcularVariacao(valor, ativo);
+    somaSeguranca += calcularVariacao(valor, ativo);
   }
-  segurancaTotal /= ativosSeguranca.length;
+  somaSeguranca /= ativosSeguranca.length;
 
-  // Média dos ativos de risco
+  let somaRisco = 0;
   for(let ativo of ativosRisco){
     const valor = await pegarValorAtivo(ativo);
     if(valor===null) continue;
-    riscoTotal += calcularVariacao(valor, ativo);
+    somaRisco += calcularVariacao(valor, ativo);
   }
-  riscoTotal /= ativosRisco.length;
+  somaRisco /= ativosRisco.length;
 
-  serieSeguranca.push(segurancaTotal);
-  serieRisco.push(riscoTotal);
-  serieDiff.push(segurancaTotal - riscoTotal);
+  // Atualiza séries
+  serieSeguranca.push(somaSeguranca);
+  serieRisco.push(somaRisco);
+  serieDiff.push(somaSeguranca - somaRisco);
 
-  if(serieSeguranca.length>480){ serieSeguranca.shift(); serieRisco.shift(); serieDiff.shift(); }
+  if(serieSeguranca.length>480){
+    serieSeguranca.shift();
+    serieRisco.shift();
+    serieDiff.shift();
+  }
 
   // Atualiza sinal
   const sinal = document.getElementById("sinal");
-  const d = segurancaTotal - riscoTotal;
+  const d = somaSeguranca - somaRisco;
   if(d>0.0025){ sinal.textContent="SINAL: COMPRA"; sinal.className="compra"; }
   else if(d<-0.0025){ sinal.textContent="SINAL: VENDA"; sinal.className="venda"; }
   else{ sinal.textContent="SINAL: NEUTRO"; sinal.className="neutro"; }
@@ -146,7 +147,7 @@ async function atualizarGrafico(){
   });
 }
 
-// Atualiza a cada 60 segundos
+// Inicializa loop automático a cada 60 segundos
 atualizarGrafico();
 setInterval(atualizarGrafico, 60000);
 </script>
