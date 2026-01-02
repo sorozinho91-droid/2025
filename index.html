@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Risco x Segurança – Intraday Dólar</title>
+<title>Direção Intraday do Dólar</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -15,21 +15,28 @@ body{
 }
 #grafico{
   width:100%;
-  height:520px;
+  height:500px;
   background:#111;
   border-radius:8px;
 }
-h2{margin-bottom:5px}
-p{color:#aaa;margin-top:0}
+#sinal{
+  font-size:22px;
+  font-weight:bold;
+  margin-top:10px;
+}
+.compra{color:#00c853}
+.venda{color:#d50000}
+.neutro{color:#ffeb3b}
 </style>
 </head>
 
 <body>
 
 <h2>Direção Intraday do Dólar</h2>
-<p>Histórico do dia + atualização automática a cada 60s</p>
+<p>Risco × Segurança • Atualização automática a cada 60s</p>
 
 <div id="grafico"></div>
+<div id="sinal" class="neutro">SINAL: NEUTRO</div>
 
 <script>
 /* =========================
@@ -41,82 +48,82 @@ const INTERVALO = "1min";
 /* =========================
    ATIVOS
 ========================= */
-const ativosRisco = [
+const risco = [
   "XAU/USD","HG","CL","EWZ","VALE","PBR",
   "XLF","XLP","XLE","XME","EEM","SOXX"
 ];
 
-const ativosSeguranca = [
+const seguranca = [
   "DXY","USD/NOK","USD/AUD","USD/NZD",
   "USD/KRW","USD/CNY","EUR/BRL"
 ];
 
 /* =========================
-   BUSCA SÉRIE INTRADAY
+   FUNÇÃO ÚNICA OTIMIZADA
 ========================= */
-async function serie(symbol){
-  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=390&apikey=${API_KEY}`;
+async function direcao(symbol){
+  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=2&apikey=${API_KEY}`;
   try{
     const r = await fetch(url);
     const d = await r.json();
-    return d.values ? d.values.reverse() : [];
+    if(!d.values || d.values.length<2) return 0;
+    return d.values[0].close > d.values[1].close ? 1 :
+           d.values[0].close < d.values[1].close ? -1 : 0;
   }catch{
-    return [];
+    return 0;
   }
 }
 
 /* =========================
-   CALCULA SCORE HISTÓRICO
+   SCORE MÉDIO
 ========================= */
-async function gerarHistorico(){
-  const base = await serie(ativosSeguranca[0]);
-  let horas=[], risco=[], seguranca=[];
-
-  for(let i=1;i<base.length;i++){
-    let sr=0,tr=0,ss=0,ts=0;
-
-    for(const a of ativosRisco){
-      const s = await serie(a);
-      if(s[i] && s[i-1]){
-        const d = s[i].close > s[i-1].close ? 1 : s[i].close < s[i-1].close ? -1 : 0;
-        if(d!==0){ sr+=d; tr++; }
-      }
-    }
-
-    for(const a of ativosSeguranca){
-      const s = await serie(a);
-      if(s[i] && s[i-1]){
-        const d = s[i].close > s[i-1].close ? 1 : s[i].close < s[i-1].close ? -1 : 0;
-        if(d!==0){ ss+=d; ts++; }
-      }
-    }
-
-    horas.push(base[i].datetime.slice(11,16));
-    risco.push(tr? +(sr/tr).toFixed(2):0);
-    seguranca.push(ts? +(ss/ts).toFixed(2):0);
+async function score(lista){
+  let s=0,t=0;
+  for(const a of lista){
+    const d = await direcao(a);
+    if(d!==0){ s+=d; t++; }
   }
-
-  return {horas, risco, seguranca};
+  return t? +(s/t).toFixed(2):0;
 }
 
 /* =========================
    GRÁFICO
 ========================= */
 const chart = echarts.init(document.getElementById("grafico"));
+let x=[], r=[], s=[], diff=[];
 
-async function iniciar(){
-  const h = await gerarHistorico();
+async function atualizar(){
+  const h = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  const vr = await score(risco);
+  const vs = await score(seguranca);
+  const vd = +(vs - vr).toFixed(2);
+
+  x.push(h); r.push(vr); s.push(vs); diff.push(vd);
+  if(x.length>120){ x.shift(); r.shift(); s.shift(); diff.shift(); }
+
+  // SINAL
+  const sinal = document.getElementById("sinal");
+  if(vd > 0.25){
+    sinal.textContent = "SINAL: COMPRA DÓLAR";
+    sinal.className = "compra";
+  }else if(vd < -0.25){
+    sinal.textContent = "SINAL: VENDA DÓLAR";
+    sinal.className = "venda";
+  }else{
+    sinal.textContent = "SINAL: NEUTRO";
+    sinal.className = "neutro";
+  }
 
   chart.setOption({
     backgroundColor:"#111",
     tooltip:{trigger:"axis"},
     legend:{
-      data:["Ativos de Risco","Ativos de Segurança"],
+      data:["Risco","Segurança","Diferença"],
       textStyle:{color:"#ccc"}
     },
     xAxis:{
       type:"category",
-      data:h.horas,
+      data:x,
       axisLabel:{color:"#aaa"}
     },
     yAxis:{
@@ -126,28 +133,18 @@ async function iniciar(){
       axisLabel:{color:"#aaa"}
     },
     series:[
-      {
-        name:"Ativos de Risco",
-        type:"line",
-        smooth:true,
-        data:h.risco,
-        lineStyle:{width:2,color:"#00c853"}
-      },
-      {
-        name:"Ativos de Segurança",
-        type:"line",
-        smooth:true,
-        data:h.seguranca,
-        lineStyle:{width:2,color:"#d50000"}
-      }
+      {name:"Risco",type:"line",smooth:true,data:r,lineStyle:{color:"#00c853"}},
+      {name:"Segurança",type:"line",smooth:true,data:s,lineStyle:{color:"#d50000"}},
+      {name:"Diferença",type:"line",smooth:true,data:diff,lineStyle:{color:"#ffeb3b",width:3}}
     ]
   });
 }
 
 /* =========================
-   START
+   LOOP 60s
 ========================= */
-iniciar();
+atualizar();
+setInterval(atualizar,60000);
 </script>
 
 </body>
