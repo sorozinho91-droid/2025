@@ -5,50 +5,39 @@
 <title>Sentimento do Mercado Global</title>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
+body{
+  font-family:Arial, sans-serif;
   background:#f4f6f8;
   margin:0;
   display:flex;
   flex-direction:column;
   align-items:center;
 }
-
-header {
+header{
   width:100%;
   background:#1f2937;
-  color:#fff;
+  color:white;
   padding:10px;
   text-align:center;
 }
+#relogio{margin:10px;font-weight:bold;}
 
-#relogio {
-  margin:10px;
-  font-weight:bold;
-}
-
-table {
+table{
   width:560px;
   background:#fff;
   border-collapse:collapse;
   box-shadow:0 2px 6px rgba(0,0,0,.15);
 }
-
-th, td {
+th,td{
   border:1px solid #ccc;
   padding:6px;
   text-align:center;
 }
+th{background:#2563eb;color:white;}
+.risco{color:green;font-weight:bold;}
+.seguro{color:red;font-weight:bold;}
 
-th {
-  background:#2563eb;
-  color:white;
-}
-
-.risco { color:green; font-weight:bold; }
-.seguro { color:red; font-weight:bold; }
-
-#sentimentoBarContainer {
+#sentimentoBarContainer{
   width:560px;
   height:28px;
   background:#e5e7eb;
@@ -56,8 +45,7 @@ th {
   margin:20px 0;
   overflow:hidden;
 }
-
-#sentimentoBar {
+#sentimentoBar{
   height:100%;
   width:50%;
   background:linear-gradient(to right, red, green);
@@ -65,8 +53,32 @@ th {
   font-weight:bold;
   text-align:center;
   line-height:28px;
-  transition:width .6s;
+  transition:width .5s;
 }
+
+/* NOTÍCIAS */
+#newsBox{
+  width:560px;
+  background:#fff;
+  margin-top:25px;
+  border-radius:6px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+  max-height:320px;
+  overflow-y:auto;
+  font-size:13px;
+}
+.news-item{
+  padding:10px;
+  border-bottom:1px solid #e5e7eb;
+}
+.news-item a{
+  text-decoration:none;
+  color:#1d4ed8;
+  font-weight:bold;
+}
+.sent-bullish{color:green;font-weight:bold;}
+.sent-bearish{color:red;font-weight:bold;}
+.sent-neutral{color:#6b7280;font-weight:bold;}
 </style>
 </head>
 
@@ -80,11 +92,7 @@ th {
 
 <table id="tabela">
 <thead>
-<tr>
-  <th>Ativo</th>
-  <th>Classe</th>
-  <th>Variação (%)</th>
-</tr>
+<tr><th>Ativo</th><th>Classe</th><th>Variação (%)</th></tr>
 </thead>
 <tbody>
 <tr><td colspan="3">Carregando dados...</td></tr>
@@ -95,106 +103,123 @@ th {
   <div id="sentimentoBar">50% Neutro</div>
 </div>
 
-<script>
-/* ================== RELÓGIO BR ================== */
-function relogioBR(){
-  const d = new Date();
-  const utc = d.getTime() + d.getTimezoneOffset()*60000;
-  const br = new Date(utc - 3*3600000);
-  document.getElementById("relogio").textContent =
-    "Horário de Brasília: " + br.toLocaleTimeString();
-}
-setInterval(relogioBR,1000);
-relogioBR();
+<h3>📰 Notícias Macro (Traduzidas)</h3>
+<div id="newsBox">
+  <div style="padding:10px;text-align:center;">Carregando notícias...</div>
+</div>
 
-/* ================== CONFIG ================== */
+<script>
+/* ================= CONFIG ================= */
 const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
 
-/*
-CLASSES:
-- RISCO: ações
-- SEGURANÇA: dólar, ouro
-Símbolos escolhidos porque EXISTEM no Alpha Vantage
-*/
-const ativos = [
-  { nome:"S&P 500", classe:"risco", symbol:"SPY" },
-  { nome:"Nasdaq", classe:"risco", symbol:"QQQ" },
-  { nome:"Dow Jones", classe:"risco", symbol:"DIA" },
-  { nome:"Dólar (UUP)", classe:"seguro", symbol:"UUP" },
-  { nome:"Ouro", classe:"seguro", commodity:true }
+/* ================= RELÓGIO BR ================= */
+function relogioBR(){
+  const d=new Date();
+  const utc=d.getTime()+d.getTimezoneOffset()*60000;
+  const br=new Date(utc-3*3600000);
+  document.getElementById("relogio").textContent =
+    "Horário de Brasília: "+br.toLocaleTimeString();
+}
+setInterval(relogioBR,1000); relogioBR();
+
+/* ================= ATIVOS ================= */
+const ativos=[
+  {nome:"S&P 500",classe:"risco",symbol:"SPY"},
+  {nome:"Nasdaq",classe:"risco",symbol:"QQQ"},
+  {nome:"Dow Jones",classe:"risco",symbol:"DIA"},
+  {nome:"Dólar (UUP)",classe:"seguro",symbol:"UUP"},
+  {nome:"Ouro",classe:"seguro",commodity:true}
 ];
+let ultimos={};
 
-let indice = 0;
-let ultimos = {};
-
-/* ================== FETCH ================== */
-async function buscarAtivo(ativo){
-  if(ativo.commodity){
-    const url = `https://www.alphavantage.co/query?function=COMMODITY_EXCHANGE_RATE&from_symbol=XAU&to_symbol=USD&apikey=${API_KEY}`;
-    const r = await fetch(url);
-    const j = await r.json();
+/* ================= FETCH ATIVOS ================= */
+async function buscarAtivo(a){
+  if(a.commodity){
+    const url=`https://www.alphavantage.co/query?function=COMMODITY_EXCHANGE_RATE&from_symbol=XAU&to_symbol=USD&apikey=${API_KEY}`;
+    const r=await fetch(url); const j=await r.json();
     return Number(j["Realtime Commodity Exchange Rate"]?.["5. Exchange Rate"]);
-  } else {
-    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ativo.symbol}&apikey=${API_KEY}`;
-    const r = await fetch(url);
-    const j = await r.json();
+  }else{
+    const url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${a.symbol}&apikey=${API_KEY}`;
+    const r=await fetch(url); const j=await r.json();
     return Number(j["Global Quote"]?.["10. change percent"]?.replace("%",""));
   }
 }
 
-/* ================== ATUALIZA ================== */
-async function atualizar(){
-  const tbody = document.querySelector("#tabela tbody");
-  tbody.innerHTML = "";
+/* ================= SENTIMENTO ================= */
+async function atualizarSentimento(){
+  const tbody=document.querySelector("#tabela tbody");
+  tbody.innerHTML="";
+  let risco=0, seguro=0;
 
-  let scoreRisco = 0;
-  let scoreSeguro = 0;
-
-  for(const ativo of ativos){
-    let variacao = 0;
-
+  for(const a of ativos){
+    let v=0;
     try{
-      if(ativo.commodity){
-        const preco = await buscarAtivo(ativo);
-        const prev = ultimos[ativo.nome] ?? preco;
-        variacao = ((preco - prev) / prev * 100);
-        ultimos[ativo.nome] = preco;
-      } else {
-        variacao = await buscarAtivo(ativo);
-      }
-    }catch(e){ variacao = 0; }
+      if(a.commodity){
+        const p=await buscarAtivo(a);
+        const prev=ultimos[a.nome]??p;
+        v=((p-prev)/prev*100); ultimos[a.nome]=p;
+      }else v=await buscarAtivo(a);
+    }catch(e){v=0;}
 
-    if(ativo.classe === "risco") scoreRisco += variacao;
-    else scoreSeguro += variacao;
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${ativo.nome}</td>
-      <td class="${ativo.classe}">${ativo.classe.toUpperCase()}</td>
-      <td>${variacao.toFixed(2)}%</td>
-    `;
-    tbody.appendChild(tr);
+    a.classe==="risco"?risco+=v:seguro+=v;
+    tbody.innerHTML+=`<tr>
+      <td>${a.nome}</td>
+      <td class="${a.classe}">${a.classe.toUpperCase()}</td>
+      <td>${v.toFixed(2)}%</td></tr>`;
   }
 
-  /* ===== SENTIMENTO ===== */
-  const total = Math.abs(scoreRisco) + Math.abs(scoreSeguro) || 1;
-  const riscoPct = Math.round((scoreRisco + total) / (2*total) * 100);
+  const total=Math.abs(risco)+Math.abs(seguro)||1;
+  const pct=Math.round((risco+total)/(2*total)*100);
+  const bar=document.getElementById("sentimentoBar");
+  bar.style.width=pct+"%";
+  bar.textContent=pct>55?`${pct}% Apetite ao Risco`:
+                   pct<45?`${pct}% Busca por Segurança`:
+                   `${pct}% Neutro`;
+}
+atualizarSentimento();
+setInterval(atualizarSentimento,70000);
 
-  const bar = document.getElementById("sentimentoBar");
-  bar.style.width = riscoPct + "%";
-  bar.textContent =
-    riscoPct > 55 ? `${riscoPct}% Apetite ao Risco` :
-    riscoPct < 45 ? `${riscoPct}% Busca por Segurança` :
-    `${riscoPct}% Neutro`;
+/* ================= TRADUÇÃO ================= */
+async function traduzir(texto){
+  try{
+    const r=await fetch("https://libretranslate.de/translate",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({q:texto,source:"en",target:"pt",format:"text"})
+    });
+    const j=await r.json();
+    return j.translatedText || texto;
+  }catch(e){ return texto; }
 }
 
-/*
-Alpha Vantage free:
-5 req / minuto
-→ 1 ciclo completo a cada 70s é seguro
-*/
-atualizar();
-setInterval(atualizar, 70000);
+/* ================= NOTÍCIAS MACRO ================= */
+async function buscarNoticias(){
+  const box=document.getElementById("newsBox");
+  const url=`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&topics=macro_economy,monetary_policy,financial_markets,geopolitics&apikey=${API_KEY}`;
+
+  try{
+    const r=await fetch(url);
+    const d=await r.json();
+    if(!d.feed){box.innerHTML="Sem notícias.";return;}
+
+    box.innerHTML="";
+    for(const n of d.feed.slice(0,8)){
+      const tituloPT=await traduzir(n.title);
+      const sent=n.overall_sentiment_label||"Neutral";
+      const cls=sent==="Bullish"?"sent-bullish":
+                sent==="Bearish"?"sent-bearish":"sent-neutral";
+      box.innerHTML+=`
+        <div class="news-item">
+          <a href="${n.url}" target="_blank">${tituloPT}</a><br>
+          <small>${n.source} • <span class="${cls}">${sent}</span></small>
+        </div>`;
+    }
+  }catch(e){
+    box.innerHTML="<div style='padding:10px'>Erro ao carregar notícias.</div>";
+  }
+}
+buscarNoticias();
+setInterval(buscarNoticias,120000); // ~tempo real
 </script>
 
 </body>
