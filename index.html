@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Intraday - Ativos de Risco x Segurança</title>
+<title>Direção Intraday - Risco x Segurança</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 <style>
 body {
@@ -22,6 +22,11 @@ body {
   margin-top:10px;
   font-weight:bold;
 }
+#percentual {
+  font-size:16px;
+  margin-top:5px;
+  color:#ccc;
+}
 </style>
 </head>
 <body>
@@ -31,6 +36,7 @@ body {
 
 <div id="grafico"></div>
 <div id="tendencia">Tendência Macro: <span id="status">Calculando...</span></div>
+<div id="percentual">Força da tendência: <span id="forca">0%</span></div>
 
 <script>
 const chart = echarts.init(document.getElementById("grafico"));
@@ -41,26 +47,22 @@ let riscoBrasil = 0, riscoMundo = 0;
 let seguroBrasil = 0, seguroMundo = 0;
 let historicoRiscoBrasil = [], historicoRiscoMundo = [];
 let historicoSeguroBrasil = [], historicoSeguroMundo = [];
+let historicoTotalRisco = [], historicoTotalSeguro = [];
+let tendenciaAnterior = "";
 
 /* =========================
-   Simula direção do dia
-   Ativos de risco: Ibovespa, S&P500, Nasdaq, Petróleo
-   Ativos de segurança: Ouro, Dólar, Títulos, VIX
+   Simula ativos do dia
 ========================= */
 async function pegarAtivosRiscoBrasil(){
-    // Simulação: ações + commodities Brasil
-    return (Math.random()*0.003-0.0015) + (Math.random()*0.002-0.001); 
+    return (Math.random()*0.003-0.0015) + (Math.random()*0.002-0.001);
 }
 async function pegarAtivosRiscoMundo(){
-    // Simulação: ações + commodities EUA/Global
     return (Math.random()*0.003-0.0015) + (Math.random()*0.002-0.001);
 }
 async function pegarAtivosSeguroBrasil(){
-    // Simulação: Ouro-BRL + Dólar-BRL
     return (Math.random()*0.002-0.001) + (Math.random()*0.001-0.0005);
 }
 async function pegarAtivosSeguroMundo(){
-    // Simulação: Ouro-USD + DXY + Títulos
     return (Math.random()*0.002-0.001) + (Math.random()*0.001-0.0005);
 }
 
@@ -83,17 +85,42 @@ async function atualizarGrafico(){
     historicoSeguroBrasil.push(seguroBrasil);
     historicoSeguroMundo.push(seguroMundo);
 
+    // Totais para gráfico de barras e força
+    const totalRisco = riscoBrasil + riscoMundo;
+    const totalSeguro = seguroBrasil + seguroMundo;
+    historicoTotalRisco.push(totalRisco);
+    historicoTotalSeguro.push(totalSeguro);
+
     if(historicoRiscoBrasil.length>480){
         historicoRiscoBrasil.shift(); historicoRiscoMundo.shift();
         historicoSeguroBrasil.shift(); historicoSeguroMundo.shift();
+        historicoTotalRisco.shift(); historicoTotalSeguro.shift();
+        eixoX.shift();
     }
 
-    // Calcula tendência macro
-    const totalRisco = riscoBrasil + riscoMundo;
-    const totalSeguro = seguroBrasil + seguroMundo;
+    // Determina tendência e força
     const status = document.getElementById("status");
-    if(totalRisco > totalSeguro) status.innerText = "Risco ON (Risk-On)";
-    else status.innerText = "Risco OFF (Risk-Off)";
+    const forca = document.getElementById("forca");
+    let tendencia = "";
+    if(totalRisco > totalSeguro){
+        tendencia = "Risco ON (Risk-On)";
+        status.style.color="#ff9800";
+    } else {
+        tendencia = "Risco OFF (Risk-Off)";
+        status.style.color="#00c853";
+    }
+    status.innerText = tendencia;
+
+    // Força percentual
+    const pct = ((Math.abs(totalRisco - totalSeguro) / (totalRisco + totalSeguro)) * 100).toFixed(2);
+    forca.innerText = pct + "%";
+
+    // Mudança de tendência (alerta visual)
+    if(tendencia !== tendenciaAnterior){
+        chart.getDom().style.border = "2px solid " + (totalRisco>totalSeguro?"#ff9800":"#00c853");
+        setTimeout(()=>{chart.getDom().style.border="none"},3000);
+    }
+    tendenciaAnterior = tendencia;
 
     // Atualiza gráfico
     chart.setOption({
@@ -102,7 +129,7 @@ async function atualizarGrafico(){
             return params.map(p=>`${p.seriesName}: ${(p.data*100).toFixed(2)}%`).join("<br>");
         }},
         legend:{
-            data:["Risco Brasil","Risco Mundo","Segurança Brasil","Segurança Mundo"],
+            data:["Risco Brasil","Risco Mundo","Segurança Brasil","Segurança Mundo","Total Risco","Total Segurança"],
             textStyle:{color:"#ccc"}
         },
         xAxis:{type:"category", data:eixoX, axisLabel:{color:"#aaa"}},
@@ -111,7 +138,9 @@ async function atualizarGrafico(){
             {name:"Risco Brasil", type:"line", smooth:true, showSymbol:false, data:historicoRiscoBrasil, lineStyle:{width:2,color:"#ff9800"}},
             {name:"Risco Mundo", type:"line", smooth:true, showSymbol:false, data:historicoRiscoMundo, lineStyle:{width:2,color:"#ff5722"}},
             {name:"Segurança Brasil", type:"line", smooth:true, showSymbol:false, data:historicoSeguroBrasil, lineStyle:{width:2,type:"dashed",color:"#00c853"}},
-            {name:"Segurança Mundo", type:"line", smooth:true, showSymbol:false, data:historicoSeguroMundo, lineStyle:{width:2,type:"dashed",color:"#d50000"}}
+            {name:"Segurança Mundo", type:"line", smooth:true, showSymbol:false, data:historicoSeguroMundo, lineStyle:{width:2,type:"dashed",color:"#d50000"}},
+            {name:"Total Risco", type:"bar", data:historicoTotalRisco, itemStyle:{color:"rgba(255,152,0,0.3)"}},
+            {name:"Total Segurança", type:"bar", data:historicoTotalSeguro, itemStyle:{color:"rgba(0,200,83,0.3)"}}
         ]
     });
 }
