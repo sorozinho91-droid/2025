@@ -2,147 +2,145 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Tendência Intraday do Dólar</title>
+<title>Direção Intraday do Dólar</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
 <style>
-body {
+body{
   background:#0e0e0e;
   color:#e0e0e0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:Arial, Helvetica, sans-serif;
   margin:20px;
 }
-#grafico {
+#grafico{
   width:100%;
   height:520px;
   background:#111;
   border-radius:8px;
 }
-h2 { margin-bottom:5px; }
-p { color:#aaa; margin-top:0; }
+h2{margin-bottom:5px}
+p{color:#aaa;margin-top:0}
 </style>
 </head>
 
 <body>
 
-<h2>Tendência Intraday do Dólar</h2>
-<p>Dados reais • Atualização automática a cada 60 segundos</p>
+<h2>Direção Intraday do Dólar</h2>
+<p>Ativos de Risco (verde) × Ativos de Segurança (vermelho) • Atualização 60s</p>
 
 <div id="grafico"></div>
 
 <script>
 /* =========================
-   CONFIGURAÇÃO
+   SUA API
 ========================= */
 const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
 const INTERVALO = "1min";
 
 /* =========================
-   ATIVOS (NENHUM DE FORA)
+   ATIVOS DA CARTEIRA
 ========================= */
-const ativos = [
-  // ATIVOS DE RISCO (se sobem, dólar tende a cair)
-  {symbol:"XAU/USD", tipo:"risco"},   // Ouro
-  {symbol:"HG", tipo:"risco"},        // Cobre
-  {symbol:"CL", tipo:"risco"},        // Petróleo
-  {symbol:"EWZ", tipo:"risco"},       // Brasil ETF
-  {symbol:"VALE", tipo:"risco"},
-  {symbol:"PBR", tipo:"risco"},
-  {symbol:"XLF", tipo:"risco"},
-  {symbol:"XLP", tipo:"risco"},
-  {symbol:"XLE", tipo:"risco"},
-  {symbol:"XME", tipo:"risco"},
-  {symbol:"EEM", tipo:"risco"},
-  {symbol:"SOXX", tipo:"risco"},
+const ativosRisco = [
+  "XAU/USD","HG","CL","EWZ","VALE","PBR",
+  "XLF","XLP","XLE","XME","EEM","SOXX"
+];
 
-  // ATIVOS DE SEGURANÇA (se sobem, dólar tende a subir)
-  {symbol:"DXY", tipo:"seguranca"},
-  {symbol:"USD/NOK", tipo:"seguranca"},
-  {symbol:"USD/AUD", tipo:"seguranca"},
-  {symbol:"USD/NZD", tipo:"seguranca"},
-  {symbol:"USD/KRW", tipo:"seguranca"},
-  {symbol:"USD/CNY", tipo:"seguranca"},
-  {symbol:"EUR/BRL", tipo:"seguranca"}
+const ativosSeguranca = [
+  "DXY","USD/NOK","USD/AUD","USD/NZD",
+  "USD/KRW","USD/CNY","EUR/BRL"
 ];
 
 /* =========================
-   BUSCA DADO REAL
+   BUSCA DIREÇÃO
 ========================= */
-async function getDirecao(symbol) {
+async function direcao(symbol){
   const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=2&apikey=${API_KEY}`;
-  try {
+  try{
     const r = await fetch(url);
     const d = await r.json();
-    if (!d.values || d.values.length < 2) return 0;
+    if(!d.values || d.values.length < 2) return 0;
 
     const atual = parseFloat(d.values[0].close);
     const anterior = parseFloat(d.values[1].close);
 
     return atual > anterior ? 1 : atual < anterior ? -1 : 0;
-  } catch {
+  }catch{
     return 0;
   }
 }
 
 /* =========================
-   SCORE DO DÓLAR
+   SCORE MÉDIO POR GRUPO
 ========================= */
-async function calcularScore() {
-  let score = 0;
-  let total = 0;
-
-  for (let a of ativos) {
-    const dir = await getDirecao(a.symbol);
-    if (dir !== 0) {
+async function scoreGrupo(lista){
+  let soma = 0, total = 0;
+  for(let s of lista){
+    const d = await direcao(s);
+    if(d !== 0){
+      soma += d;
       total++;
-      score += a.tipo === "seguranca" ? dir : -dir;
     }
   }
-  return total ? +(score / total).toFixed(2) : 0;
+  return total ? +(soma / total).toFixed(2) : 0;
 }
 
 /* =========================
    GRÁFICO
 ========================= */
 const chart = echarts.init(document.getElementById("grafico"));
-let historico = [];
+let horas = [], risco = [], seguranca = [];
 
-async function atualizar() {
+async function atualizar(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-  const score = await calcularScore();
 
-  historico.push({hora, score});
-  if (historico.length > 120) historico.shift();
+  const scoreRisco = await scoreGrupo(ativosRisco);
+  const scoreSeg = await scoreGrupo(ativosSeguranca);
+
+  horas.push(hora);
+  risco.push(scoreRisco);
+  seguranca.push(scoreSeg);
+
+  if(horas.length > 120){
+    horas.shift();
+    risco.shift();
+    seguranca.shift();
+  }
 
   chart.setOption({
     backgroundColor:"#111",
+    tooltip:{trigger:"axis"},
+    legend:{
+      data:["Ativos de Risco","Ativos de Segurança"],
+      textStyle:{color:"#ccc"}
+    },
     xAxis:{
       type:"category",
-      data:historico.map(h=>h.hora),
+      data:horas,
       axisLabel:{color:"#aaa"}
     },
     yAxis:{
       min:-1,
       max:1,
-      axisLabel:{color:"#aaa"},
-      splitLine:{lineStyle:{color:"#222"}}
+      splitLine:{lineStyle:{color:"#222"}},
+      axisLabel:{color:"#aaa"}
     },
-    visualMap:{
-      show:false,
-      pieces:[
-        {gt:0.25, color:"#00c853"},     // Alta do dólar
-        {gte:-0.25, lte:0.25, color:"#9e9e9e"}, // Neutro
-        {lt:-0.25, color:"#d50000"}     // Baixa do dólar
-      ]
-    },
-    series:[{
-      type:"line",
-      smooth:true,
-      data:historico.map(h=>h.score),
-      symbolSize:6,
-      lineStyle:{width:2}
-    }]
+    series:[
+      {
+        name:"Ativos de Risco",
+        type:"line",
+        smooth:true,
+        data:risco,
+        lineStyle:{width:2,color:"#00c853"} // VERDE
+      },
+      {
+        name:"Ativos de Segurança",
+        type:"line",
+        smooth:true,
+        data:seguranca,
+        lineStyle:{width:2,color:"#d50000"} // VERMELHO
+      }
+    ]
   });
 }
 
