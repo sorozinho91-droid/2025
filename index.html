@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Intraday do Dólar</title>
+<title>Risco x Segurança – Intraday Dólar</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -27,19 +27,19 @@ p{color:#aaa;margin-top:0}
 <body>
 
 <h2>Direção Intraday do Dólar</h2>
-<p>Ativos de Risco (verde) × Ativos de Segurança (vermelho) • Atualização 60s</p>
+<p>Histórico do dia + atualização automática a cada 60s</p>
 
 <div id="grafico"></div>
 
 <script>
 /* =========================
-   SUA API
+   API
 ========================= */
 const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
 const INTERVALO = "1min";
 
 /* =========================
-   ATIVOS DA CARTEIRA
+   ATIVOS
 ========================= */
 const ativosRisco = [
   "XAU/USD","HG","CL","EWZ","VALE","PBR",
@@ -52,60 +52,60 @@ const ativosSeguranca = [
 ];
 
 /* =========================
-   BUSCA DIREÇÃO
+   BUSCA SÉRIE INTRADAY
 ========================= */
-async function direcao(symbol){
-  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=2&apikey=${API_KEY}`;
+async function serie(symbol){
+  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=390&apikey=${API_KEY}`;
   try{
     const r = await fetch(url);
     const d = await r.json();
-    if(!d.values || d.values.length < 2) return 0;
-
-    const atual = parseFloat(d.values[0].close);
-    const anterior = parseFloat(d.values[1].close);
-
-    return atual > anterior ? 1 : atual < anterior ? -1 : 0;
+    return d.values ? d.values.reverse() : [];
   }catch{
-    return 0;
+    return [];
   }
 }
 
 /* =========================
-   SCORE MÉDIO POR GRUPO
+   CALCULA SCORE HISTÓRICO
 ========================= */
-async function scoreGrupo(lista){
-  let soma = 0, total = 0;
-  for(let s of lista){
-    const d = await direcao(s);
-    if(d !== 0){
-      soma += d;
-      total++;
+async function gerarHistorico(){
+  const base = await serie(ativosSeguranca[0]);
+  let horas=[], risco=[], seguranca=[];
+
+  for(let i=1;i<base.length;i++){
+    let sr=0,tr=0,ss=0,ts=0;
+
+    for(const a of ativosRisco){
+      const s = await serie(a);
+      if(s[i] && s[i-1]){
+        const d = s[i].close > s[i-1].close ? 1 : s[i].close < s[i-1].close ? -1 : 0;
+        if(d!==0){ sr+=d; tr++; }
+      }
     }
+
+    for(const a of ativosSeguranca){
+      const s = await serie(a);
+      if(s[i] && s[i-1]){
+        const d = s[i].close > s[i-1].close ? 1 : s[i].close < s[i-1].close ? -1 : 0;
+        if(d!==0){ ss+=d; ts++; }
+      }
+    }
+
+    horas.push(base[i].datetime.slice(11,16));
+    risco.push(tr? +(sr/tr).toFixed(2):0);
+    seguranca.push(ts? +(ss/ts).toFixed(2):0);
   }
-  return total ? +(soma / total).toFixed(2) : 0;
+
+  return {horas, risco, seguranca};
 }
 
 /* =========================
    GRÁFICO
 ========================= */
 const chart = echarts.init(document.getElementById("grafico"));
-let horas = [], risco = [], seguranca = [];
 
-async function atualizar(){
-  const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-
-  const scoreRisco = await scoreGrupo(ativosRisco);
-  const scoreSeg = await scoreGrupo(ativosSeguranca);
-
-  horas.push(hora);
-  risco.push(scoreRisco);
-  seguranca.push(scoreSeg);
-
-  if(horas.length > 120){
-    horas.shift();
-    risco.shift();
-    seguranca.shift();
-  }
+async function iniciar(){
+  const h = await gerarHistorico();
 
   chart.setOption({
     backgroundColor:"#111",
@@ -116,7 +116,7 @@ async function atualizar(){
     },
     xAxis:{
       type:"category",
-      data:horas,
+      data:h.horas,
       axisLabel:{color:"#aaa"}
     },
     yAxis:{
@@ -130,25 +130,24 @@ async function atualizar(){
         name:"Ativos de Risco",
         type:"line",
         smooth:true,
-        data:risco,
-        lineStyle:{width:2,color:"#00c853"} // VERDE
+        data:h.risco,
+        lineStyle:{width:2,color:"#00c853"}
       },
       {
         name:"Ativos de Segurança",
         type:"line",
         smooth:true,
-        data:seguranca,
-        lineStyle:{width:2,color:"#d50000"} // VERMELHO
+        data:h.seguranca,
+        lineStyle:{width:2,color:"#d50000"}
       }
     ]
   });
 }
 
 /* =========================
-   LOOP AUTOMÁTICO
+   START
 ========================= */
-atualizar();
-setInterval(atualizar, 60000);
+iniciar();
 </script>
 
 </body>
