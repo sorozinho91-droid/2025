@@ -3,274 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <title>Sentimento do Mercado Global</title>
-<style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-height:100vh; }
-header { background:#1f2937; color:white; padding:10px; text-align:center; width:100%; }
-#relogio { text-align:center; font-size:16px; margin:10px 0; font-weight:bold; }
 
-/* Tabela centralizada */
-#tabelaSentimento {
-    width:550px;
-    font-size:14px;
-    background:#fff;
-    border-collapse:collapse;
-    box-shadow:0 2px 6px rgba(0,0,0,0.1);
-    margin-top:20px;
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
-#tabelaSentimento th, #tabelaSentimento td {
-    padding:6px;
-    border:1px solid #ccc;
-    text-align:center;
+
+header {
+  width:100%;
+  background:#1f2937;
+  color:#fff;
+  padding:10px;
+  text-align:center;
 }
-#tabelaSentimento thead th { background:#2563eb; color:white; }
+
+#relogio {
+  margin:10px;
+  font-weight:bold;
+}
+
+table {
+  width:560px;
+  background:#fff;
+  border-collapse:collapse;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+
+th, td {
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+}
+
+th {
+  background:#2563eb;
+  color:white;
+}
+
 .risco { color:green; font-weight:bold; }
 .seguro { color:red; font-weight:bold; }
 
-/* Barra de Sentimento */
 #sentimentoBarContainer {
-    width:550px;
-    height:30px;
-    background:#e5e7eb;
-    border-radius:6px;
-    margin:20px 0;
-    overflow:hidden;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
-#sentimentoBar {
-    height:100%;
-    width:50%;
-    background: linear-gradient(to right, red, green);
-    text-align:center;
-    line-height:30px;
-    color:white;
-    font-weight:bold;
-    transition: width 0.5s;
-}
-
-/* BREAKING NEWS */
-#painel-news{
-  position:fixed;
-  top:28px;
-  right:10px;
-  width:360px;
-  background:#111827;
-  color:white;
+  width:560px;
+  height:28px;
+  background:#e5e7eb;
   border-radius:6px;
-  box-shadow:0 4px 8px rgba(0,0,0,0.3);
-  z-index:9998;
+  margin:20px 0;
+  overflow:hidden;
 }
-.news-header{ text-align:center; font-weight:bold; padding:8px; background:#1f2937; border-radius:6px 6px 0 0; }
-#newsList{ max-height:260px; overflow-y:auto; font-size:13px; }
-.news-item{ padding:8px; border-bottom:1px solid #374151; }
-.news-item a{ color:#93c5fd; text-decoration:none; }
-.breaking{ animation:piscar 1s infinite; }
-@keyframes piscar{ 0%{background:#7f1d1d;} 50%{background:#dc2626;} 100%{background:#7f1d1d;} }
 
-/* ALERTA MERCADO */
-#alerta-mercado { position: fixed; top:32px; left:10px; width:280px; background: #ffffff; border-left: 5px solid #c00000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: Arial, sans-serif; font-size: 12px; z-index:9999; }
-.alerta-header { background: #c00000; color: #fff; font-weight: bold; text-align: center; padding: 6px; font-size: 11px; }
-#alerta-conteudo { padding: 8px; line-height: 1.3; }
-.piscar { animation:pisca 1s infinite; }
-@keyframes pisca { 0% { background: #ffffff; } 50% { background: #ffe5e5; } 100% { background: #ffffff; } }
+#sentimentoBar {
+  height:100%;
+  width:50%;
+  background:linear-gradient(to right, red, green);
+  color:white;
+  font-weight:bold;
+  text-align:center;
+  line-height:28px;
+  transition:width .6s;
+}
 </style>
 </head>
+
 <body>
 
 <header>
-<h2>Sentimento Real do Mercado Global</h2>
+  <h2>Sentimento do Mercado Global</h2>
 </header>
 
 <div id="relogio"></div>
 
-<!-- Tabela centralizada -->
-<table id="tabelaSentimento">
+<table id="tabela">
 <thead>
-<tr><th>Ativo</th><th>Sentimento</th><th>Variação</th></tr>
+<tr>
+  <th>Ativo</th>
+  <th>Classe</th>
+  <th>Variação (%)</th>
+</tr>
 </thead>
 <tbody>
-<tr id="loading"><td colspan="3">Carregando dados reais...</td></tr>
+<tr><td colspan="3">Carregando dados...</td></tr>
 </tbody>
 </table>
 
-<!-- Barra de Sentimento -->
 <div id="sentimentoBarContainer">
-    <div id="sentimentoBar">50% Apetite ao Risco</div>
+  <div id="sentimentoBar">50% Neutro</div>
 </div>
-
-<!-- BREAKING NEWS -->
-<div id="painel-news">
-  <div class="news-header">🚨 BREAKING NEWS – Macro</div>
-  <div id="newsList"><div id="aguardando" class="news-item">Aguardando notícias...</div></div>
-</div>
-<audio id="alertSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alert-alarm-1005.mp3"></audio>
-
-<!-- ALERTA MERCADO -->
-<div id="alerta-mercado">
-  <div class="alerta-header">⚠️ ALERTA MERCADO</div>
-  <div id="alerta-conteudo">Aguardando notícias...</div>
-</div>
-<audio id="alerta-som" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
-// ===== Horário de Brasília =====
-function agoraBrasilia(){
-    const agora = new Date();
-    const offset = -3;
-    const utc = agora.getTime() + (agora.getTimezoneOffset()*60000);
-    return new Date(utc + (3600000*offset));
+/* ================== RELÓGIO BR ================== */
+function relogioBR(){
+  const d = new Date();
+  const utc = d.getTime() + d.getTimezoneOffset()*60000;
+  const br = new Date(utc - 3*3600000);
+  document.getElementById("relogio").textContent =
+    "Horário de Brasília: " + br.toLocaleTimeString();
 }
+setInterval(relogioBR,1000);
+relogioBR();
 
-// ===== Relógio =====
-function atualizarRelogio(){
-    const agora = agoraBrasilia();
-    const h = String(agora.getHours()).padStart(2,'0');
-    const m = String(agora.getMinutes()).padStart(2,'0');
-    const s = String(agora.getSeconds()).padStart(2,'0');
-    document.getElementById('relogio').textContent = `Horário de Brasília: ${h}:${m}:${s}`;
-}
-setInterval(atualizarRelogio,1000);
-atualizarRelogio();
+/* ================== CONFIG ================== */
+const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
 
-// ===== Ativos Reais =====
-const ativosRisco = [
-  {nome:"S&P 500", proName:"INDEX:SPX"},
-  {nome:"Nasdaq", proName:"INDEX:NDX"},
-  {nome:"Dow Jones", proName:"INDEX:DJI"},
-  {nome:"FTSE 100", proName:"INDEX:UKX"},
-  {nome:"DAX", proName:"INDEX:DAX"},
-  {nome:"Hang Seng", proName:"INDEX:HSI"},
-  {nome:"Ouro", proName:"COMEX:GC1!"},
-  {nome:"Petróleo WTI", proName:"NYMEX:CL1!"}
-];
-const ativosSeguro = [
-  {nome:"DXY", proName:"FOREXCOM:DX1!"},
-  {nome:"VIX", proName:"CBOE:VIX"},
-  {nome:"Tesouro EUA 10y", proName:"CURRENCY:US10Y"},
-  {nome:"Ouro Físico", proName:"COMEX:GC1!"},
-  {nome:"Franco Suíço", proName:"FOREXCOM:CHFUSD"},
-  {nome:"Títulos Alemães 10y", proName:"TVC:DE10Y"},
-  {nome:"Iene Japonês", proName:"FOREXCOM:JPYUSD"}
+/*
+CLASSES:
+- RISCO: ações
+- SEGURANÇA: dólar, ouro
+Símbolos escolhidos porque EXISTEM no Alpha Vantage
+*/
+const ativos = [
+  { nome:"S&P 500", classe:"risco", symbol:"SPY" },
+  { nome:"Nasdaq", classe:"risco", symbol:"QQQ" },
+  { nome:"Dow Jones", classe:"risco", symbol:"DIA" },
+  { nome:"Dólar (UUP)", classe:"seguro", symbol:"UUP" },
+  { nome:"Ouro", classe:"seguro", commodity:true }
 ];
 
-// Fetch TradingView
-async function fetchTradingViewPrice(symbol){
-    const url = `https://api.allorigins.win/raw?url=https://s3.tradingview.com/symbols/${symbol.replace(":","_")}.json`;
+let indice = 0;
+let ultimos = {};
+
+/* ================== FETCH ================== */
+async function buscarAtivo(ativo){
+  if(ativo.commodity){
+    const url = `https://www.alphavantage.co/query?function=COMMODITY_EXCHANGE_RATE&from_symbol=XAU&to_symbol=USD&apikey=${API_KEY}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    return Number(j["Realtime Commodity Exchange Rate"]?.["5. Exchange Rate"]);
+  } else {
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ativo.symbol}&apikey=${API_KEY}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    return Number(j["Global Quote"]?.["10. change percent"]?.replace("%",""));
+  }
+}
+
+/* ================== ATUALIZA ================== */
+async function atualizar(){
+  const tbody = document.querySelector("#tabela tbody");
+  tbody.innerHTML = "";
+
+  let scoreRisco = 0;
+  let scoreSeguro = 0;
+
+  for(const ativo of ativos){
+    let variacao = 0;
+
     try{
-        const res = await fetch(url);
-        const json = await res.json();
-        return json.last_price || json.close || 0;
-    }catch(e){ return 0; }
+      if(ativo.commodity){
+        const preco = await buscarAtivo(ativo);
+        const prev = ultimos[ativo.nome] ?? preco;
+        variacao = ((preco - prev) / prev * 100);
+        ultimos[ativo.nome] = preco;
+      } else {
+        variacao = await buscarAtivo(ativo);
+      }
+    }catch(e){ variacao = 0; }
+
+    if(ativo.classe === "risco") scoreRisco += variacao;
+    else scoreSeguro += variacao;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${ativo.nome}</td>
+      <td class="${ativo.classe}">${ativo.classe.toUpperCase()}</td>
+      <td>${variacao.toFixed(2)}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  /* ===== SENTIMENTO ===== */
+  const total = Math.abs(scoreRisco) + Math.abs(scoreSeguro) || 1;
+  const riscoPct = Math.round((scoreRisco + total) / (2*total) * 100);
+
+  const bar = document.getElementById("sentimentoBar");
+  bar.style.width = riscoPct + "%";
+  bar.textContent =
+    riscoPct > 55 ? `${riscoPct}% Apetite ao Risco` :
+    riscoPct < 45 ? `${riscoPct}% Busca por Segurança` :
+    `${riscoPct}% Neutro`;
 }
 
-// ===== Atualizar Sentimento =====
-async function atualizarSentimento(){
-    const tbody = document.querySelector("#tabelaSentimento tbody");
-    tbody.innerHTML = "";
-    let somaRisco=0, somaSeguro=0;
-    function variacaoSafe(novo, antigo){ return (!novo||!antigo)?0:((novo-antigo)/antigo*100).toFixed(2); }
-
-    for(const a of ativosRisco){
-        const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
-        const variacao = variacaoSafe(valor, a.ultimoValor || valor);
-        a.ultimoValor = valor;
-        somaRisco += parseFloat(variacao);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.nome}</td><td class="risco">Risco</td><td>${variacao}%</td>`;
-        tbody.appendChild(tr);
-    }
-
-    for(const a of ativosSeguro){
-        const valor = await fetchTradingViewPrice(a.proName) || a.ultimoValor || 0;
-        const variacao = variacaoSafe(valor, a.ultimoValor || valor);
-        a.ultimoValor = valor;
-        somaSeguro += parseFloat(variacao);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${a.nome}</td><td class="seguro">Segurança</td><td>${variacao}%</td>`;
-        tbody.appendChild(tr);
-    }
-
-    // Barra de Sentimento com gradiente
-    const total = somaRisco+somaSeguro||1;
-    const riscoPercent = Math.round((somaRisco+total)/(2*total)*100); // 0-100%
-    const bar = document.getElementById("sentimentoBar");
-    bar.style.width = riscoPercent + "%";
-    bar.textContent = `${riscoPercent}% ${riscoPercent>50?"Apetite ao Risco":"Busca por Segurança"}`;
-}
-atualizarSentimento();
-setInterval(atualizarSentimento,60000);
-
-// ===== BREAKING NEWS =====
-const palavras = ["fed","cpi","juros","taxa","guerra","war","inflação","inflation","banco central","central bank"];
-const lista = document.getElementById("newsList");
-const painel = document.getElementById("painel-news");
-const header = document.querySelector(".news-header");
-const som = document.getElementById("alertSound");
-let cache = {}; let alertaAtivo=false;
-async function buscarNoticias(){
-  const query = palavras.join(" OR ");
-  const rss = "https://news.google.com/rss/search?q=" + encodeURIComponent(query) + "&hl=pt-BR&gl=BR&ceid=BR:pt";
-  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rss);
-  try{
-    const res = await fetch(url);
-    const text = await res.text();
-    const xml = new DOMParser().parseFromString(text,"text/xml");
-    const items = xml.querySelectorAll("item");
-    items.forEach(item=>{
-        const titulo=item.querySelector("title")?.textContent||"";
-        const link=item.querySelector("link")?.textContent||"";
-        if(!titulo || cache[link]) return;
-        const t=titulo.toLowerCase();
-        if(!palavras.some(p=>t.includes(p))) return;
-        cache[link]=true;
-        document.getElementById("aguardando")?.remove();
-        const div=document.createElement("div");
-        div.className="news-item";
-        div.innerHTML=`<strong>🚨 ${titulo}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
-        lista.prepend(div);
-        if(!alertaAtivo){
-            alertaAtivo=true;
-            painel.classList.add("breaking"); 
-            header.classList.add("breaking");
-            som.play().catch(()=>{});
-            setTimeout(()=>{
-              painel.classList.remove("breaking"); 
-              header.classList.remove("breaking"); 
-              alertaAtivo=false;
-            },12000);
-        }
-    });
-  }catch(e){console.error("Erro news:",e);}
-}
-buscarNoticias(); 
-setInterval(buscarNoticias,30000);
-
-// ===== ALERTA MERCADO =====
-const alertaConteudo = document.getElementById("alerta-conteudo");
-const alertaBox = document.getElementById("alerta-mercado");
-const alertaSom = document.getElementById("alerta-som");
-const rssUrl = "https://news.google.com/rss/search?q=presidente+EUA+OR+presidente+Brasil+juros+mercado+financeiro&hl=pt-BR&gl=BR&ceid=BR:pt";
-const proxy = "https://api.allorigins.win/raw?url=";
-let ultimaNoticia = "";
-async function buscarNoticiasAlerta(){
-    try{
-        const res = await fetch(proxy + encodeURIComponent(rssUrl));
-        const texto = await res.text();
-        const xml = new DOMParser().parseFromString(texto,"text/xml");
-        const item = xml.querySelector("item");
-        if(!item) return;
-        const titulo=item.querySelector("title").textContent;
-        const link=item.querySelector("link").textContent;
-        if(titulo!==ultimaNoticia){
-            ultimaNoticia=titulo;
-            alertaConteudo.innerHTML='📰 <a href="'+link+'" target="_blank" style="color:#000;text-decoration:none;">'+titulo+'</a>';
-            alertaBox.classList.add("piscar"); 
-            alertaSom.play().catch(()=>{});
-            setTimeout(()=>alertaBox.classList.remove("piscar"),15000);
-        }
-    }catch(e){console.log("Erro ao buscar notícias alerta");}
-}
-buscarNoticiasAlerta(); 
-setInterval(buscarNoticiasAlerta,60000);
+/*
+Alpha Vantage free:
+5 req / minuto
+→ 1 ciclo completo a cada 70s é seguro
+*/
+atualizar();
+setInterval(atualizar, 70000);
 </script>
 
 </body>
