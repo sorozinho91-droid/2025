@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Intraday do Dólar (Simulada Tendência)</title>
+<title>Comparação de Ativos - Risco x Segurança</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -32,153 +32,130 @@ body{
 
 <body>
 
-<h2>Direção Intraday do Dólar (Simulada Tendência)</h2>
-<p>Risco × Segurança (dados simulados) • Atualização 60s</p>
+<h2>Comparação de Ativos - Risco x Segurança</h2>
+<p>Dados em tempo real • Atualização 30s</p>
 
 <div id="grafico"></div>
 <div id="sinal" class="neutro">SINAL: AGUARDANDO DADOS…</div>
 
 <script>
-/* =========================
-   GRÁFICO
-========================= */
 const chart = echarts.init(document.getElementById("grafico"));
 
 let eixoX = [];
-let serieRisco = [];
-let serieSeg = [];
-let serieDiff = [];
+let ativos = ["USD-BRL", "BTC-BRL", "Ouro"]; // ativos para comparação
+let ultimoValores = {}; // armazena últimos valores
+let seriesData = {}; // armazena série de cada ativo
 
-/* =========================
-   FUNÇÃO DE SIMULAÇÃO COM TENDÊNCIA
-========================= */
-let tendencia = 0; 
+// inicializa séries
+ativos.forEach(a => seriesData[a] = {risco:[], seguranca:[]});
 
-function gerarDirecaoTendencia(){
-  const delta = (Math.random() - 0.5) * 0.2; 
-  tendencia += delta;
-  if(tendencia > 1) tendencia = 1;
-  if(tendencia < -1) tendencia = -1;
-  return tendencia;
-}
-
-function scoreRiscoSimulado(){
-  let soma = 0, total = 5;
-  for(let i=0;i<total;i++){
-    soma += gerarDirecaoTendencia();
+async function pegarValorAtivo(ativo){
+  try{
+    if(ativo === "USD-BRL"){
+      const res = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+      const data = await res.json();
+      return parseFloat(data.USDBRL.bid);
+    }else if(ativo === "BTC-BRL"){
+      const res = await fetch('https://economia.awesomeapi.com.br/json/last/BTC-BRL');
+      const data = await res.json();
+      return parseFloat(data.BTCBRL.bid);
+    }else if(ativo === "Ouro"){
+      // API simulada: Ouro em BRL/grama
+      const res = await fetch('https://www.quandl.com/api/v3/datasets/LBMA/GOLD.json?rows=1&api_key=demo'); 
+      const data = await res.json();
+      return parseFloat(data.dataset.data[0][1]); // preço do ouro
+    }
+  }catch(err){
+    console.error("Erro ao buscar ativo", ativo, err);
+    return null;
   }
-  return soma / total;
 }
 
-function scoreSegurancaSimulado(){
-  let soma = 0;
-  let pesos = [3,1,1,1,1,1,1];
-  for(let i=0;i<pesos.length;i++){
-    soma += -gerarDirecaoTendencia() * pesos[i]; // <- inverter direção para caminhar oposto
+function calcularIndicadores(valorAtual, ativo){
+  let r=0, s=0;
+  if(ultimoValores[ativo] !== undefined){
+    const delta = valorAtual - ultimoValores[ativo];
+    const percentual = delta / ultimoValores[ativo];
+    r = percentual;
+    s = -percentual;
   }
-  const totalPeso = pesos.reduce((a,b)=>a+b,0);
-  return soma / totalPeso;
+  ultimoValores[ativo] = valorAtual;
+  return [r, s];
 }
 
-/* =========================
-   ATUALIZAÇÃO DO GRÁFICO
-========================= */
-function atualizarSimulado(){
-  const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-
-  const r = scoreRiscoSimulado();
-  const s = scoreSegurancaSimulado();
-  const d = +(s - r).toFixed(2);
-
+async function atualizarGrafico(){
+  const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   eixoX.push(hora);
-  serieRisco.push(+r.toFixed(2));
-  serieSeg.push(+s.toFixed(2));
-  serieDiff.push(d);
+  if(eixoX.length > 120) eixoX.shift();
 
-  if(eixoX.length > 120){
-    eixoX.shift();
-    serieRisco.shift();
-    serieSeg.shift();
-    serieDiff.shift();
+  let sinalTexto = "";
+  let sinalClass = "neutro";
+
+  // para cada ativo, buscar valor e atualizar séries
+  for(let ativo of ativos){
+    const valor = await pegarValorAtivo(ativo);
+    if(valor === null) continue;
+
+    const [r, s] = calcularIndicadores(valor, ativo);
+
+    seriesData[ativo].risco.push(+r.toFixed(4));
+    seriesData[ativo].seguranca.push(+s.toFixed(4));
+
+    if(seriesData[ativo].risco.length > 120){
+      seriesData[ativo].risco.shift();
+      seriesData[ativo].seguranca.shift();
+    }
+
+    // sinal baseado no último ativo como exemplo
+    if(s - r > 0.0025){ sinalTexto="COMPRA"; sinalClass="compra"; }
+    else if(s - r < -0.0025){ sinalTexto="VENDA"; sinalClass="venda"; }
+    else{ sinalTexto="NEUTRO"; sinalClass="neutro"; }
   }
 
-  /* ===== SINAL ===== */
-  const sinal = document.getElementById("sinal");
-  if(d > 0.25){
-    sinal.textContent = "SINAL: COMPRA DÓLAR";
-    sinal.className = "compra";
-  }else if(d < -0.25){
-    sinal.textContent = "SINAL: VENDA DÓLAR";
-    sinal.className = "venda";
-  }else{
-    sinal.textContent = "SINAL: NEUTRO";
-    sinal.className = "neutro";
+  document.getElementById("sinal").textContent = "SINAL: "+sinalTexto;
+  document.getElementById("sinal").className = sinalClass;
+
+  // montar séries para o gráfico
+  const series = [];
+  for(let ativo of ativos){
+    series.push({
+      name: ativo+" Risco",
+      type:"line",
+      smooth:true,
+      showSymbol:false,
+      data:seriesData[ativo].risco,
+      lineStyle:{width:2}
+    });
+    series.push({
+      name: ativo+" Segurança",
+      type:"line",
+      smooth:true,
+      showSymbol:false,
+      data:seriesData[ativo].seguranca,
+      lineStyle:{width:2,type:"dashed"}
+    });
   }
 
   chart.setOption({
     backgroundColor:"#111",
-    tooltip:{
-      trigger:"axis",
-      formatter: function(params){
-        return params.map(p => `${p.seriesName}: ${p.data.toFixed(2)}`).join("<br>");
-      }
-    },
-    legend:{
-      data:["Risco","Segurança","Diferença"],
-      textStyle:{color:"#ccc"}
-    },
-    xAxis:{
-      type:"category",
-      data:eixoX,
-      axisLabel:{color:"#aaa"}
-    },
+    tooltip:{trigger:"axis"},
+    legend:{data:series.map(s=>s.name),textStyle:{color:"#ccc"}},
+    xAxis:{type:"category", data:eixoX, axisLabel:{color:"#aaa"}},
     yAxis:{
       scale:true,
-      axisLabel:{color:"#aaa"},
+      axisLabel:{
+        formatter: v => (v*100).toFixed(2)+"%",
+        color:"#aaa"
+      },
       splitLine:{lineStyle:{color:"#222"}}
     },
-    series:[
-      {
-        name:"Risco",
-        type:"line",
-        smooth:true,
-        showSymbol:false,
-        data:serieRisco,
-        lineStyle:{color:"#00c853",width:2}
-      },
-      {
-        name:"Segurança",
-        type:"line",
-        smooth:true,
-        showSymbol:false,
-        data:serieSeg,
-        lineStyle:{color:"#d50000",width:2,type:"dashed"} // linha tracejada
-      },
-      {
-        name:"Diferença",
-        type:"line",
-        smooth:true,
-        showSymbol:true,
-        symbol:"circle",
-        symbolSize:6,
-        data:serieDiff,
-        lineStyle:{color:"#ffeb3b",width:3},
-        markLine:{
-          data:[
-            {yAxis:0.25, name:"Limite Compra", lineStyle:{color:"#00c853",type:"dashed"}},
-            {yAxis:-0.25, name:"Limite Venda", lineStyle:{color:"#d50000",type:"dashed"}}
-          ]
-        }
-      }
-    ]
+    series:series
   });
 }
 
-/* =========================
-   LOOP 60s
-========================= */
-atualizarSimulado();
-setInterval(atualizarSimulado, 60000);
+// Atualizar a cada 30 segundos
+atualizarGrafico();
+setInterval(atualizarGrafico, 30000);
 </script>
 
 </body>
