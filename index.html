@@ -2,184 +2,243 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard de Mercado</title>
-
+<title>Dashboard – Linha do Tempo Risco x Segurança</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background: #f5f5f5;
-}
-
-h2, h3 { margin-top: 20px; }
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  background: #fff;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
-}
-
-th {
-  background: #333;
-  color: white;
-}
-
-td.positivo { color: green; font-weight: bold; }
-td.negativo { color: red; font-weight: bold; }
-
-#ultima-atualizacao {
-  margin-top: 10px;
-  font-weight: bold;
-}
+body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; }
+header { background:#1f2937; color:white; padding:15px; text-align:center; }
+#controls, #compareDates { text-align:center; padding:10px; }
+button { margin:5px; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; background:#e5e7eb; }
+button.active { background:#2563eb; color:white; }
+#grafico { width:90%; max-width:1200px; height:400px; margin:20px auto; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+table { width:90%; max-width:1200px; margin:20px auto; border-collapse: collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+th, td { padding:8px; border:1px solid #ccc; text-align:center; font-size:14px;}
+thead th { background:#2563eb; color:white;}
+.risco { color:green; }        /* Risco verde */
+.seguro { color:red; }         /* Segurança vermelho */
+.positivo { color:green; }
+.negativo { color:red; }
 </style>
 </head>
-
 <body>
 
-<h2>Cotações de Ativos (Alpha Vantage)</h2>
+<header>
+<h2>Risco x Segurança – Linha do Tempo (Tempo Real)</h2>
+</header>
 
-<h3>Segurança</h3>
-<table>
+<div id="controls">
+<button onclick="setTimeframe(60,this)" class="active">60s</button>
+<button onclick="setTimeframe(1,this)">1m</button>
+<button onclick="setTimeframe(5,this)">5m</button>
+</div>
+
+<div id="compareDates">
+<label>Início: <input type="datetime-local" id="startDate"></label>
+<label>Fim: <input type="datetime-local" id="endDate"></label>
+<button onclick="filtrarPorData()">Comparar</button>
+<button onclick="resetGrafico()">Resetar</button>
+</div>
+
+<div id="grafico"></div>
+
+<!-- Tabelas de Ativos -->
+<table id="tabelaRisco">
 <thead>
-<tr>
-  <th>Ativo</th>
-  <th>Último</th>
-  <th>Variação</th>
-  <th>%</th>
-</tr>
+<tr><th>Ativo de Risco</th><th>Valor Atual</th><th>Variação (%)</th></tr>
 </thead>
-<tbody>
-<tr><td>Ouro</td><td id="gold-price">-</td><td id="gold-change">-</td><td id="gold-percent">-</td></tr>
-<tr><td>Dólar (UUP)</td><td id="dxy-price">-</td><td id="dxy-change">-</td><td id="dxy-percent">-</td></tr>
-</tbody>
+<tbody></tbody>
 </table>
 
-<h3>Risco</h3>
-<table>
+<table id="tabelaSeguro">
 <thead>
-<tr>
-  <th>Ativo</th>
-  <th>Último</th>
-  <th>Variação</th>
-  <th>%</th>
-</tr>
+<tr><th>Ativo de Segurança</th><th>Valor Atual</th><th>Variação (%)</th></tr>
 </thead>
-<tbody>
-<tr><td>S&P 500 (SPY)</td><td id="sp-price">-</td><td id="sp-change">-</td><td id="sp-percent">-</td></tr>
-<tr><td>Nasdaq (QQQ)</td><td id="nasdaq-price">-</td><td id="nasdaq-change">-</td><td id="nasdaq-percent">-</td></tr>
-</tbody>
+<tbody></tbody>
 </table>
-
-<div id="ultima-atualizacao">Última atualização: --:--:--</div>
-
-<h2>Gráfico Intraday</h2>
-<div id="grafico" style="height:300px;background:#fff;border-radius:6px;"></div>
 
 <script>
-const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
+// ==== Variáveis ====
+let datas = [];
+let risco = [];
+let seguro = [];
+let valorRisco = 100;
+let valorSeguro = 100;
+let timer = null;
+let filtered = false;
+let filteredStart, filteredEnd;
+let timeframe = 60; // segundos
 
-/* ================= CONFIGURAÇÃO DOS ATIVOS ================= */
-const ativos = [
-  {
-    id: "gold",
-    nome: "Ouro",
-    url: () =>
-      `https://www.alphavantage.co/query?function=COMMODITY_EXCHANGE_RATE&from_symbol=XAU&to_symbol=USD&apikey=${API_KEY}`,
-    parser: d =>
-      Number(d["Realtime Commodity Exchange Rate"]?.["5. Exchange Rate"])
-  },
-  {
-    id: "dxy",
-    nome: "Dólar",
-    url: () =>
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=UUP&apikey=${API_KEY}`,
-    parser: d =>
-      Number(d["Global Quote"]?.["05. price"])
-  },
-  {
-    id: "sp",
-    nome: "S&P 500",
-    url: () =>
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=${API_KEY}`,
-    parser: d =>
-      Number(d["Global Quote"]?.["05. price"])
-  },
-  {
-    id: "nasdaq",
-    nome: "Nasdaq",
-    url: () =>
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=${API_KEY}`,
-    parser: d =>
-      Number(d["Global Quote"]?.["05. price"])
-  }
+// Ativos de Risco
+let ativosRisco = [
+    {nome:"Ouro Futuros", valor:2766.2},
+    {nome:"Cobre Futuros", valor:4.2315},
+    {nome:"Petróleo WTI", valor:73.17},
+    {nome:"Minério de Ferro", valor:56.72},
+    {nome:"Vale SA ADR", valor:9.16},
+    {nome:"Petrobras ADR", valor:13.88},
+    {nome:"Soja Chicago", valor:1045},
+    {nome:"Oslo All Share", valor:1709.43},
+    {nome:"Dow Jones Futuros", valor:44904},
+    {nome:"The Global Dow USD", valor:5079.14},
+    {nome:"BSE Sensex 30", valor:75366.17},
+    {nome:"Hang Seng Futuros", valor:20430.5},
+    {nome:"China A50 Futuros", valor:12983},
+    {nome:"SZSE Component", valor:10292.73},
+    {nome:"Shanghai Composite", valor:3252.63},
+    {nome:"Financial Select Sector", valor:51.41},
+    {nome:"Consumer Staples", valor:80.01},
+    {nome:"Energy Select Sector", valor:90.36},
+    {nome:"SPDR Metals & Mining", valor:58.68},
+    {nome:"iShares MSCI Emerging Markets", valor:42.17},
+    {nome:"iShares Semiconductor ETF", valor:212.55}
 ];
 
-let idx = 0;
-let ultimoValor = {};
-let historico = [];
+// Ativos de Segurança
+let ativosSeguranca = [
+    {nome:"DXY - Índice Dólar", valor:107.16},
+    {nome:"EUR/BRL", valor:6.1843},
+    {nome:"S&P 500 VIX Futuros", valor:17.61},
+    {nome:"USD/MXN", valor:20.665},
+    {nome:"USD/NOK", valor:11.2378},
+    {nome:"USD/NZD", valor:1.7565},
+    {nome:"USD/AUD", valor:1.5892},
+    {nome:"USD/KRW", valor:1432.84},
+    {nome:"USD/CNY", valor:7.2509}
+];
 
-/* ================= ATUALIZAÇÃO ================= */
-async function atualizarAtivo() {
-  const ativo = ativos[idx];
-  idx = (idx + 1) % ativos.length;
-
-  try {
-    const res = await fetch(ativo.url());
-    const data = await res.json();
-    const last = ativo.parser(data);
-
-    if (!last || isNaN(last)) return;
-
-    const prev = ultimoValor[ativo.id] ?? last;
-    const change = last - prev;
-    const percent = ((change / prev) * 100).toFixed(2);
-
-    ultimoValor[ativo.id] = last;
-
-    document.getElementById(`${ativo.id}-price`).innerText = last.toFixed(2);
-    document.getElementById(`${ativo.id}-change`).innerText = change.toFixed(2);
-    document.getElementById(`${ativo.id}-percent`).innerText = percent + "%";
-
-    const cls = change > 0 ? "positivo" : change < 0 ? "negativo" : "";
-    document.getElementById(`${ativo.id}-change`).className = cls;
-    document.getElementById(`${ativo.id}-percent`).className = cls;
-
-    historico.push({
-      hora: new Date().toLocaleTimeString(),
-      valor: last
-    });
-
-    Plotly.react("grafico", [{
-      x: historico.map(p => p.hora),
-      y: historico.map(p => p.valor),
-      type: "scatter",
-      mode: "lines+markers",
-      name: ativo.nome
-    }], {
-      title: "Evolução Intraday (último ativo)"
-    });
-
-    document.getElementById("ultima-atualizacao").innerText =
-      "Última atualização: " + new Date().toLocaleTimeString();
-
-  } catch (e) {
-    console.error("Erro:", ativo.nome, e);
-  }
+// Gerar histórico inicial (30 dias, 1 ponto/hora)
+function gerarHistorico(){
+    const agora = new Date();
+    const start = new Date(agora.getTime() - 30*24*60*60*1000);
+    datas = []; risco = []; seguro = [];
+    let valR = valorRisco;
+    let valS = valorSeguro;
+    for(let d=new Date(start); d<=agora; d.setHours(d.getHours()+1)){
+        valR += (Math.random()-0.5)*2;
+        valS += (Math.random()-0.5)*1;
+        datas.push(new Date(d));
+        risco.push(valR);
+        seguro.push(valS);
+    }
 }
 
-/* ================= START ================= */
-atualizarAtivo();
-setInterval(atualizarAtivo, 15000); // seguro para Alpha Vantage free
+// Plotar gráfico
+function plotGrafico(x, yR, yS){
+    Plotly.react('grafico',[
+        {x:x, y:yR, mode:'lines+markers', name:'Risco', line:{color:'green'}},       // Risco verde
+        {x:x, y:yS, mode:'lines+markers', name:'Segurança', line:{color:'red'}}      // Segurança vermelho
+    ],{
+        title:'Linha do Tempo Risco x Segurança',
+        xaxis:{title:'Data', type:'date', rangeslider:{visible:false}},
+        yaxis:{title:'Valor'},
+        margin:{t:40,l:50,r:50,b:50},
+        legend:{x:1,xanchor:'right',y:1}
+    });
+}
+
+// Atualizar tabelas
+function atualizarTabelas(){
+    const tbodyR = document.querySelector("#tabelaRisco tbody");
+    tbodyR.innerHTML="";
+    ativosRisco.forEach(a=>{
+        let variacao = a.variacao?.toFixed(2)??0;
+        let tr = document.createElement("tr");
+        tr.innerHTML=`<td class="risco">${a.nome}</td>
+                      <td>${a.valor.toFixed(2)}</td>
+                      <td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>`;
+        tbodyR.appendChild(tr);
+    });
+    const tbodyS = document.querySelector("#tabelaSeguro tbody");
+    tbodyS.innerHTML="";
+    ativosSeguranca.forEach(a=>{
+        let variacao = a.variacao?.toFixed(2)??0;
+        let tr = document.createElement("tr");
+        tr.innerHTML=`<td class="seguro">${a.nome}</td>
+                      <td>${a.valor.toFixed(2)}</td>
+                      <td class="${variacao>=0?'positivo':'negativo'}">${variacao}%</td>`;
+        tbodyS.appendChild(tr);
+    });
+}
+
+// Atualização em tempo real
+function atualizarGrafico(){
+    const agora = new Date();
+    valorRisco += (Math.random()-0.5)*2;
+    valorSeguro += (Math.random()-0.5)*1;
+    datas.push(agora);
+    risco.push(valorRisco);
+    seguro.push(valorSeguro);
+
+    if(datas.length>1000){
+        datas.shift(); risco.shift(); seguro.shift();
+    }
+
+    if(filtered){
+        const newD=[], newR=[], newS=[];
+        for(let i=0;i<datas.length;i++){
+            if(datas[i]>=filteredStart && datas[i]<=filteredEnd){
+                newD.push(datas[i]);
+                newR.push(risco[i]);
+                newS.push(seguro[i]);
+            }
+        }
+        plotGrafico(newD,newR,newS);
+    } else {
+        plotGrafico(datas,risco,seguro);
+    }
+
+    // Atualiza valores e variações dos ativos
+    ativosRisco.forEach(a=>{
+        let novo = a.valor + (Math.random()-0.5)*2;
+        a.variacao = ((novo-a.valor)/a.valor)*100;
+        a.valor = novo;
+    });
+    ativosSeguranca.forEach(a=>{
+        let novo = a.valor + (Math.random()-0.5)*1;
+        a.variacao = ((novo-a.valor)/a.valor)*100;
+        a.valor = novo;
+    });
+
+    atualizarTabelas();
+}
+
+// Filtrar por datas
+function filtrarPorData(){
+    filteredStart = new Date(document.getElementById('startDate').value);
+    filteredEnd = new Date(document.getElementById('endDate').value);
+    if(isNaN(filteredStart) || isNaN(filteredEnd)){ alert("Selecione datas válidas"); return; }
+    if(filteredStart > filteredEnd){ alert("A data de início deve ser anterior à data de fim."); return; }
+    filtered = true;
+    atualizarGrafico();
+}
+
+// Resetar filtro
+function resetGrafico(){
+    filtered = false;
+    plotGrafico(datas,risco,seguro);
+}
+
+// Alterar timeframe
+function setTimeframe(segundos, botao){
+    timeframe = segundos;
+    document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
+    botao.classList.add('active');
+    if(timer) clearInterval(timer);
+    timer = setInterval(atualizarGrafico, timeframe*1000);
+}
+
+// Inicialização
+gerarHistorico();
+if(datas.length===0){
+    const agora = new Date();
+    datas.push(agora); risco.push(valorRisco); seguro.push(valorSeguro);
+}
+plotGrafico(datas,risco,seguro);
+atualizarTabelas();
+timer = setInterval(atualizarGrafico, timeframe*1000);
+
+// Redimensionamento responsivo
+window.addEventListener('resize', ()=>{ Plotly.Plots.resize('grafico'); });
 </script>
 
 </body>
