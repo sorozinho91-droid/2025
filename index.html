@@ -4,33 +4,23 @@
 <meta charset="UTF-8">
 <title>Tendência Intraday do Dólar</title>
 
-<!-- ECharts -->
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
 <style>
-  body {
-    background: #0e0e0e;
-    color: #e0e0e0;
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 20px;
-  }
-
-  h2 {
-    margin-bottom: 10px;
-  }
-
-  #info {
-    font-size: 13px;
-    color: #aaa;
-    margin-bottom: 10px;
-  }
-
-  #grafico {
-    width: 100%;
-    height: 520px;
-    background: #111;
-    border-radius: 6px;
-  }
+body {
+  background:#0e0e0e;
+  color:#e0e0e0;
+  font-family: Arial, Helvetica, sans-serif;
+  margin:20px;
+}
+h2 { margin-bottom:5px; }
+#info { font-size:13px; color:#aaa; margin-bottom:10px; }
+#grafico {
+  width:100%;
+  height:520px;
+  background:#111;
+  border-radius:6px;
+}
 </style>
 </head>
 
@@ -41,88 +31,89 @@
 <div id="grafico"></div>
 
 <script>
-/* ================================
-   CONFIGURAÇÕES
-================================ */
-const API_URL = "http://localhost:8000/api/score"; // backend
-const UPDATE_INTERVAL = 60000;
+const chart = echarts.init(document.getElementById("grafico"));
+
+const ZONA_ALTA = 0.25;
+const ZONA_BAIXA = -0.25;
+
+let historico = [];
 
 /* ================================
-   INICIALIZA GRÁFICO
+   GERA SCORE SIMULADO (fallback)
 ================================ */
-const chart = echarts.init(document.getElementById('grafico'));
+function gerarScore() {
+  let ultimo = historico.length ? historico[historico.length - 1].score : 0;
+  let variacao = (Math.random() - 0.5) * 0.3;
+  let novo = Math.max(-1, Math.min(1, ultimo + variacao));
+  return Number(novo.toFixed(2));
+}
+
+function horaAtual() {
+  return new Date().toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 
 /* ================================
-   FUNÇÃO DE ATUALIZAÇÃO
+   ATUALIZA GRÁFICO
 ================================ */
-function atualizarGrafico() {
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(dados => {
+function atualizar() {
 
-      const horas  = dados.historico.map(p => p.hora);
-      const scores = dados.historico.map(p => p.score);
+  historico.push({
+    hora: horaAtual(),
+    score: gerarScore()
+  });
 
-      chart.setOption({
-        backgroundColor: '#111',
+  if (historico.length > 120) historico.shift();
 
-        tooltip: {
-          trigger: 'axis',
-          formatter: (params) => {
-            const p = params[0];
-            return `
-              Hora: ${p.axisValue}<br>
-              Score Dólar: <b>${p.data}</b>
-            `;
-          }
-        },
+  chart.setOption({
+    backgroundColor: "#111",
 
-        xAxis: {
-          type: 'category',
-          data: horas,
-          axisLabel: { color: '#aaa' },
-          axisLine: { lineStyle: { color: '#444' } }
-        },
+    tooltip: {
+      trigger: "axis"
+    },
 
-        yAxis: {
-          min: -1,
-          max: 1,
-          splitLine: { lineStyle: { color: '#222' } },
-          axisLabel: { color: '#aaa' },
-          axisLine: { lineStyle: { color: '#444' } }
-        },
+    xAxis: {
+      type: "category",
+      data: historico.map(h => h.hora),
+      axisLabel: { color:"#aaa" },
+      axisLine: { lineStyle:{ color:"#444" } }
+    },
 
-        visualMap: {
-          show: false,
-          pieces: [
-            { gt: dados.zona_alta, color: '#00c853' },       // Alta
-            { gte: dados.zona_baixa, lte: dados.zona_alta, color: '#9e9e9e' }, // Neutro
-            { lt: dados.zona_baixa, color: '#d50000' }      // Baixa
-          ]
-        },
+    yAxis: {
+      min:-1,
+      max:1,
+      splitLine:{ lineStyle:{ color:"#222" } },
+      axisLabel:{ color:"#aaa" },
+      axisLine:{ lineStyle:{ color:"#444" } }
+    },
 
-        series: [{
-          type: 'line',
-          data: scores,
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 6,
-          lineStyle: {
-            width: 2
-          }
-        }]
-      });
-    })
-    .catch(err => {
-      console.error("Erro ao buscar dados:", err);
-    });
+    visualMap: {
+      show:false,
+      pieces:[
+        { gt: ZONA_ALTA, color:"#00c853" },
+        { gte: ZONA_BAIXA, lte: ZONA_ALTA, color:"#9e9e9e" },
+        { lt: ZONA_BAIXA, color:"#d50000" }
+      ]
+    },
+
+    series:[{
+      type:"line",
+      data: historico.map(h => h.score),
+      smooth:true,
+      symbol:"circle",
+      symbolSize:6,
+      lineStyle:{ width:2 }
+    }]
+  });
 }
 
 /* ================================
    LOOP TEMPO REAL
 ================================ */
-atualizarGrafico();
-setInterval(atualizarGrafico, UPDATE_INTERVAL);
+atualizar();
+setInterval(atualizar, 60000);
 </script>
 
 </body>
