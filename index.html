@@ -1,11 +1,120 @@
+from flask import Flask, jsonify
+import yfinance as yf
+from datetime import datetime
+import threading
+import time
+
+app = Flask(__name__)
+
+# ===============================
+# ATIVOS DA CARTEIRA ESPELHO
+# ===============================
+ATIVOS = {
+    # RISCO (se sobe, dólar cai)
+    "GCJ25": "risco",
+    "HGH5": "risco",
+    "CL": "risco",
+    "VALE.K": "risco",
+    "PBR": "risco",
+    "EWZ": "risco",
+    "XLF": "risco",
+    "XLP": "risco",
+    "XLE": "risco",
+    "XME": "risco",
+    "EEM": "risco",
+    "SOXX": "risco",
+
+    # SEGURANÇA (se sobe, dólar sobe)
+    "DX-Y.NYB": "seguranca",
+    "USDNOK=X": "seguranca",
+    "USDAUD=X": "seguranca",
+    "USDNZD=X": "seguranca",
+    "USDKRW=X": "seguranca",
+    "USDCNY=X": "seguranca",
+    "EURBRL=X": "seguranca"
+}
+
+ZONA_ALTA = 0.25
+ZONA_BAIXA = -0.25
+
+historico = []
+
+# ===============================
+# CALCULA SCORE DO DÓLAR
+# ===============================
+def calcular_score():
+    score = 0
+    total = 0
+
+    for ticker, grupo in ATIVOS.items():
+        try:
+            dados = yf.Ticker(ticker).history(period="1d", interval="1m")
+            if len(dados) < 2:
+                continue
+
+            atual = dados["Close"].iloc[-1]
+            anterior = dados["Close"].iloc[-2]
+
+            if atual > anterior:
+                direcao = 1
+            elif atual < anterior:
+                direcao = -1
+            else:
+                direcao = 0
+
+            if direcao != 0:
+                total += 1
+                if grupo == "seguranca":
+                    score += direcao
+                else:
+                    score -= direcao
+        except:
+            pass
+
+    if total == 0:
+        return 0
+
+    return round(score / total, 2)
+
+# ===============================
+# LOOP AUTOMÁTICO 60s
+# ===============================
+def loop_atualizacao():
+    while True:
+        score = calcular_score()
+        historico.append({
+            "hora": datetime.now().strftime("%H:%M"),
+            "score": score
+        })
+        if len(historico) > 240:
+            historico.pop(0)
+        time.sleep(60)
+
+threading.Thread(target=loop_atualizacao, daemon=True).start()
+
+# ===============================
+# API DOS DADOS
+# ===============================
+@app.route("/api/score")
+def api_score():
+    return jsonify({
+        "zona_alta": ZONA_ALTA,
+        "zona_baixa": ZONA_BAIXA,
+        "historico": historico
+    })
+
+# ===============================
+# HTML EMBUTIDO
+# ===============================
+@app.route("/")
+def index():
+    return """
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Tendência Intraday do Dólar</title>
-
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
-
 <style>
 body {
   background:#0e0e0e;
@@ -13,8 +122,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   margin:20px;
 }
-h2 { margin-bottom:5px; }
-#info { font-size:13px; color:#aaa; margin-bottom:10px; }
 #grafico {
   width:100%;
   height:520px;
@@ -23,98 +130,63 @@ h2 { margin-bottom:5px; }
 }
 </style>
 </head>
-
 <body>
 
 <h2>Tendência Intraday do Dólar</h2>
-<div id="info">Atualização automática a cada 60 segundos</div>
+<p>Atualização automática a cada 60 segundos</p>
 <div id="grafico"></div>
 
 <script>
 const chart = echarts.init(document.getElementById("grafico"));
 
-const ZONA_ALTA = 0.25;
-const ZONA_BAIXA = -0.25;
-
-let historico = [];
-
-/* ================================
-   GERA SCORE SIMULADO (fallback)
-================================ */
-function gerarScore() {
-  let ultimo = historico.length ? historico[historico.length - 1].score : 0;
-  let variacao = (Math.random() - 0.5) * 0.3;
-  let novo = Math.max(-1, Math.min(1, ultimo + variacao));
-  return Number(novo.toFixed(2));
-}
-
-function horaAtual() {
-  return new Date().toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-/* ================================
-   ATUALIZA GRÁFICO
-================================ */
 function atualizar() {
+  fetch("/api/score")
+    .then(r => r.json())
+    .then(d => {
 
-  historico.push({
-    hora: horaAtual(),
-    score: gerarScore()
-  });
-
-  if (historico.length > 120) historico.shift();
-
-  chart.setOption({
-    backgroundColor: "#111",
-
-    tooltip: {
-      trigger: "axis"
-    },
-
-    xAxis: {
-      type: "category",
-      data: historico.map(h => h.hora),
-      axisLabel: { color:"#aaa" },
-      axisLine: { lineStyle:{ color:"#444" } }
-    },
-
-    yAxis: {
-      min:-1,
-      max:1,
-      splitLine:{ lineStyle:{ color:"#222" } },
-      axisLabel:{ color:"#aaa" },
-      axisLine:{ lineStyle:{ color:"#444" } }
-    },
-
-    visualMap: {
-      show:false,
-      pieces:[
-        { gt: ZONA_ALTA, color:"#00c853" },
-        { gte: ZONA_BAIXA, lte: ZONA_ALTA, color:"#9e9e9e" },
-        { lt: ZONA_BAIXA, color:"#d50000" }
-      ]
-    },
-
-    series:[{
-      type:"line",
-      data: historico.map(h => h.score),
-      smooth:true,
-      symbol:"circle",
-      symbolSize:6,
-      lineStyle:{ width:2 }
-    }]
-  });
+      chart.setOption({
+        backgroundColor:"#111",
+        xAxis:{
+          type:"category",
+          data:d.historico.map(x=>x.hora),
+          axisLabel:{color:"#aaa"}
+        },
+        yAxis:{
+          min:-1,
+          max:1,
+          axisLabel:{color:"#aaa"},
+          splitLine:{lineStyle:{color:"#222"}}
+        },
+        visualMap:{
+          show:false,
+          pieces:[
+            {gt:d.zona_alta, color:"#00c853"},
+            {gte:d.zona_baixa, lte:d.zona_alta, color:"#9e9e9e"},
+            {lt:d.zona_baixa, color:"#d50000"}
+          ]
+        },
+        series:[{
+          type:"line",
+          smooth:true,
+          data:d.historico.map(x=>x.score),
+          symbol:"circle",
+          symbolSize:6,
+          lineStyle:{width:2}
+        }]
+      });
+    });
 }
 
-/* ================================
-   LOOP TEMPO REAL
-================================ */
 atualizar();
 setInterval(atualizar, 60000);
 </script>
 
 </body>
 </html>
+"""
+
+# ===============================
+# START
+# ===============================
+if __name__ == "__main__":
+    app.run(port=8000)
