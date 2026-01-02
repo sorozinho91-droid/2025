@@ -2,224 +2,127 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento do Mercado Global</title>
+<title>Tendência Intraday do Dólar</title>
+
+<!-- ECharts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
 <style>
-body{
-  font-family:Arial, sans-serif;
-  background:#f4f6f8;
-  margin:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-header{
-  width:100%;
-  background:#1f2937;
-  color:white;
-  padding:10px;
-  text-align:center;
-}
-#relogio{margin:10px;font-weight:bold;}
+  body {
+    background: #0e0e0e;
+    color: #e0e0e0;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 20px;
+  }
 
-table{
-  width:560px;
-  background:#fff;
-  border-collapse:collapse;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
-}
-th,td{
-  border:1px solid #ccc;
-  padding:6px;
-  text-align:center;
-}
-th{background:#2563eb;color:white;}
-.risco{color:green;font-weight:bold;}
-.seguro{color:red;font-weight:bold;}
+  h2 {
+    margin-bottom: 10px;
+  }
 
-#sentimentoBarContainer{
-  width:560px;
-  height:28px;
-  background:#e5e7eb;
-  border-radius:6px;
-  margin:20px 0;
-  overflow:hidden;
-}
-#sentimentoBar{
-  height:100%;
-  width:50%;
-  background:linear-gradient(to right, red, green);
-  color:white;
-  font-weight:bold;
-  text-align:center;
-  line-height:28px;
-  transition:width .5s;
-}
+  #info {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 10px;
+  }
 
-/* NOTÍCIAS */
-#newsBox{
-  width:560px;
-  background:#fff;
-  margin-top:25px;
-  border-radius:6px;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
-  max-height:320px;
-  overflow-y:auto;
-  font-size:13px;
-}
-.news-item{
-  padding:10px;
-  border-bottom:1px solid #e5e7eb;
-}
-.news-item a{
-  text-decoration:none;
-  color:#1d4ed8;
-  font-weight:bold;
-}
-.sent-bullish{color:green;font-weight:bold;}
-.sent-bearish{color:red;font-weight:bold;}
-.sent-neutral{color:#6b7280;font-weight:bold;}
+  #grafico {
+    width: 100%;
+    height: 520px;
+    background: #111;
+    border-radius: 6px;
+  }
 </style>
 </head>
 
 <body>
 
-<header>
-  <h2>Sentimento do Mercado Global</h2>
-</header>
-
-<div id="relogio"></div>
-
-<table id="tabela">
-<thead>
-<tr><th>Ativo</th><th>Classe</th><th>Variação (%)</th></tr>
-</thead>
-<tbody>
-<tr><td colspan="3">Carregando dados...</td></tr>
-</tbody>
-</table>
-
-<div id="sentimentoBarContainer">
-  <div id="sentimentoBar">50% Neutro</div>
-</div>
-
-<h3>📰 Notícias Macro (Traduzidas)</h3>
-<div id="newsBox">
-  <div style="padding:10px;text-align:center;">Carregando notícias...</div>
-</div>
+<h2>Tendência Intraday do Dólar</h2>
+<div id="info">Atualização automática a cada 60 segundos</div>
+<div id="grafico"></div>
 
 <script>
-/* ================= CONFIG ================= */
-const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
+/* ================================
+   CONFIGURAÇÕES
+================================ */
+const API_URL = "http://localhost:8000/api/score"; // backend
+const UPDATE_INTERVAL = 60000;
 
-/* ================= RELÓGIO BR ================= */
-function relogioBR(){
-  const d=new Date();
-  const utc=d.getTime()+d.getTimezoneOffset()*60000;
-  const br=new Date(utc-3*3600000);
-  document.getElementById("relogio").textContent =
-    "Horário de Brasília: "+br.toLocaleTimeString();
-}
-setInterval(relogioBR,1000); relogioBR();
+/* ================================
+   INICIALIZA GRÁFICO
+================================ */
+const chart = echarts.init(document.getElementById('grafico'));
 
-/* ================= ATIVOS ================= */
-const ativos=[
-  {nome:"S&P 500",classe:"risco",symbol:"SPY"},
-  {nome:"Nasdaq",classe:"risco",symbol:"QQQ"},
-  {nome:"Dow Jones",classe:"risco",symbol:"DIA"},
-  {nome:"Dólar (UUP)",classe:"seguro",symbol:"UUP"},
-  {nome:"Ouro",classe:"seguro",commodity:true}
-];
-let ultimos={};
+/* ================================
+   FUNÇÃO DE ATUALIZAÇÃO
+================================ */
+function atualizarGrafico() {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(dados => {
 
-/* ================= FETCH ATIVOS ================= */
-async function buscarAtivo(a){
-  if(a.commodity){
-    const url=`https://www.alphavantage.co/query?function=COMMODITY_EXCHANGE_RATE&from_symbol=XAU&to_symbol=USD&apikey=${API_KEY}`;
-    const r=await fetch(url); const j=await r.json();
-    return Number(j["Realtime Commodity Exchange Rate"]?.["5. Exchange Rate"]);
-  }else{
-    const url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${a.symbol}&apikey=${API_KEY}`;
-    const r=await fetch(url); const j=await r.json();
-    return Number(j["Global Quote"]?.["10. change percent"]?.replace("%",""));
-  }
-}
+      const horas  = dados.historico.map(p => p.hora);
+      const scores = dados.historico.map(p => p.score);
 
-/* ================= SENTIMENTO ================= */
-async function atualizarSentimento(){
-  const tbody=document.querySelector("#tabela tbody");
-  tbody.innerHTML="";
-  let risco=0, seguro=0;
+      chart.setOption({
+        backgroundColor: '#111',
 
-  for(const a of ativos){
-    let v=0;
-    try{
-      if(a.commodity){
-        const p=await buscarAtivo(a);
-        const prev=ultimos[a.nome]??p;
-        v=((p-prev)/prev*100); ultimos[a.nome]=p;
-      }else v=await buscarAtivo(a);
-    }catch(e){v=0;}
+        tooltip: {
+          trigger: 'axis',
+          formatter: (params) => {
+            const p = params[0];
+            return `
+              Hora: ${p.axisValue}<br>
+              Score Dólar: <b>${p.data}</b>
+            `;
+          }
+        },
 
-    a.classe==="risco"?risco+=v:seguro+=v;
-    tbody.innerHTML+=`<tr>
-      <td>${a.nome}</td>
-      <td class="${a.classe}">${a.classe.toUpperCase()}</td>
-      <td>${v.toFixed(2)}%</td></tr>`;
-  }
+        xAxis: {
+          type: 'category',
+          data: horas,
+          axisLabel: { color: '#aaa' },
+          axisLine: { lineStyle: { color: '#444' } }
+        },
 
-  const total=Math.abs(risco)+Math.abs(seguro)||1;
-  const pct=Math.round((risco+total)/(2*total)*100);
-  const bar=document.getElementById("sentimentoBar");
-  bar.style.width=pct+"%";
-  bar.textContent=pct>55?`${pct}% Apetite ao Risco`:
-                   pct<45?`${pct}% Busca por Segurança`:
-                   `${pct}% Neutro`;
-}
-atualizarSentimento();
-setInterval(atualizarSentimento,70000);
+        yAxis: {
+          min: -1,
+          max: 1,
+          splitLine: { lineStyle: { color: '#222' } },
+          axisLabel: { color: '#aaa' },
+          axisLine: { lineStyle: { color: '#444' } }
+        },
 
-/* ================= TRADUÇÃO ================= */
-async function traduzir(texto){
-  try{
-    const r=await fetch("https://libretranslate.de/translate",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({q:texto,source:"en",target:"pt",format:"text"})
+        visualMap: {
+          show: false,
+          pieces: [
+            { gt: dados.zona_alta, color: '#00c853' },       // Alta
+            { gte: dados.zona_baixa, lte: dados.zona_alta, color: '#9e9e9e' }, // Neutro
+            { lt: dados.zona_baixa, color: '#d50000' }      // Baixa
+          ]
+        },
+
+        series: [{
+          type: 'line',
+          data: scores,
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 6,
+          lineStyle: {
+            width: 2
+          }
+        }]
+      });
+    })
+    .catch(err => {
+      console.error("Erro ao buscar dados:", err);
     });
-    const j=await r.json();
-    return j.translatedText || texto;
-  }catch(e){ return texto; }
 }
 
-/* ================= NOTÍCIAS MACRO ================= */
-async function buscarNoticias(){
-  const box=document.getElementById("newsBox");
-  const url=`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&topics=macro_economy,monetary_policy,financial_markets,geopolitics&apikey=${API_KEY}`;
-
-  try{
-    const r=await fetch(url);
-    const d=await r.json();
-    if(!d.feed){box.innerHTML="Sem notícias.";return;}
-
-    box.innerHTML="";
-    for(const n of d.feed.slice(0,8)){
-      const tituloPT=await traduzir(n.title);
-      const sent=n.overall_sentiment_label||"Neutral";
-      const cls=sent==="Bullish"?"sent-bullish":
-                sent==="Bearish"?"sent-bearish":"sent-neutral";
-      box.innerHTML+=`
-        <div class="news-item">
-          <a href="${n.url}" target="_blank">${tituloPT}</a><br>
-          <small>${n.source} • <span class="${cls}">${sent}</span></small>
-        </div>`;
-    }
-  }catch(e){
-    box.innerHTML="<div style='padding:10px'>Erro ao carregar notícias.</div>";
-  }
-}
-buscarNoticias();
-setInterval(buscarNoticias,120000); // ~tempo real
+/* ================================
+   LOOP TEMPO REAL
+================================ */
+atualizarGrafico();
+setInterval(atualizarGrafico, UPDATE_INTERVAL);
 </script>
 
 </body>
