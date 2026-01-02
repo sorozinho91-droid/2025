@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Macro Ativos - Segurança x Risco (Histórico Intraday)</title>
+<title>Comparação Risco x Segurança - Intraday</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -32,8 +32,8 @@ body{
 
 <body>
 
-<h2>Macro Ativos - Segurança x Risco (Histórico Intraday)</h2>
-<p>Atualização automática a cada 60s • Histórico intraday</p>
+<h2>Comparação Intraday - Risco x Segurança</h2>
+<p>Atualização a cada 60s • Histórico intraday</p>
 
 <div id="grafico"></div>
 <div id="sinal" class="neutro">SINAL: AGUARDANDO DADOS…</div>
@@ -46,14 +46,12 @@ let eixoX = [];
 let ativosSeguranca = ["USD-BRL", "Ouro"];
 let ativosRisco = ["BTC-BRL", "ETF-ACAO"];
 let ultimoValores = {};
-let seriesData = {};
-
-// Inicializa séries
-ativosSeguranca.forEach(a => seriesData[a] = []);
-ativosRisco.forEach(a => seriesData[a] = []);
+let serieRisco = [];
+let serieSeguranca = [];
+let serieDiff = [];
 
 /* =========================
-   Função para pegar preço real ou simulado
+   Pega preço real ou simulado
 ========================= */
 async function pegarValorAtivo(ativo){
   try{
@@ -66,11 +64,9 @@ async function pegarValorAtivo(ativo){
       const data = await res.json();
       return parseFloat(data.BTCBRL.bid);
     }else if(ativo === "Ouro"){
-      // Simulação do ouro em BRL/grama
-      return 325 + Math.random()*2-1;
+      return 325 + Math.random()*2-1; // simulado
     }else if(ativo === "ETF-ACAO"){
-      // Simulação de ETF/Ação brasileira
-      return 100 + Math.random()*2-1;
+      return 100 + Math.random()*2-1; // simulado
     }
   }catch(err){
     console.error("Erro ao buscar ativo", ativo, err);
@@ -91,84 +87,66 @@ function calcularVariacao(valorAtual, ativo){
 }
 
 /* =========================
-   Atualiza gráfico intraday
+   Atualiza gráfico comparativo
 ========================= */
 async function atualizarGrafico(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   eixoX.push(hora);
-  if(eixoX.length > 480) eixoX.shift(); // mantém histórico intraday (480 pontos = 8h se atualizar a cada 60s)
+  if(eixoX.length > 480) eixoX.shift(); // histórico intraday
 
-  let riscoTotal = 0, segurancaTotal = 0;
+  let riscoTotal=0, segurancaTotal=0;
 
-  // Atualiza ativos de segurança
+  // Média dos ativos de segurança
   for(let ativo of ativosSeguranca){
     const valor = await pegarValorAtivo(ativo);
-    if(valor === null) continue;
-    const varPerc = calcularVariacao(valor, ativo);
-    seriesData[ativo].push(varPerc);
-    if(seriesData[ativo].length>480) seriesData[ativo].shift();
-    segurancaTotal += varPerc;
+    if(valor===null) continue;
+    segurancaTotal += calcularVariacao(valor, ativo);
   }
+  segurancaTotal /= ativosSeguranca.length;
 
-  // Atualiza ativos de risco
+  // Média dos ativos de risco
   for(let ativo of ativosRisco){
     const valor = await pegarValorAtivo(ativo);
-    if(valor === null) continue;
-    const varPerc = calcularVariacao(valor, ativo);
-    seriesData[ativo].push(varPerc);
-    if(seriesData[ativo].length>480) seriesData[ativo].shift();
-    riscoTotal += varPerc;
+    if(valor===null) continue;
+    riscoTotal += calcularVariacao(valor, ativo);
   }
+  riscoTotal /= ativosRisco.length;
 
-  // Calcula diferença geral
-  const d = segurancaTotal - riscoTotal;
+  serieSeguranca.push(segurancaTotal);
+  serieRisco.push(riscoTotal);
+  serieDiff.push(segurancaTotal - riscoTotal);
+
+  if(serieSeguranca.length>480){ serieSeguranca.shift(); serieRisco.shift(); serieDiff.shift(); }
 
   // Atualiza sinal
   const sinal = document.getElementById("sinal");
-  if(d > 0.0025){ sinal.textContent="SINAL: COMPRA"; sinal.className="compra"; }
-  else if(d < -0.0025){ sinal.textContent="SINAL: VENDA"; sinal.className="venda"; }
+  const d = segurancaTotal - riscoTotal;
+  if(d>0.0025){ sinal.textContent="SINAL: COMPRA"; sinal.className="compra"; }
+  else if(d<-0.0025){ sinal.textContent="SINAL: VENDA"; sinal.className="venda"; }
   else{ sinal.textContent="SINAL: NEUTRO"; sinal.className="neutro"; }
 
-  // Monta séries para o gráfico
-  const series = [];
-  ativosSeguranca.forEach(a=>{
-    series.push({
-      name: a+" Segurança",
-      type:"line",
-      smooth:true,
-      showSymbol:false,
-      data:seriesData[a],
-      lineStyle:{width:2,type:"dashed"}
-    });
-  });
-  ativosRisco.forEach(a=>{
-    series.push({
-      name: a+" Risco",
-      type:"line",
-      smooth:true,
-      showSymbol:false,
-      data:seriesData[a],
-      lineStyle:{width:2}
-    });
-  });
-
+  // Atualiza gráfico
   chart.setOption({
     backgroundColor:"#111",
     tooltip:{trigger:"axis", formatter: params=>{
       return params.map(p=>`${p.seriesName}: ${(p.data*100).toFixed(2)}%`).join("<br>");
     }},
-    legend:{data:series.map(s=>s.name),textStyle:{color:"#ccc"}},
+    legend:{data:["Segurança","Risco","Diferença"], textStyle:{color:"#ccc"}},
     xAxis:{type:"category", data:eixoX, axisLabel:{color:"#aaa"}},
     yAxis:{
       scale:true,
       axisLabel:{formatter:v=>(v*100).toFixed(2)+"%", color:"#aaa"},
       splitLine:{lineStyle:{color:"#222"}}
     },
-    series:series
+    series:[
+      {name:"Segurança", type:"line", smooth:true, showSymbol:false, data:serieSeguranca, lineStyle:{width:2,type:"dashed",color:"#00c853"}},
+      {name:"Risco", type:"line", smooth:true, showSymbol:false, data:serieRisco, lineStyle:{width:2,color:"#d50000"}},
+      {name:"Diferença", type:"line", smooth:true, showSymbol:true, symbolSize:6, data:serieDiff, lineStyle:{width:3,color:"#ffeb3b"}}
+    ]
   });
 }
 
-// Loop automático a cada 60 segundos
+// Atualiza a cada 60 segundos
 atualizarGrafico();
 setInterval(atualizarGrafico, 60000);
 </script>
