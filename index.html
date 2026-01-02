@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Comparação de Ativos - Risco x Segurança</title>
+<title>Macro Ativos - Segurança x Risco (Histórico Intraday)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -32,8 +32,8 @@ body{
 
 <body>
 
-<h2>Comparação de Ativos - Risco x Segurança</h2>
-<p>Dados em tempo real • Atualização 30s</p>
+<h2>Macro Ativos - Segurança x Risco (Histórico Intraday)</h2>
+<p>Atualização automática a cada 60s • Histórico intraday</p>
 
 <div id="grafico"></div>
 <div id="sinal" class="neutro">SINAL: AGUARDANDO DADOS…</div>
@@ -41,14 +41,20 @@ body{
 <script>
 const chart = echarts.init(document.getElementById("grafico"));
 
+// Histórico intraday
 let eixoX = [];
-let ativos = ["USD-BRL", "BTC-BRL", "Ouro"]; // ativos para comparação
-let ultimoValores = {}; // armazena últimos valores
-let seriesData = {}; // armazena série de cada ativo
+let ativosSeguranca = ["USD-BRL", "Ouro"];
+let ativosRisco = ["BTC-BRL", "ETF-ACAO"];
+let ultimoValores = {};
+let seriesData = {};
 
-// inicializa séries
-ativos.forEach(a => seriesData[a] = {risco:[], seguranca:[]});
+// Inicializa séries
+ativosSeguranca.forEach(a => seriesData[a] = []);
+ativosRisco.forEach(a => seriesData[a] = []);
 
+/* =========================
+   Função para pegar preço real ou simulado
+========================= */
 async function pegarValorAtivo(ativo){
   try{
     if(ativo === "USD-BRL"){
@@ -60,10 +66,11 @@ async function pegarValorAtivo(ativo){
       const data = await res.json();
       return parseFloat(data.BTCBRL.bid);
     }else if(ativo === "Ouro"){
-      // API simulada: Ouro em BRL/grama
-      const res = await fetch('https://www.quandl.com/api/v3/datasets/LBMA/GOLD.json?rows=1&api_key=demo'); 
-      const data = await res.json();
-      return parseFloat(data.dataset.data[0][1]); // preço do ouro
+      // Simulação do ouro em BRL/grama
+      return 325 + Math.random()*2-1;
+    }else if(ativo === "ETF-ACAO"){
+      // Simulação de ETF/Ação brasileira
+      return 100 + Math.random()*2-1;
     }
   }catch(err){
     console.error("Erro ao buscar ativo", ativo, err);
@@ -71,91 +78,99 @@ async function pegarValorAtivo(ativo){
   }
 }
 
-function calcularIndicadores(valorAtual, ativo){
-  let r=0, s=0;
+/* =========================
+   Calcula variação percentual
+========================= */
+function calcularVariacao(valorAtual, ativo){
+  let delta = 0;
   if(ultimoValores[ativo] !== undefined){
-    const delta = valorAtual - ultimoValores[ativo];
-    const percentual = delta / ultimoValores[ativo];
-    r = percentual;
-    s = -percentual;
+    delta = (valorAtual - ultimoValores[ativo]) / ultimoValores[ativo];
   }
   ultimoValores[ativo] = valorAtual;
-  return [r, s];
+  return delta;
 }
 
+/* =========================
+   Atualiza gráfico intraday
+========================= */
 async function atualizarGrafico(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   eixoX.push(hora);
-  if(eixoX.length > 120) eixoX.shift();
+  if(eixoX.length > 480) eixoX.shift(); // mantém histórico intraday (480 pontos = 8h se atualizar a cada 60s)
 
-  let sinalTexto = "";
-  let sinalClass = "neutro";
+  let riscoTotal = 0, segurancaTotal = 0;
 
-  // para cada ativo, buscar valor e atualizar séries
-  for(let ativo of ativos){
+  // Atualiza ativos de segurança
+  for(let ativo of ativosSeguranca){
     const valor = await pegarValorAtivo(ativo);
     if(valor === null) continue;
-
-    const [r, s] = calcularIndicadores(valor, ativo);
-
-    seriesData[ativo].risco.push(+r.toFixed(4));
-    seriesData[ativo].seguranca.push(+s.toFixed(4));
-
-    if(seriesData[ativo].risco.length > 120){
-      seriesData[ativo].risco.shift();
-      seriesData[ativo].seguranca.shift();
-    }
-
-    // sinal baseado no último ativo como exemplo
-    if(s - r > 0.0025){ sinalTexto="COMPRA"; sinalClass="compra"; }
-    else if(s - r < -0.0025){ sinalTexto="VENDA"; sinalClass="venda"; }
-    else{ sinalTexto="NEUTRO"; sinalClass="neutro"; }
+    const varPerc = calcularVariacao(valor, ativo);
+    seriesData[ativo].push(varPerc);
+    if(seriesData[ativo].length>480) seriesData[ativo].shift();
+    segurancaTotal += varPerc;
   }
 
-  document.getElementById("sinal").textContent = "SINAL: "+sinalTexto;
-  document.getElementById("sinal").className = sinalClass;
+  // Atualiza ativos de risco
+  for(let ativo of ativosRisco){
+    const valor = await pegarValorAtivo(ativo);
+    if(valor === null) continue;
+    const varPerc = calcularVariacao(valor, ativo);
+    seriesData[ativo].push(varPerc);
+    if(seriesData[ativo].length>480) seriesData[ativo].shift();
+    riscoTotal += varPerc;
+  }
 
-  // montar séries para o gráfico
+  // Calcula diferença geral
+  const d = segurancaTotal - riscoTotal;
+
+  // Atualiza sinal
+  const sinal = document.getElementById("sinal");
+  if(d > 0.0025){ sinal.textContent="SINAL: COMPRA"; sinal.className="compra"; }
+  else if(d < -0.0025){ sinal.textContent="SINAL: VENDA"; sinal.className="venda"; }
+  else{ sinal.textContent="SINAL: NEUTRO"; sinal.className="neutro"; }
+
+  // Monta séries para o gráfico
   const series = [];
-  for(let ativo of ativos){
+  ativosSeguranca.forEach(a=>{
     series.push({
-      name: ativo+" Risco",
+      name: a+" Segurança",
       type:"line",
       smooth:true,
       showSymbol:false,
-      data:seriesData[ativo].risco,
-      lineStyle:{width:2}
-    });
-    series.push({
-      name: ativo+" Segurança",
-      type:"line",
-      smooth:true,
-      showSymbol:false,
-      data:seriesData[ativo].seguranca,
+      data:seriesData[a],
       lineStyle:{width:2,type:"dashed"}
     });
-  }
+  });
+  ativosRisco.forEach(a=>{
+    series.push({
+      name: a+" Risco",
+      type:"line",
+      smooth:true,
+      showSymbol:false,
+      data:seriesData[a],
+      lineStyle:{width:2}
+    });
+  });
 
   chart.setOption({
     backgroundColor:"#111",
-    tooltip:{trigger:"axis"},
+    tooltip:{trigger:"axis", formatter: params=>{
+      return params.map(p=>`${p.seriesName}: ${(p.data*100).toFixed(2)}%`).join("<br>");
+    }},
     legend:{data:series.map(s=>s.name),textStyle:{color:"#ccc"}},
     xAxis:{type:"category", data:eixoX, axisLabel:{color:"#aaa"}},
     yAxis:{
       scale:true,
-      axisLabel:{
-        formatter: v => (v*100).toFixed(2)+"%",
-        color:"#aaa"
-      },
+      axisLabel:{formatter:v=>(v*100).toFixed(2)+"%", color:"#aaa"},
       splitLine:{lineStyle:{color:"#222"}}
     },
     series:series
   });
 }
 
-// Atualizar a cada 30 segundos
+// Loop automático a cada 60 segundos
 atualizarGrafico();
-setInterval(atualizarGrafico, 30000);
+setInterval(atualizarGrafico, 60000);
 </script>
 
 </body>
