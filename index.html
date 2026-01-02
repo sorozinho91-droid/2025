@@ -33,7 +33,7 @@ body{
 <body>
 
 <h2>Direção Intraday do Dólar</h2>
-<p>Risco × Segurança • Atualização automática a cada 60s</p>
+<p>Risco × Segurança (DXY com peso maior) • Atualização 60s</p>
 
 <div id="grafico"></div>
 <div id="sinal" class="neutro">SINAL: AGUARDANDO DADOS…</div>
@@ -53,13 +53,19 @@ const ativosRisco = [
   "XLF","XLP","XLE","XME","EEM","SOXX"
 ];
 
+// segurança com peso
 const ativosSeguranca = [
-  "DXY","USD/NOK","USD/AUD","USD/NZD",
-  "USD/KRW","USD/CNY","EUR/BRL"
+  {symbol:"DXY", peso:3}, // PESO MAIOR
+  {symbol:"USD/NOK", peso:1},
+  {symbol:"USD/AUD", peso:1},
+  {symbol:"USD/NZD", peso:1},
+  {symbol:"USD/KRW", peso:1},
+  {symbol:"USD/CNY", peso:1},
+  {symbol:"EUR/BRL", peso:1}
 ];
 
 /* =========================
-   DIREÇÃO (OTIMIZADA)
+   DIREÇÃO
 ========================= */
 async function direcao(symbol){
   const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=2&apikey=${API_KEY}`;
@@ -78,11 +84,11 @@ async function direcao(symbol){
 }
 
 /* =========================
-   SCORE MÉDIO
+   SCORE RISCO
 ========================= */
-async function score(lista){
+async function scoreRisco(){
   let soma = 0, total = 0;
-  for(const a of lista){
+  for(const a of ativosRisco){
     const d = await direcao(a);
     if(d !== null){
       soma += d;
@@ -90,6 +96,21 @@ async function score(lista){
     }
   }
   return total ? soma / total : null;
+}
+
+/* =========================
+   SCORE SEGURANÇA (COM PESO)
+========================= */
+async function scoreSeguranca(){
+  let soma = 0, totalPeso = 0;
+  for(const a of ativosSeguranca){
+    const d = await direcao(a.symbol);
+    if(d !== null){
+      soma += d * a.peso;
+      totalPeso += a.peso;
+    }
+  }
+  return totalPeso ? soma / totalPeso : null;
 }
 
 /* =========================
@@ -105,8 +126,8 @@ let serieDiff = [];
 async function atualizar(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
 
-  const r = await score(ativosRisco);
-  const s = await score(ativosSeguranca);
+  const r = await scoreRisco();
+  const s = await scoreSeguranca();
   if(r === null || s === null) return;
 
   const d = +(s - r).toFixed(2);
@@ -149,7 +170,6 @@ async function atualizar(){
       axisLabel:{color:"#aaa"}
     },
     yAxis:{
-      type:"value",
       scale:true,
       axisLabel:{color:"#aaa"},
       splitLine:{lineStyle:{color:"#222"}}
