@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Intraday - Risco x Segurança</title>
+<title>Direção Intraday Aprimorada - Risco x Segurança</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 <style>
 body {
@@ -29,8 +29,8 @@ body {
 </head>
 <body>
 
-<h2>Direção Intraday - Ativos de Risco x Segurança</h2>
-<p>Atualização a cada 60s • Histórico intraday</p>
+<h2>Direção Intraday Aprimorada - Risco x Segurança</h2>
+<p>Atualização a cada 60s • Histórico intraday com variação acumulada</p>
 
 <div id="grafico"></div>
 <div id="sinal" class="neutro">SINAL: AGUARDANDO DADOS…</div>
@@ -43,8 +43,8 @@ let eixoX = [];
 let ativosSeguranca = ["USD-BRL","Ouro"];
 let ativosRisco = ["BTC-BRL","ETF-ACAO"];
 let ultimoValores = {};
-let serieRisco = [];
-let serieSeguranca = [];
+let acumuladoSeguranca = [];
+let acumuladoRisco = [];
 
 /* =========================
    Função para pegar preço real ou simulado
@@ -71,67 +71,72 @@ async function pegarValorAtivo(ativo){
 }
 
 /* =========================
-   Calcula direção de cada grupo
+   Calcula variação percentual
 ========================= */
-function calcularDirecao(ativos){
-  let soma = 0;
-  let count = 0;
-  for(let ativo of ativos){
-    const valor = ultimoValores[ativo];
-    if(valor !== undefined){
-      const delta = valor - ultimoValores[ativo+"_anterior"];
-      if(ultimoValores[ativo+"_anterior"] !== undefined){
-        soma += delta;
-        count++;
-      }
-      ultimoValores[ativo+"_anterior"] = valor;
-    }
+function calcularVariacao(valorAtual, ativo){
+  let delta = 0;
+  if(ultimoValores[ativo] !== undefined){
+    delta = (valorAtual - ultimoValores[ativo]) / ultimoValores[ativo];
   }
-  if(count === 0) return 0;
-  return soma / count; // direção média do grupo
+  ultimoValores[ativo] = valorAtual;
+  return delta;
 }
 
 /* =========================
-   Atualiza gráfico intraday
+   Atualiza gráfico intraday acumulado
 ========================= */
 async function atualizarGrafico(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   eixoX.push(hora);
-  if(eixoX.length>480) eixoX.shift(); // histórico intraday
+  if(eixoX.length>480) eixoX.shift();
 
-  // Atualiza valores atuais
-  for(let ativo of ativosSeguranca.concat(ativosRisco)){
+  // Calcula variação média dos grupos
+  let somaSeg = 0;
+  for(let ativo of ativosSeguranca){
     const valor = await pegarValorAtivo(ativo);
-    if(valor!==null) ultimoValores[ativo] = valor;
+    if(valor!==null) somaSeg += calcularVariacao(valor, ativo);
   }
+  somaSeg /= ativosSeguranca.length;
 
-  // Calcula direção dos grupos
-  const dirSeg = calcularDirecao(ativosSeguranca);
-  const dirRisco = calcularDirecao(ativosRisco);
+  let somaRisco = 0;
+  for(let ativo of ativosRisco){
+    const valor = await pegarValorAtivo(ativo);
+    if(valor!==null) somaRisco += calcularVariacao(valor, ativo);
+  }
+  somaRisco /= ativosRisco.length;
 
-  serieSeguranca.push(dirSeg);
-  serieRisco.push(dirRisco);
+  // Acumula histórico intraday
+  const ultimoSeg = acumuladoSeguranca.length>0 ? acumuladoSeguranca[acumuladoSeguranca.length-1] : 0;
+  const ultimoRisco = acumuladoRisco.length>0 ? acumuladoRisco[acumuladoRisco.length-1] : 0;
 
-  if(serieSeguranca.length>480){ serieSeguranca.shift(); serieRisco.shift(); }
+  acumuladoSeguranca.push(ultimoSeg + somaSeg);
+  acumuladoRisco.push(ultimoRisco + somaRisco);
+
+  if(acumuladoSeguranca.length>480){ acumuladoSeguranca.shift(); acumuladoRisco.shift(); }
 
   // Atualiza sinal
   const sinal = document.getElementById("sinal");
-  if(dirSeg - dirRisco > 0){ sinal.textContent="SINAL: SEGURANÇA DOMINANTE"; sinal.className="compra"; }
-  else if(dirSeg - dirRisco < 0){ sinal.textContent="SINAL: RISCO DOMINANTE"; sinal.className="venda"; }
+  const dif = (acumuladoSeguranca[acumuladoSeguranca.length-1] - acumuladoRisco[acumuladoRisco.length-1]);
+  if(dif>0){ sinal.textContent="SINAL: SEGURANÇA DOMINANTE"; sinal.className="compra"; }
+  else if(dif<0){ sinal.textContent="SINAL: RISCO DOMINANTE"; sinal.className="venda"; }
   else{ sinal.textContent="SINAL: NEUTRO"; sinal.className="neutro"; }
 
   // Atualiza gráfico
   chart.setOption({
     backgroundColor:"#111",
     tooltip:{trigger:"axis", formatter: params=>{
-      return params.map(p=>`${p.seriesName}: ${p.data.toFixed(4)}`).join("<br>");
+      return params.map(p=>`${p.seriesName}: ${(p.data*100).toFixed(2)}%`).join("<br>");
     }},
     legend:{data:["Segurança","Risco"], textStyle:{color:"#ccc"}},
     xAxis:{type:"category", data:eixoX, axisLabel:{color:"#aaa"}},
-    yAxis:{scale:true, axisLabel:{color:"#aaa"}, splitLine:{lineStyle:{color:"#222"}}},
+    yAxis:{
+      scale:true,
+      axisLabel:{formatter:v=>(v*100).toFixed(2)+"%", color:"#aaa"},
+      splitLine:{lineStyle:{color:"#222"}}
+    },
     series:[
-      {name:"Segurança", type:"line", smooth:true, showSymbol:false, data:serieSeguranca, lineStyle:{width:2,type:"dashed",color:"#00c853"}},
-      {name:"Risco", type:"line", smooth:true, showSymbol:false, data:serieRisco, lineStyle:{width:2,color:"#d50000"}}
+      {name:"Segurança", type:"line", smooth:true, showSymbol:false, data:acumuladoSeguranca, lineStyle:{width:2,type:"dashed",color:"#00c853"}},
+      {name:"Risco", type:"line", smooth:true, showSymbol:false, data:acumuladoRisco, lineStyle:{width:2,color:"#d50000"}}
     ]
   });
 }
