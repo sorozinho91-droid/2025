@@ -1,126 +1,15 @@
-from flask import Flask, jsonify
-import yfinance as yf
-from datetime import datetime
-import threading
-import time
-
-app = Flask(__name__)
-
-# ===============================
-# ATIVOS DA CARTEIRA ESPELHO
-# ===============================
-ATIVOS = {
-    # RISCO (se sobe, dólar cai)
-    "GCJ25": "risco",
-    "HGH5": "risco",
-    "CL": "risco",
-    "VALE.K": "risco",
-    "PBR": "risco",
-    "EWZ": "risco",
-    "XLF": "risco",
-    "XLP": "risco",
-    "XLE": "risco",
-    "XME": "risco",
-    "EEM": "risco",
-    "SOXX": "risco",
-
-    # SEGURANÇA (se sobe, dólar sobe)
-    "DX-Y.NYB": "seguranca",
-    "USDNOK=X": "seguranca",
-    "USDAUD=X": "seguranca",
-    "USDNZD=X": "seguranca",
-    "USDKRW=X": "seguranca",
-    "USDCNY=X": "seguranca",
-    "EURBRL=X": "seguranca"
-}
-
-ZONA_ALTA = 0.25
-ZONA_BAIXA = -0.25
-
-historico = []
-
-# ===============================
-# CALCULA SCORE DO DÓLAR
-# ===============================
-def calcular_score():
-    score = 0
-    total = 0
-
-    for ticker, grupo in ATIVOS.items():
-        try:
-            dados = yf.Ticker(ticker).history(period="1d", interval="1m")
-            if len(dados) < 2:
-                continue
-
-            atual = dados["Close"].iloc[-1]
-            anterior = dados["Close"].iloc[-2]
-
-            if atual > anterior:
-                direcao = 1
-            elif atual < anterior:
-                direcao = -1
-            else:
-                direcao = 0
-
-            if direcao != 0:
-                total += 1
-                if grupo == "seguranca":
-                    score += direcao
-                else:
-                    score -= direcao
-        except:
-            pass
-
-    if total == 0:
-        return 0
-
-    return round(score / total, 2)
-
-# ===============================
-# LOOP AUTOMÁTICO 60s
-# ===============================
-def loop_atualizacao():
-    while True:
-        score = calcular_score()
-        historico.append({
-            "hora": datetime.now().strftime("%H:%M"),
-            "score": score
-        })
-        if len(historico) > 240:
-            historico.pop(0)
-        time.sleep(60)
-
-threading.Thread(target=loop_atualizacao, daemon=True).start()
-
-# ===============================
-# API DOS DADOS
-# ===============================
-@app.route("/api/score")
-def api_score():
-    return jsonify({
-        "zona_alta": ZONA_ALTA,
-        "zona_baixa": ZONA_BAIXA,
-        "historico": historico
-    })
-
-# ===============================
-# HTML EMBUTIDO
-# ===============================
-@app.route("/")
-def index():
-    return """
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Tendência Intraday do Dólar</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
 <style>
 body {
   background:#0e0e0e;
   color:#e0e0e0;
   font-family: Arial, Helvetica, sans-serif;
-  margin:20px;
 }
 #grafico {
   width:100%;
@@ -130,6 +19,7 @@ body {
 }
 </style>
 </head>
+
 <body>
 
 <h2>Tendência Intraday do Dólar</h2>
@@ -137,13 +27,14 @@ body {
 <div id="grafico"></div>
 
 <script>
+const API_URL = "https://SEU-BACKEND-AQUI/api/score";
+
 const chart = echarts.init(document.getElementById("grafico"));
 
 function atualizar() {
-  fetch("/api/score")
+  fetch(API_URL)
     .then(r => r.json())
     .then(d => {
-
       chart.setOption({
         backgroundColor:"#111",
         xAxis:{
@@ -154,8 +45,7 @@ function atualizar() {
         yAxis:{
           min:-1,
           max:1,
-          axisLabel:{color:"#aaa"},
-          splitLine:{lineStyle:{color:"#222"}}
+          axisLabel:{color:"#aaa"}
         },
         visualMap:{
           show:false,
@@ -169,9 +59,7 @@ function atualizar() {
           type:"line",
           smooth:true,
           data:d.historico.map(x=>x.score),
-          symbol:"circle",
-          symbolSize:6,
-          lineStyle:{width:2}
+          symbolSize:6
         }]
       });
     });
@@ -183,10 +71,3 @@ setInterval(atualizar, 60000);
 
 </body>
 </html>
-"""
-
-# ===============================
-# START
-# ===============================
-if __name__ == "__main__":
-    app.run(port=8000)
