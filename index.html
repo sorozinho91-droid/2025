@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção Intraday do Dólar</title>
+<title>Direção Intraday do Dólar (Simulada Tendência)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
@@ -32,87 +32,13 @@ body{
 
 <body>
 
-<h2>Direção Intraday do Dólar</h2>
-<p>Risco × Segurança (DXY com peso maior) • Atualização 60s</p>
+<h2>Direção Intraday do Dólar (Simulada Tendência)</h2>
+<p>Risco × Segurança (dados simulados) • Atualização 60s</p>
 
 <div id="grafico"></div>
 <div id="sinal" class="neutro">SINAL: AGUARDANDO DADOS…</div>
 
 <script>
-/* =========================
-   API
-========================= */
-const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-const INTERVALO = "1min";
-
-/* =========================
-   ATIVOS
-========================= */
-const ativosRisco = [
-  "XAU/USD","HG","CL","EWZ","VALE","PBR",
-  "XLF","XLP","XLE","XME","EEM","SOXX"
-];
-
-// segurança com peso
-const ativosSeguranca = [
-  {symbol:"DXY", peso:3}, // PESO MAIOR
-  {symbol:"USD/NOK", peso:1},
-  {symbol:"USD/AUD", peso:1},
-  {symbol:"USD/NZD", peso:1},
-  {symbol:"USD/KRW", peso:1},
-  {symbol:"USD/CNY", peso:1},
-  {symbol:"EUR/BRL", peso:1}
-];
-
-/* =========================
-   DIREÇÃO
-========================= */
-async function direcao(symbol){
-  const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${INTERVALO}&outputsize=2&apikey=${API_KEY}`;
-  try{
-    const r = await fetch(url);
-    const d = await r.json();
-    if(!d.values || d.values.length < 2) return null;
-
-    const a = parseFloat(d.values[0].close);
-    const b = parseFloat(d.values[1].close);
-
-    return a > b ? 1 : a < b ? -1 : 0;
-  }catch{
-    return null;
-  }
-}
-
-/* =========================
-   SCORE RISCO
-========================= */
-async function scoreRisco(){
-  let soma = 0, total = 0;
-  for(const a of ativosRisco){
-    const d = await direcao(a);
-    if(d !== null){
-      soma += d;
-      total++;
-    }
-  }
-  return total ? soma / total : null;
-}
-
-/* =========================
-   SCORE SEGURANÇA (COM PESO)
-========================= */
-async function scoreSeguranca(){
-  let soma = 0, totalPeso = 0;
-  for(const a of ativosSeguranca){
-    const d = await direcao(a.symbol);
-    if(d !== null){
-      soma += d * a.peso;
-      totalPeso += a.peso;
-    }
-  }
-  return totalPeso ? soma / totalPeso : null;
-}
-
 /* =========================
    GRÁFICO
 ========================= */
@@ -123,13 +49,47 @@ let serieRisco = [];
 let serieSeg = [];
 let serieDiff = [];
 
-async function atualizar(){
+/* =========================
+   FUNÇÃO DE SIMULAÇÃO COM TENDÊNCIA
+========================= */
+let tendencia = 0; // tendência acumulada
+
+function gerarDirecaoTendencia(){
+  // Simula pequenas variações em torno da tendência
+  const delta = (Math.random() - 0.5) * 0.2; // varia de -0.1 a +0.1
+  tendencia += delta;
+  // Mantém o valor entre -1 e 1
+  if(tendencia > 1) tendencia = 1;
+  if(tendencia < -1) tendencia = -1;
+  return tendencia;
+}
+
+function scoreRiscoSimulado(){
+  let soma = 0, total = 5;
+  for(let i=0;i<total;i++){
+    soma += gerarDirecaoTendencia();
+  }
+  return soma / total;
+}
+
+function scoreSegurancaSimulado(){
+  let soma = 0;
+  let pesos = [3,1,1,1,1,1,1];
+  for(let i=0;i<pesos.length;i++){
+    soma += gerarDirecaoTendencia() * pesos[i];
+  }
+  const totalPeso = pesos.reduce((a,b)=>a+b,0);
+  return soma / totalPeso;
+}
+
+/* =========================
+   ATUALIZAÇÃO DO GRÁFICO
+========================= */
+function atualizarSimulado(){
   const hora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
 
-  const r = await scoreRisco();
-  const s = await scoreSeguranca();
-  if(r === null || s === null) return;
-
+  const r = scoreRiscoSimulado();
+  const s = scoreSegurancaSimulado();
   const d = +(s - r).toFixed(2);
 
   eixoX.push(hora);
@@ -206,8 +166,8 @@ async function atualizar(){
 /* =========================
    LOOP 60s
 ========================= */
-atualizar();
-setInterval(atualizar, 60000);
+atualizarSimulado();
+setInterval(atualizarSimulado, 60000);
 </script>
 
 </body>
