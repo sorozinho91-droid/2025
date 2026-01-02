@@ -2,187 +2,184 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Mercado - Notícias no Topo</title>
+<title>Dashboard de Mercado</title>
+
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 <style>
-body { font-family: Arial, sans-serif; margin:20px; background:#f5f5f5; }
-h2,h3 { margin-top:20px; }
-table { border-collapse: collapse; width: 100%; margin-bottom:20px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#333; color:white; }
-td.positivo { color:green; }
-td.negativo { color:red; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f5f5f5;
+}
 
-#news-top { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:30px; }
-.panel { flex:1 1 45%; background:#fff; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); max-height:400px; overflow-y:auto; }
-.panel-header { background:#2563eb; color:white; text-align:center; font-weight:bold; padding:10px; border-radius:6px 6px 0 0; }
-#breaking .panel-header { background:#dc2626; }
-.news-item { padding:8px; border-bottom:1px solid #ccc; }
-.news-item a { text-decoration:none; color:#1e40af; }
-.breaking-alert { animation: piscar 1s infinite; }
-@keyframes piscar {0%{background:#7f1d1d;}50%{background:#dc2626;}100%{background:#7f1d1d;}}
+h2, h3 { margin-top: 20px; }
 
-#graficos { display:flex; gap:20px; flex-wrap:wrap; margin-top:20px; }
-.grafico-container { flex:1 1 45%; background:#fff; padding:10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
 
-#ultima-atualizacao { margin-top:10px; font-weight:bold; }
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background: #333;
+  color: white;
+}
+
+td.positivo { color: green; font-weight: bold; }
+td.negativo { color: red; font-weight: bold; }
+
+#ultima-atualizacao {
+  margin-top: 10px;
+  font-weight: bold;
+}
 </style>
 </head>
+
 <body>
 
-<h2>Notícias de Mercado</h2>
-<div id="news-top">
-  <div class="panel" id="relevantes">
-    <div class="panel-header">📰 Notícias Relevantes</div>
-    <div id="relevantesList"><div class="news-item">Aguardando notícias...</div></div>
-  </div>
-  <div class="panel" id="breaking">
-    <div class="panel-header">🚨 Breaking News</div>
-    <div id="breakingList"><div class="news-item">Aguardando notícias...</div></div>
-  </div>
-</div>
-
-<h2>Cotações de Ativos</h2>
+<h2>Cotações de Ativos (Alpha Vantage)</h2>
 
 <h3>Segurança</h3>
-<table id="tabela-seguranca">
+<table>
 <thead>
-<tr><th>Ativo</th><th>Último</th><th>Variação</th><th>%</th></tr>
+<tr>
+  <th>Ativo</th>
+  <th>Último</th>
+  <th>Variação</th>
+  <th>%</th>
+</tr>
 </thead>
 <tbody>
 <tr><td>Ouro</td><td id="gold-price">-</td><td id="gold-change">-</td><td id="gold-percent">-</td></tr>
-<tr><td>U.S. 10Y Treasury</td><td id="treasury10-price">-</td><td id="treasury10-change">-</td><td id="treasury10-percent">-</td></tr>
-<tr><td>U.S. 30Y Treasury</td><td id="treasury30-price">-</td><td id="treasury30-change">-</td><td id="treasury30-percent">-</td></tr>
-<tr><td>Dólar (DXY)</td><td id="dxy-price">-</td><td id="dxy-change">-</td><td id="dxy-percent">-</td></tr>
+<tr><td>Dólar (UUP)</td><td id="dxy-price">-</td><td id="dxy-change">-</td><td id="dxy-percent">-</td></tr>
 </tbody>
 </table>
 
 <h3>Risco</h3>
-<table id="tabela-risco">
+<table>
 <thead>
-<tr><th>Ativo</th><th>Último</th><th>Variação</th><th>%</th></tr>
+<tr>
+  <th>Ativo</th>
+  <th>Último</th>
+  <th>Variação</th>
+  <th>%</th>
+</tr>
 </thead>
 <tbody>
-<tr><td>Ibovespa Fut</td><td id="ibov-price">-</td><td id="ibov-change">-</td><td id="ibov-percent">-</td></tr>
-<tr><td>Dow Jones Fut</td><td id="dow-price">-</td><td id="dow-change">-</td><td id="dow-percent">-</td></tr>
-<tr><td>S&P 500 Fut</td><td id="sp-price">-</td><td id="sp-change">-</td><td id="sp-percent">-</td></tr>
-<tr><td>Nasdaq Fut</td><td id="nasdaq-price">-</td><td id="nasdaq-change">-</td><td id="nasdaq-percent">-</td></tr>
-<tr><td>Euro Stoxx 50 Fut</td><td id="stoxx-price">-</td><td id="stoxx-change">-</td><td id="stoxx-percent">-</td></tr>
-<tr><td>China A50 Fut</td><td id="china-price">-</td><td id="china-change">-</td><td id="china-percent">-</td></tr>
-<tr><td>Petróleo WTI</td><td id="wti-price">-</td><td id="wti-change">-</td><td id="wti-percent">-</td></tr>
-<tr><td>Petróleo Brent</td><td id="brent-price">-</td><td id="brent-change">-</td><td id="brent-percent">-</td></tr>
-<tr><td>Minério de Ferro</td><td id="iron-price">-</td><td id="iron-change">-</td><td id="iron-percent">-</td></tr>
+<tr><td>S&P 500 (SPY)</td><td id="sp-price">-</td><td id="sp-change">-</td><td id="sp-percent">-</td></tr>
+<tr><td>Nasdaq (QQQ)</td><td id="nasdaq-price">-</td><td id="nasdaq-change">-</td><td id="nasdaq-percent">-</td></tr>
 </tbody>
 </table>
 
 <div id="ultima-atualizacao">Última atualização: --:--:--</div>
 
-<h2>Gráficos Intraday</h2>
-<div id="graficos">
-  <div class="grafico-container" id="grafico-risco" style="height:300px;"></div>
-  <div class="grafico-container" id="grafico-seguranca" style="height:300px;"></div>
-</div>
-
-<audio id="alertSound">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-</audio>
+<h2>Gráfico Intraday</h2>
+<div id="grafico" style="height:300px;background:#fff;border-radius:6px;"></div>
 
 <script>
 const API_KEY = "d58a789r01qptoar8c7gd58a789r01qptoar8c80";
-const API_URL = "https://suaapi.com/cotacoes?apikey=" + API_KEY;
 
-let historicoRisco = {};
-let historicoSeguranca = {};
+/* ================= CONFIGURAÇÃO DOS ATIVOS ================= */
+const ativos = [
+  {
+    id: "gold",
+    nome: "Ouro",
+    url: () =>
+      `https://www.alphavantage.co/query?function=COMMODITY_EXCHANGE_RATE&from_symbol=XAU&to_symbol=USD&apikey=${API_KEY}`,
+    parser: d =>
+      Number(d["Realtime Commodity Exchange Rate"]?.["5. Exchange Rate"])
+  },
+  {
+    id: "dxy",
+    nome: "Dólar",
+    url: () =>
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=UUP&apikey=${API_KEY}`,
+    parser: d =>
+      Number(d["Global Quote"]?.["05. price"])
+  },
+  {
+    id: "sp",
+    nome: "S&P 500",
+    url: () =>
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=${API_KEY}`,
+    parser: d =>
+      Number(d["Global Quote"]?.["05. price"])
+  },
+  {
+    id: "nasdaq",
+    nome: "Nasdaq",
+    url: () =>
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=${API_KEY}`,
+    parser: d =>
+      Number(d["Global Quote"]?.["05. price"])
+  }
+];
 
-const risco = ["ibov","dow","sp","nasdaq","stoxx","china","wti","brent","iron"];
-const seguranca = ["gold","treasury10","treasury30","dxy"];
-const todosAtivos = [...risco,...seguranca];
+let idx = 0;
+let ultimoValor = {};
+let historico = [];
 
-async function atualizarCotacoes() {
+/* ================= ATUALIZAÇÃO ================= */
+async function atualizarAtivo() {
+  const ativo = ativos[idx];
+  idx = (idx + 1) % ativos.length;
+
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(ativo.url());
     const data = await res.json();
-    const agora = new Date();
+    const last = ativo.parser(data);
 
-    todosAtivos.forEach(id=>{
-      const last = data[id].last;
-      const change = data[id].change;
-      const percent = ((change/(last-change))*100).toFixed(2);
+    if (!last || isNaN(last)) return;
 
-      document.getElementById(`${id}-price`).innerText = last;
-      document.getElementById(`${id}-change`).innerText = change;
-      document.getElementById(`${id}-percent`).innerText = percent+"%";
-      const cls = change>0?"positivo":(change<0?"negativo":"");
-      document.getElementById(`${id}-change`).className = cls;
-      document.getElementById(`${id}-percent`).className = cls;
+    const prev = ultimoValor[ativo.id] ?? last;
+    const change = last - prev;
+    const percent = ((change / prev) * 100).toFixed(2);
 
-      if(risco.includes(id)){
-        if(!historicoRisco[id]) historicoRisco[id]=[];
-        historicoRisco[id].push({hora:agora.toLocaleTimeString(), valor:last});
-      } else {
-        if(!historicoSeguranca[id]) historicoSeguranca[id]=[];
-        historicoSeguranca[id].push({hora:agora.toLocaleTimeString(), valor:last});
-      }
+    ultimoValor[ativo.id] = last;
+
+    document.getElementById(`${ativo.id}-price`).innerText = last.toFixed(2);
+    document.getElementById(`${ativo.id}-change`).innerText = change.toFixed(2);
+    document.getElementById(`${ativo.id}-percent`).innerText = percent + "%";
+
+    const cls = change > 0 ? "positivo" : change < 0 ? "negativo" : "";
+    document.getElementById(`${ativo.id}-change`).className = cls;
+    document.getElementById(`${ativo.id}-percent`).className = cls;
+
+    historico.push({
+      hora: new Date().toLocaleTimeString(),
+      valor: last
     });
 
-    document.getElementById("ultima-atualizacao").innerText = "Última atualização: "+agora.toLocaleTimeString();
-
-    // Gráficos simplificados (apenas primeiro ativo de cada grupo)
-    Plotly.react('grafico-risco',[{
-      x:Object.values(historicoRisco)[0]?.map(p=>p.hora)||[],
-      y:Object.values(historicoRisco)[0]?.map(p=>p.valor)||[],
-      type:'scatter', mode:'lines+markers', name:'Risco'
-    }],{title:'Ativos de Risco'});
-
-    Plotly.react('grafico-seguranca',[{
-      x:Object.values(historicoSeguranca)[0]?.map(p=>p.hora)||[],
-      y:Object.values(historicoSeguranca)[0]?.map(p=>p.valor)||[],
-      type:'scatter', mode:'lines+markers', name:'Segurança'
-    }],{title:'Ativos de Segurança'});
-
-  } catch(e){ console.error(e); }
-}
-
-// === Notícias ===
-const proxy = "https://api.allorigins.win/raw?url=";
-const keywordsBreaking = ["crash","guerra","urgente","alerta","queda"];
-const keywordsRelevantes = ["juros","banco central","inflação","Ibovespa","câmbio","ações"];
-const breakingList = document.getElementById("breakingList");
-const relevantesList = document.getElementById("relevantesList");
-const alertSound = document.getElementById("alertSound");
-let cacheBreaking = {};
-let cacheRelevantes = {};
-
-async function buscarNoticias(query, container, cacheObj, alert=false){
-  try{
-    const rss="https://news.google.com/rss/search?q="+encodeURIComponent(query)+"&hl=pt-BR&gl=BR&ceid=BR:pt";
-    const res = await fetch(proxy + encodeURIComponent(rss));
-    const text = await res.text();
-    const xml = new DOMParser().parseFromString(text,"text/xml");
-    xml.querySelectorAll("item").forEach(item=>{
-      const title=item.querySelector("title")?.textContent||"";
-      const link=item.querySelector("link")?.textContent||"";
-      if(!title||cacheObj[link]) return;
-      cacheObj[link]=true;
-      const div=document.createElement("div");
-      div.className="news-item"+(alert?" breaking-alert":"");
-      div.innerHTML=`<strong>${title}</strong><br><a href="${link}" target="_blank">Ler notícia</a>`;
-      container.prepend(div);
-      if(alert) alertSound.play().catch(()=>{});
+    Plotly.react("grafico", [{
+      x: historico.map(p => p.hora),
+      y: historico.map(p => p.valor),
+      type: "scatter",
+      mode: "lines+markers",
+      name: ativo.nome
+    }], {
+      title: "Evolução Intraday (último ativo)"
     });
-  }catch(e){console.error(e);}
+
+    document.getElementById("ultima-atualizacao").innerText =
+      "Última atualização: " + new Date().toLocaleTimeString();
+
+  } catch (e) {
+    console.error("Erro:", ativo.nome, e);
+  }
 }
 
-function atualizarNoticias(){
-  buscarNoticias(keywordsBreaking.join(" OR "), breakingList, cacheBreaking, true);
-  buscarNoticias(keywordsRelevantes.join(" OR "), relevantesList, cacheRelevantes, false);
-}
-
-// Inicialização
-atualizarCotacoes();
-atualizarNoticias();
-setInterval(atualizarCotacoes,5000);
-setInterval(atualizarNoticias,30000);
+/* ================= START ================= */
+atualizarAtivo();
+setInterval(atualizarAtivo, 15000); // seguro para Alpha Vantage free
 </script>
 
 </body>
