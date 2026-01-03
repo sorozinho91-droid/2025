@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Financeiro Profissional</title>
+<title>Dashboard Financeiro Global</title>
 
 <style>
 body{
@@ -12,9 +12,11 @@ body{
   margin:20px;
 }
 h2{
-  font-size:18px;
+  font-size:17px;
   margin-bottom:10px;
   color:#fff;
+  border-bottom:1px solid #222;
+  padding-bottom:5px;
 }
 .dashboard{
   display:grid;
@@ -52,21 +54,50 @@ h2{
 
 <div class="dashboard">
 
-<div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2></div>
-<div class="section" id="breaking"><h2>🚨 Breaking News</h2></div>
+<!-- NOTÍCIAS GERAIS -->
+<div class="section" id="mercado">
+  <h2>📰 Mercado Financeiro — Visão Geral</h2>
+</div>
 
-<div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2></div>
-<div class="section" id="petroleo"><h2>🛢️ Petróleo</h2></div>
-<div class="section" id="dxy"><h2>💵 DXY / Dólar</h2></div>
-<div class="section" id="juros"><h2>📈 Juros Americanos</h2></div>
-<div class="section" id="bancos"><h2>🏦 Bancos</h2></div>
-<div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas Americanas</h2></div>
-<div class="section" id="bolsasGlobal"><h2>🌍 Bolsas Europa & Ásia</h2></div>
+<div class="section" id="breaking">
+  <h2>🚨 Breaking News — Impacto Imediato</h2>
+</div>
+
+<!-- COMMODITIES -->
+<div class="section" id="minerio">
+  <h2>🪨 Commodities — Minério de Ferro</h2>
+</div>
+
+<div class="section" id="petroleo">
+  <h2>🛢️ Commodities — Petróleo (Brent / WTI)</h2>
+</div>
+
+<!-- MACRO -->
+<div class="section" id="dxy">
+  <h2>💵 Macro — DXY & Dólar Global</h2>
+</div>
+
+<div class="section" id="juros">
+  <h2>📈 Macro — Juros Americanos (FED & Treasuries)</h2>
+</div>
+
+<!-- SETORES & BOLSAS -->
+<div class="section" id="bancos">
+  <h2>🏦 Setor Financeiro — Bancos</h2>
+</div>
+
+<div class="section" id="bolsasUSA">
+  <h2>🇺🇸 Bolsas — Estados Unidos</h2>
+</div>
+
+<div class="section" id="bolsasGlobal">
+  <h2>🌍 Bolsas — Europa & Ásia</h2>
+</div>
 
 </div>
 
 <script>
-// ========= URGÊNCIA =========
+// ===== URGÊNCIA =====
 const palavrasUrgentes=[
  {p:'guerra',c:'urgente-vermelho'},
  {p:'crise',c:'urgente-laranja'},
@@ -83,7 +114,7 @@ function getUrgencia(a){
  return '';
 }
 
-// ========= TEMAS =========
+// ===== TEMAS =====
 const temas={
  minerio:["minério de ferro","iron ore","vale","aço"],
  petroleo:["petróleo","oil","brent","wti","opec"],
@@ -94,7 +125,7 @@ const temas={
  bolsasGlobal:["nikkei","hang seng","dax","ftse","europa","asia"]
 };
 
-// ========= FEEDS =========
+// ===== FEEDS =====
 const feedsMercado=[
  "https://valor.globo.com/rss/mercados/",
  "https://www.infomoney.com.br/feed/"
@@ -103,7 +134,7 @@ const feedsBreaking=[
  "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
 ];
 
-// ========= FUNÇÕES =========
+// ===== FUNÇÕES =====
 function stripHTML(h){
  const d=document.createElement("div");
  d.innerHTML=h;
@@ -153,7 +184,7 @@ async function atualizarSecao(id,feeds,filtro=null){
  if(!noticias.length) c.innerHTML="Nenhuma notícia relevante.";
 }
 
-// ========= ATUALIZAÇÃO =========
+// ===== ATUALIZAÇÃO =====
 async function atualizarTudo(){
  atualizarSecao("mercado",feedsMercado);
  atualizarSecao("breaking",feedsBreaking);
