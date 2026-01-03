@@ -42,8 +42,20 @@ h2 { color:#fff; }
 }
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
-  70% { box-shadow: 0 0 10px 10px rgba(255,0,0,0); }
+  70% { box-shadow: 0 0 15px 15px rgba(255,0,0,0); }
   100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+}
+
+/* Pulsar especial para Breaking News críticas */
+.breaking-critica {
+  background:#ff1744 !important; /* vermelho mais chamativo */
+  color:#fff;
+  animation: pulseBreaking 1s infinite;
+}
+@keyframes pulseBreaking {
+  0% { box-shadow: 0 0 0 0 rgba(255,23,68,0.8); }
+  50% { box-shadow: 0 0 20px 20px rgba(255,23,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,23,68,0); }
 }
 </style>
 </head>
@@ -68,7 +80,7 @@ const palavrasUrgentes = [
   {palavra: 'poli', classe:'urgente-amarelo'}
 ];
 
-// Feeds confiáveis (funcionando com CORS)
+// Feeds confiáveis
 const feedsFinance = [
   'https://valor.globo.com/rss/mercados/',
   'https://www.infomoney.com.br/feed/'
@@ -77,10 +89,10 @@ const feedsBreaking = [
   'https://g1.globo.com/rss/g1/ultimas-noticias.rss'
 ];
 
-// Histórico local de notícias críticas para pulsar
+// Histórico local de notícias críticas
 let noticiasCriticasHistorico = new Set(JSON.parse(localStorage.getItem('noticiasCriticas') || '[]'));
 
-// Função para limpar HTML da descrição
+// Limpar HTML
 function stripHTML(html){
   const div = document.createElement('div');
   div.innerHTML = html;
@@ -106,7 +118,7 @@ async function buscarRSS(url, max=5){
     }
 }
 
-// Retorna classe de urgência
+// Classe de urgência
 function getUrgencia(article){
     const texto = (article.title + " " + article.desc).toLowerCase();
     for(const p of palavrasUrgentes){
@@ -117,7 +129,7 @@ function getUrgencia(article){
     return '';
 }
 
-// Valor numérico da urgência para ordenação
+// Valor numérico da urgência
 function urgenciaValor(article){
     const classe = getUrgencia(article);
     if(classe === 'urgente-vermelho') return 3;
@@ -127,7 +139,7 @@ function urgenciaValor(article){
 }
 
 // Atualiza seção de notícias
-async function atualizarSecao(feeds, containerId){
+async function atualizarSecao(feeds, containerId, isBreaking=false){
     const container = document.getElementById(containerId);
     container.innerHTML = 'Carregando...';
 
@@ -135,7 +147,6 @@ async function atualizarSecao(feeds, containerId){
     const resultados = await Promise.all(feeds.map(feed => buscarRSS(feed, 5)));
     todasNoticias = resultados.flat();
 
-    // Ordena por urgência
     todasNoticias.sort((a,b) => urgenciaValor(b) - urgenciaValor(a));
 
     container.innerHTML = '';
@@ -143,8 +154,14 @@ async function atualizarSecao(feeds, containerId){
         const item = document.createElement('div');
         item.className = 'news-item';
         const classeUrgente = getUrgencia(article);
+
         if(classeUrgente){
-            item.classList.add(classeUrgente);
+            // Para Breaking News críticas, use destaque especial
+            if(isBreaking && classeUrgente === 'urgente-vermelho'){
+                item.classList.add('breaking-critica');
+            } else {
+                item.classList.add(classeUrgente);
+            }
 
             // Pulsar se notícia nova crítica
             const idUnique = article.title + article.link;
@@ -165,13 +182,13 @@ async function atualizarSecao(feeds, containerId){
     if(container.innerHTML === '') container.innerHTML = 'Nenhuma notícia no momento.';
 }
 
-// Atualiza automaticamente
+// Atualiza todas as notícias
 async function atualizarNoticias(){
     await atualizarSecao(feedsFinance, 'finance-news');
-    await atualizarSecao(feedsBreaking, 'breaking-news');
+    await atualizarSecao(feedsBreaking, 'breaking-news', true);
 }
 
-// Inicializa
+// Inicializa e atualiza a cada 60s
 atualizarNoticias();
 setInterval(atualizarNoticias, 60000);
 </script>
