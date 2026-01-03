@@ -2,223 +2,169 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Premium de Notícias Financeiras</title>
+<title>Dashboard Financeiro Profissional</title>
+
 <style>
-body {
+body{
   background:#0e0e0e;
   color:#e0e0e0;
   font-family:Arial, Helvetica, sans-serif;
   margin:20px;
 }
-h2 { color:#fff; margin-bottom:10px; }
-
-/* Layout flex */
-.dashboard {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+h2{
+  font-size:18px;
+  margin-bottom:10px;
+  color:#fff;
 }
-
-/* Seções */
-.section {
+.dashboard{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+  gap:20px;
+}
+.section{
   background:#111;
   padding:15px;
   border-radius:8px;
-  max-height: 600px;
-  overflow-y: auto;
-  flex: 1 1 600px;
+  max-height:520px;
+  overflow-y:auto;
 }
-
-/* Notícias individuais */
-.news-item {
+.news-item{
   border-bottom:1px solid #222;
   padding:8px 0;
-  transition: all 0.3s;
-  position: relative;
 }
-.news-item:last-child { border-bottom:none; }
-.news-item a { color:#03a9f4; text-decoration:none; }
-.news-item a:hover { text-decoration:underline; }
-.news-title { font-weight:bold; font-size:16px; }
-.news-desc { font-size:14px; color:#ccc; }
+.news-item:last-child{border-bottom:none;}
+.news-title a{
+  color:#03a9f4;
+  text-decoration:none;
+  font-weight:bold;
+}
+.news-title a:hover{text-decoration:underline;}
+.news-desc{font-size:14px;color:#ccc}
 
-/* Classes de urgência */
-.urgente-vermelho { background:#b71c1c; color:#fff; padding:5px 8px; border-radius:4px; }
-.urgente-laranja { background:#ff6f00; color:#fff; padding:5px 8px; border-radius:4px; }
-.urgente-amarelo { background:#fbc02d; color:#000; padding:5px 8px; border-radius:4px; }
-
-/* Pulsar notícias críticas */
-.pulsar {
-  animation: pulse 1s infinite;
-}
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
-  50% { box-shadow: 0 0 15px 15px rgba(255,0,0,0); }
-  100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
-}
-
-/* Pulsar especial para Breaking News críticas */
-.breaking-critica {
-  background:#ff1744 !important;
-  color:#fff;
-  animation: pulseBreaking 1s infinite;
-}
-@keyframes pulseBreaking {
-  0% { box-shadow: 0 0 0 0 rgba(255,23,68,0.8); }
-  50% { box-shadow: 0 0 20px 20px rgba(255,23,68,0); }
-  100% { box-shadow: 0 0 0 0 rgba(255,23,68,0); }
-}
-
-/* Cabeçalho das seções */
-.section h2 {
-  margin-top:0;
-  margin-bottom:10px;
-}
-
-/* Responsividade */
-@media(max-width:1000px){
-  .dashboard { flex-direction: column; }
-}
+/* urgência */
+.urgente-vermelho{background:#b71c1c;padding:6px;border-radius:4px;}
+.urgente-laranja{background:#ff6f00;padding:6px;border-radius:4px;}
+.urgente-amarelo{background:#fbc02d;color:#000;padding:6px;border-radius:4px;}
 </style>
 </head>
+
 <body>
 
 <div class="dashboard">
-  <!-- Notícias Financeiras à esquerda -->
-  <div class="section" id="finance-news">
-    <h2>📰 Notícias de Mercado Financeiro</h2>
-    Carregando...
-  </div>
 
-  <!-- Breaking News à direita -->
-  <div class="section" id="breaking-news">
-    <h2>🚨 Breaking News</h2>
-    Carregando...
-  </div>
+<div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2></div>
+<div class="section" id="breaking"><h2>🚨 Breaking News</h2></div>
+
+<div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2></div>
+<div class="section" id="petroleo"><h2>🛢️ Petróleo</h2></div>
+<div class="section" id="dxy"><h2>💵 DXY / Dólar</h2></div>
+<div class="section" id="juros"><h2>📈 Juros Americanos</h2></div>
+<div class="section" id="bancos"><h2>🏦 Bancos</h2></div>
+<div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas Americanas</h2></div>
+<div class="section" id="bolsasGlobal"><h2>🌍 Bolsas Europa & Ásia</h2></div>
+
 </div>
 
 <script>
-// Palavras-chave urgentes e cores
-const palavrasUrgentes = [
-  {palavra: 'guerra', classe:'urgente-vermelho'},
-  {palavra: 'desastre naturais', classe:'urgente-vermelho'},
-  {palavra: 'crise', classe:'urgente-laranja'},
-  {palavra: 'queda', classe:'urgente-laranja'},
-  {palavra: 'falência', classe:'urgente-laranja'},
-  {palavra: 'volatilidade', classe:'urgente-laranja'},
-  {palavra: 'alta', classe:'urgente-amarelo'},
-  {palavra: 'poli', classe:'urgente-amarelo'}
+// ========= URGÊNCIA =========
+const palavrasUrgentes=[
+ {p:'guerra',c:'urgente-vermelho'},
+ {p:'crise',c:'urgente-laranja'},
+ {p:'queda',c:'urgente-laranja'},
+ {p:'falência',c:'urgente-laranja'},
+ {p:'alta forte',c:'urgente-amarelo'}
 ];
 
-// Feeds confiáveis
-const feedsFinance = [
-  'https://valor.globo.com/rss/mercados/',
-  'https://www.infomoney.com.br/feed/'
+function getUrgencia(a){
+ const t=(a.title+a.desc).toLowerCase();
+ for(const p of palavrasUrgentes){
+   if(t.includes(p.p)) return p.c;
+ }
+ return '';
+}
+
+// ========= TEMAS =========
+const temas={
+ minerio:["minério de ferro","iron ore","vale","aço"],
+ petroleo:["petróleo","oil","brent","wti","opec"],
+ dxy:["dxy","dólar","usd","fed"],
+ juros:["juros","interest rate","fed","fomc","treasury","yield"],
+ bancos:["banco","bank","itaú","bradesco","jpmorgan","goldman"],
+ bolsasUSA:["dow jones","nasdaq","s&p 500","wall street"],
+ bolsasGlobal:["nikkei","hang seng","dax","ftse","europa","asia"]
+};
+
+// ========= FEEDS =========
+const feedsMercado=[
+ "https://valor.globo.com/rss/mercados/",
+ "https://www.infomoney.com.br/feed/"
 ];
-const feedsBreaking = [
-  'https://g1.globo.com/rss/g1/ultimas-noticias.rss'
+const feedsBreaking=[
+ "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
 ];
 
-// Histórico local de notícias críticas
-let noticiasCriticasHistorico = new Set(JSON.parse(localStorage.getItem('noticiasCriticas') || '[]'));
-
-// Limpar HTML
-function stripHTML(html){
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || '';
+// ========= FUNÇÕES =========
+function stripHTML(h){
+ const d=document.createElement("div");
+ d.innerHTML=h;
+ return d.textContent||"";
 }
 
-// Busca RSS via AllOrigins
-async function buscarRSS(url, max=5){
-    try{
-        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-        const xmlText = await res.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(xmlText, "text/xml");
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, max);
-        return items.map(item => ({
-            title: item.querySelector("title")?.textContent || "",
-            link: item.querySelector("link")?.textContent || "",
-            desc: item.querySelector("description")?.textContent || ""
-        }));
-    }catch(err){
-        console.error("Erro RSS:", err);
-        return [];
-    }
+async function buscarRSS(url){
+ try{
+  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+  const x=await r.text();
+  const xml=new DOMParser().parseFromString(x,"text/xml");
+  return [...xml.querySelectorAll("item")].map(i=>({
+    title:i.querySelector("title")?.textContent||"",
+    link:i.querySelector("link")?.textContent||"",
+    desc:i.querySelector("description")?.textContent||""
+  }));
+ }catch{return []}
 }
 
-// Classe de urgência
-function getUrgencia(article){
-    const texto = (article.title + " " + article.desc).toLowerCase();
-    for(const p of palavrasUrgentes){
-        if(texto.includes(p.palavra.toLowerCase())){
-            return p.classe;
-        }
-    }
-    return '';
+function pertenceTema(a,p){
+ const t=(a.title+a.desc).toLowerCase();
+ return p.some(x=>t.includes(x));
 }
 
-// Valor numérico da urgência
-function urgenciaValor(article){
-    const classe = getUrgencia(article);
-    if(classe === 'urgente-vermelho') return 3;
-    if(classe === 'urgente-laranja') return 2;
-    if(classe === 'urgente-amarelo') return 1;
-    return 0;
+async function atualizarSecao(id,feeds,filtro=null){
+ const c=document.getElementById(id);
+ c.innerHTML="<em>Carregando...</em>";
+
+ const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
+ let noticias=dados;
+
+ if(filtro) noticias=noticias.filter(n=>pertenceTema(n,filtro));
+ noticias=noticias.slice(0,8);
+
+ c.innerHTML="";
+ noticias.forEach(n=>{
+  const d=document.createElement("div");
+  d.className="news-item";
+  const u=getUrgencia(n);
+  if(u) d.classList.add(u);
+  d.innerHTML=`
+   <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
+   <div class="news-desc">${stripHTML(n.desc)}</div>`;
+  c.appendChild(d);
+ });
+
+ if(!noticias.length) c.innerHTML="Nenhuma notícia relevante.";
 }
 
-// Atualiza seção de notícias
-async function atualizarSecao(feeds, containerId, isBreaking=false){
-    const container = document.getElementById(containerId);
-    container.innerHTML = 'Carregando...';
+// ========= ATUALIZAÇÃO =========
+async function atualizarTudo(){
+ atualizarSecao("mercado",feedsMercado);
+ atualizarSecao("breaking",feedsBreaking);
 
-    let todasNoticias = [];
-    const resultados = await Promise.all(feeds.map(feed => buscarRSS(feed, 5)));
-    todasNoticias = resultados.flat();
-
-    todasNoticias.sort((a,b) => urgenciaValor(b) - urgenciaValor(a));
-
-    container.innerHTML = '';
-    todasNoticias.forEach(article => {
-        const item = document.createElement('div');
-        item.className = 'news-item';
-        const classeUrgente = getUrgencia(article);
-
-        if(classeUrgente){
-            if(isBreaking && classeUrgente === 'urgente-vermelho'){
-                item.classList.add('breaking-critica');
-            } else {
-                item.classList.add(classeUrgente);
-            }
-
-            const idUnique = article.title + article.link;
-            if(!noticiasCriticasHistorico.has(idUnique)){
-                item.classList.add('pulsar');
-                noticiasCriticasHistorico.add(idUnique);
-                localStorage.setItem('noticiasCriticas', JSON.stringify([...noticiasCriticasHistorico]));
-            }
-        }
-
-        item.innerHTML = `
-            <div class="news-title"><a href="${article.link}" target="_blank">${article.title}</a></div>
-            <div class="news-desc">${stripHTML(article.desc)}</div>
-        `;
-        container.appendChild(item);
-    });
-
-    if(container.innerHTML === '') container.innerHTML = 'Nenhuma notícia no momento.';
+ for(const t in temas){
+   atualizarSecao(t,feedsMercado,temas[t]);
+ }
 }
 
-// Atualiza todas as notícias
-async function atualizarNoticias(){
-    await atualizarSecao(feedsFinance, 'finance-news');
-    await atualizarSecao(feedsBreaking, 'breaking-news', true);
-}
-
-// Inicializa e atualiza a cada 60s
-atualizarNoticias();
-setInterval(atualizarNoticias, 60000);
+atualizarTudo();
+setInterval(atualizarTudo,60000);
 </script>
 
 </body>
