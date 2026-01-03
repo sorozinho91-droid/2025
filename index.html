@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Notícias Financeiras em Tempo Real</title>
+<title>Dashboard de Notícias Financeiras em Tempo Real</title>
 <style>
 body {
   background:#0e0e0e;
@@ -20,12 +20,16 @@ h2 { color:#fff; }
 .news-item {
   border-bottom:1px solid #222;
   padding:8px 0;
+  transition: all 0.3s;
 }
 .news-item:last-child { border-bottom:none; }
 .news-item a { color:#03a9f4; text-decoration:none; }
 .news-item a:hover { text-decoration:underline; }
 .news-title { font-weight:bold; font-size:16px; }
 .news-desc { font-size:14px; color:#ccc; }
+
+/* Destaque para notícias críticas */
+.urgente { background: #b71c1c; color:#fff; padding:5px 8px; border-radius:4px; }
 </style>
 </head>
 <body>
@@ -37,7 +41,13 @@ h2 { color:#fff; }
 <div class="section" id="breaking-news">Carregando...</div>
 
 <script>
-// Lista de feeds RSS ou JSON públicos confiáveis
+// Palavras-chave urgentes
+const palavrasUrgentes = [
+    'crise','queda','alta','volatilidade','falência',
+    'guerra','poli','desastre naturais'
+];
+
+// Feeds confiáveis
 const feedsFinance = [
     'https://valor.globo.com/rss/mercados/',
     'https://www.infomoney.com.br/feed/',
@@ -49,7 +59,7 @@ const feedsBreaking = [
     'https://www.reuters.com/rssFeed/topNews'
 ];
 
-// Função para buscar notícias via RSS
+// Busca RSS usando AllOrigins para contornar CORS
 async function buscarRSS(url, max=5){
     try{
         const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
@@ -68,6 +78,12 @@ async function buscarRSS(url, max=5){
     }
 }
 
+// Verifica se notícia é urgente
+function isUrgente(article){
+    const texto = (article.title + " " + article.desc).toLowerCase();
+    return palavrasUrgentes.some(p => texto.includes(p.toLowerCase()));
+}
+
 // Atualiza seção de notícias
 async function atualizarSecao(feeds, containerId){
     const container = document.getElementById(containerId);
@@ -78,6 +94,8 @@ async function atualizarSecao(feeds, containerId){
         noticias.forEach(article=>{
             const item = document.createElement('div');
             item.className = 'news-item';
+            if(isUrgente(article)) item.classList.add('urgente');
+
             item.innerHTML = `
                 <div class="news-title"><a href="${article.link}" target="_blank">${article.title}</a></div>
                 <div class="news-desc">${article.desc.replace(/<\/?[^>]+(>|$)/g, "")}</div>
