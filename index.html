@@ -10,15 +10,15 @@
   --mod:#ffffff;
   --card:#f7f7f7;
   --line:#dcdcdc;
-  --text:#000000;
-  --muted:#333333;
+  --text:#000;
+  --muted:#333;
   --blue:#0d47a1;
   --red:#ef5350;
   --orange:#ffb74d;
   --yellow:#fff176;
 }
 
-/* ===== TRAVA A PÁGINA ===== */
+/* ===== BASE ===== */
 html,body{
   height:100%;
   margin:0;
@@ -32,7 +32,7 @@ body{
   padding:12px;
 }
 
-/* ===== GRID ===== */
+/* ===== GRID PRINCIPAL ===== */
 .dashboard{
   display:grid;
   grid-template-rows:auto 1fr;
@@ -42,7 +42,6 @@ body{
 
 /* ===== BREAKING ===== */
 .section.breaking{
-  grid-column:1 / -1;
   background:#fff5f5;
   border:2px solid var(--red);
   border-radius:10px;
@@ -51,13 +50,14 @@ body{
   overflow-y:auto;
 }
 
-/* ===== GRID PRINCIPAL ===== */
+/* ===== GRID DE MÓDULOS ===== */
 .main{
   display:grid;
   grid-template-columns:repeat(3, 1fr);
-  grid-template-rows:repeat(3, 1fr);
+  grid-auto-rows:minmax(0, 1fr);
   gap:12px;
   height:100%;
+  overflow-y:auto;
 }
 
 /* ===== MÓDULOS ===== */
@@ -69,6 +69,8 @@ body{
   display:flex;
   flex-direction:column;
   overflow:hidden;
+  contain:layout paint;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
 }
 
 .section h2{
@@ -79,9 +81,11 @@ body{
   flex-shrink:0;
 }
 
-/* ===== LISTA INTERNA ===== */
+/* ===== LISTA ===== */
 .list{
   overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
 }
 
 /* ===== CARD ===== */
@@ -92,6 +96,7 @@ body{
   padding:6px 8px;
   margin-bottom:6px;
   position:relative;
+  will-change:transform;
 }
 
 .news-item::before{
@@ -121,67 +126,40 @@ body{
   margin-top:4px;
   line-height:1.3;
 }
+
+/* ===== 4K ===== */
+@media (min-width:2560px){
+  body{font-size:15px;padding:20px}
+  .dashboard{max-width:2800px;margin:0 auto}
+  .main{grid-template-columns:repeat(4,1fr)}
+  .section h2{font-size:16px}
+  .news-title a{font-size:14px}
+  .news-desc{font-size:13px;line-height:1.4;max-height:3.6em;overflow:hidden}
+}
 </style>
 </head>
 
 <body>
-
 <div class="dashboard">
 
-<!-- BREAKING -->
 <div class="section breaking" id="breaking">
   <h2>🚨 Breaking News — Impacto Imediato</h2>
   <div class="list"></div>
 </div>
 
-<!-- GRID PRINCIPAL -->
 <div class="main">
-
-<div class="section" id="mercado">
-  <h2>📰 Mercado Financeiro</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="minerio">
-  <h2>🪨 Minério de Ferro</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="petroleo">
-  <h2>🛢️ Petróleo</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="dxy">
-  <h2>💵 DXY & Dólar</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="juros">
-  <h2>📈 Juros Americanos</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="bancos">
-  <h2>🏦 Bancos</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="bolsasUSA">
-  <h2>🇺🇸 Bolsas EUA</h2>
-  <div class="list"></div>
-</div>
-
-<div class="section" id="bolsasGlobal">
-  <h2>🌍 Bolsas Europa & Ásia</h2>
-  <div class="list"></div>
-</div>
-
+  <div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2><div class="list"></div></div>
+  <div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2><div class="list"></div></div>
+  <div class="section" id="petroleo"><h2>🛢️ Petróleo</h2><div class="list"></div></div>
+  <div class="section" id="dxy"><h2>💵 DXY & Dólar</h2><div class="list"></div></div>
+  <div class="section" id="juros"><h2>📈 Juros Americanos</h2><div class="list"></div></div>
+  <div class="section" id="bancos"><h2>🏦 Bancos</h2><div class="list"></div></div>
+  <div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas EUA</h2><div class="list"></div></div>
+  <div class="section" id="bolsasGlobal"><h2>🌍 Bolsas Europa & Ásia</h2><div class="list"></div></div>
 </div>
 </div>
 
 <script>
-// ===== URGÊNCIA =====
 const palavrasUrgentes=[
  {p:'guerra',c:'urgente-vermelho'},
  {p:'crise',c:'urgente-laranja'},
@@ -192,34 +170,30 @@ const palavrasUrgentes=[
 
 function getUrgencia(a){
  const t=(a.title+a.desc).toLowerCase();
- for(const p of palavrasUrgentes){
-   if(t.includes(p.p)) return p.c;
- }
+ for(const p of palavrasUrgentes) if(t.includes(p.p)) return p.c;
  return '';
 }
 
-// ===== TEMAS =====
 const temas={
  mercado:null,
- minerio:["minério de ferro","iron ore","vale","aço"],
+ minerio:["minério","iron ore","vale","aço"],
  petroleo:["petróleo","oil","brent","wti","opec"],
  dxy:["dxy","dólar","usd","fed"],
- juros:["juros","interest rate","fed","fomc","treasury","yield"],
- bancos:["banco","bank","itaú","bradesco","jpmorgan","goldman"],
- bolsasUSA:["dow jones","nasdaq","s&p 500","wall street"],
- bolsasGlobal:["nikkei","hang seng","dax","ftse","europa","asia"]
+ juros:["juros","interest","fomc","yield"],
+ bancos:["banco","bank","itaú","jpmorgan"],
+ bolsasUSA:["dow","nasdaq","s&p","wall street"],
+ bolsasGlobal:["nikkei","hang seng","dax","ftse","asia","europa"]
 };
 
-// ===== FEEDS =====
 const feedsMercado=[
  "https://valor.globo.com/rss/mercados/",
  "https://www.infomoney.com.br/feed/"
 ];
+
 const feedsBreaking=[
  "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
 ];
 
-// ===== FUNÇÕES =====
 function stripHTML(h){
  const d=document.createElement("div");
  d.innerHTML=h;
@@ -247,14 +221,10 @@ function pertenceTema(a,p){
 
 async function atualizarSecao(id,feeds,filtro){
  const box=document.querySelector(`#${id} .list`);
- box.innerHTML="";
+ while(box.firstChild) box.removeChild(box.firstChild);
 
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
- const noticias=dados
-  .filter(n=>pertenceTema(n,filtro))
-  .slice(0,5);
-
- noticias.forEach(n=>{
+ dados.filter(n=>pertenceTema(n,filtro)).slice(0,5).forEach(n=>{
   const d=document.createElement("div");
   d.className="news-item";
   const u=getUrgencia(n);
@@ -266,17 +236,15 @@ async function atualizarSecao(id,feeds,filtro){
  });
 }
 
-// ===== ATUALIZAÇÃO =====
 async function atualizarTudo(){
- atualizarSecao("breaking",feedsBreaking);
+ await atualizarSecao("breaking",feedsBreaking);
  for(const t in temas){
-   atualizarSecao(t,feedsMercado,temas[t]);
+   await atualizarSecao(t,feedsMercado,temas[t]);
  }
 }
 
 atualizarTudo();
 setInterval(atualizarTudo,60000);
 </script>
-
 </body>
 </html>
