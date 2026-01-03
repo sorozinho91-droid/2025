@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard de Notícias Financeiras em Tempo Real</title>
+<title>Dashboard Premium de Notícias Financeiras</title>
 <style>
 body {
   background:#0e0e0e;
@@ -16,11 +16,14 @@ h2 { color:#fff; }
   padding:15px;
   border-radius:8px;
   margin-bottom:20px;
+  max-height: 500px;
+  overflow-y: auto;
 }
 .news-item {
   border-bottom:1px solid #222;
   padding:8px 0;
   transition: all 0.3s;
+  position: relative;
 }
 .news-item:last-child { border-bottom:none; }
 .news-item a { color:#03a9f4; text-decoration:none; }
@@ -28,8 +31,20 @@ h2 { color:#fff; }
 .news-title { font-weight:bold; font-size:16px; }
 .news-desc { font-size:14px; color:#ccc; }
 
-/* Destaque para notícias críticas */
-.urgente { background: #b71c1c; color:#fff; padding:5px 8px; border-radius:4px; }
+/* Classes de urgência */
+.urgente-vermelho { background:#b71c1c; color:#fff; padding:5px 8px; border-radius:4px; }
+.urgente-laranja { background:#ff6f00; color:#fff; padding:5px 8px; border-radius:4px; }
+.urgente-amarelo { background:#fbc02d; color:#000; padding:5px 8px; border-radius:4px; }
+
+/* Pulsar para novas notícias críticas */
+.pulsar {
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
+  70% { box-shadow: 0 0 10px 10px rgba(255,0,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+}
 </style>
 </head>
 <body>
@@ -41,10 +56,16 @@ h2 { color:#fff; }
 <div class="section" id="breaking-news">Carregando...</div>
 
 <script>
-// Palavras-chave urgentes
+// Palavras-chave urgentes e cores
 const palavrasUrgentes = [
-    'crise','queda','alta','volatilidade','falência',
-    'guerra','poli','desastre naturais'
+  {palavra: 'guerra', classe:'urgente-vermelho'},
+  {palavra: 'desastre naturais', classe:'urgente-vermelho'},
+  {palavra: 'crise', classe:'urgente-laranja'},
+  {palavra: 'queda', classe:'urgente-laranja'},
+  {palavra: 'falência', classe:'urgente-laranja'},
+  {palavra: 'volatilidade', classe:'urgente-laranja'},
+  {palavra: 'alta', classe:'urgente-amarelo'},
+  {palavra: 'poli', classe:'urgente-amarelo'}
 ];
 
 // Feeds confiáveis
@@ -59,7 +80,10 @@ const feedsBreaking = [
     'https://www.reuters.com/rssFeed/topNews'
 ];
 
-// Busca RSS usando AllOrigins para contornar CORS
+// Histórico para detectar novas notícias críticas
+let noticiasCriticasHistorico = new Set();
+
+// Busca RSS via AllOrigins
 async function buscarRSS(url, max=5){
     try{
         const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
@@ -78,10 +102,15 @@ async function buscarRSS(url, max=5){
     }
 }
 
-// Verifica se notícia é urgente
-function isUrgente(article){
+// Verifica se notícia é urgente e retorna classe CSS
+function getUrgencia(article){
     const texto = (article.title + " " + article.desc).toLowerCase();
-    return palavrasUrgentes.some(p => texto.includes(p.toLowerCase()));
+    for(const p of palavrasUrgentes){
+        if(texto.includes(p.palavra.toLowerCase())){
+            return p.classe;
+        }
+    }
+    return '';
 }
 
 // Atualiza seção de notícias
@@ -89,20 +118,41 @@ async function atualizarSecao(feeds, containerId){
     const container = document.getElementById(containerId);
     container.innerHTML = '';
 
+    let todasNoticias = [];
+
     for(const feed of feeds){
         const noticias = await buscarRSS(feed, 5);
-        noticias.forEach(article=>{
-            const item = document.createElement('div');
-            item.className = 'news-item';
-            if(isUrgente(article)) item.classList.add('urgente');
-
-            item.innerHTML = `
-                <div class="news-title"><a href="${article.link}" target="_blank">${article.title}</a></div>
-                <div class="news-desc">${article.desc.replace(/<\/?[^>]+(>|$)/g, "")}</div>
-            `;
-            container.appendChild(item);
-        });
+        todasNoticias.push(...noticias);
     }
+
+    // Ordena notícias críticas primeiro
+    todasNoticias.sort((a,b)=>{
+        const urgA = getUrgencia(a) ? 1 : 0;
+        const urgB = getUrgencia(b) ? 1 : 0;
+        return urgB - urgA;
+    });
+
+    todasNoticias.forEach(article=>{
+        const item = document.createElement('div');
+        item.className = 'news-item';
+        const classeUrgente = getUrgencia(article);
+        if(classeUrgente){
+            item.classList.add(classeUrgente);
+
+            // Pulsar se notícia nova crítica
+            const idUnique = article.title + article.link;
+            if(!noticiasCriticasHistorico.has(idUnique)){
+                item.classList.add('pulsar');
+                noticiasCriticasHistorico.add(idUnique);
+            }
+        }
+
+        item.innerHTML = `
+            <div class="news-title"><a href="${article.link}" target="_blank">${article.title}</a></div>
+            <div class="news-desc">${article.desc.replace(/<\/?[^>]+(>|$)/g, "")}</div>
+        `;
+        container.appendChild(item);
+    });
 
     if(container.innerHTML === '') container.innerHTML = 'Nenhuma notícia no momento.';
 }
