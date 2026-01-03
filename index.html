@@ -5,48 +5,113 @@
 <title>Dashboard Financeiro Global</title>
 
 <style>
+:root{
+  --bg:#0e0e0e;
+  --mod:#121212;
+  --card:#181818;
+  --line:#242424;
+  --text:#e0e0e0;
+  --muted:#b0b0b0;
+  --blue:#03a9f4;
+  --red:#ff5252;
+  --orange:#ff9800;
+  --yellow:#fbc02d;
+}
+
 body{
-  background:#0e0e0e;
-  color:#e0e0e0;
+  background:var(--bg);
+  color:var(--text);
   font-family:Arial, Helvetica, sans-serif;
   margin:20px;
 }
-h2{
-  font-size:17px;
-  margin-bottom:10px;
-  color:#fff;
-  border-bottom:1px solid #222;
-  padding-bottom:5px;
-}
+
 .dashboard{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
-  gap:20px;
+  gap:22px;
 }
-.section{
-  background:#111;
-  padding:15px;
-  border-radius:8px;
-  max-height:520px;
-  overflow-y:auto;
-}
-.news-item{
-  border-bottom:1px solid #222;
-  padding:8px 0;
-}
-.news-item:last-child{border-bottom:none;}
-.news-title a{
-  color:#03a9f4;
-  text-decoration:none;
-  font-weight:bold;
-}
-.news-title a:hover{text-decoration:underline;}
-.news-desc{font-size:14px;color:#ccc}
 
-/* urgência */
-.urgente-vermelho{background:#b71c1c;padding:6px;border-radius:4px;}
-.urgente-laranja{background:#ff6f00;padding:6px;border-radius:4px;}
-.urgente-amarelo{background:#fbc02d;color:#000;padding:6px;border-radius:4px;}
+/* ===== MÓDULO ===== */
+.section{
+  background:var(--mod);
+  border-radius:10px;
+  padding:14px 14px 10px;
+  max-height:540px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Cabeçalho fixo */
+.section h2{
+  font-size:16px;
+  margin:0 0 12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--line);
+  letter-spacing:0.3px;
+  position:sticky;
+  top:0;
+  background:var(--mod);
+  z-index:2;
+}
+
+/* Lista */
+.section::-webkit-scrollbar{
+  width:6px;
+}
+.section::-webkit-scrollbar-thumb{
+  background:#333;
+  border-radius:4px;
+}
+
+/* ===== CARD DE NOTÍCIA ===== */
+.news-item{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 12px;
+  margin-bottom:10px;
+  position:relative;
+}
+
+.news-item:last-child{
+  margin-bottom:0;
+}
+
+/* Barra lateral de urgência */
+.news-item::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:4px;
+  border-radius:8px 0 0 8px;
+  background:transparent;
+}
+
+.urgente-vermelho::before{background:var(--red);}
+.urgente-laranja::before{background:var(--orange);}
+.urgente-amarelo::before{background:var(--yellow);}
+
+/* Título */
+.news-title a{
+  color:var(--blue);
+  font-weight:bold;
+  font-size:14.5px;
+  text-decoration:none;
+  line-height:1.3;
+}
+.news-title a:hover{
+  text-decoration:underline;
+}
+
+/* Descrição */
+.news-desc{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:6px;
+  line-height:1.35;
+}
 </style>
 </head>
 
@@ -54,7 +119,6 @@ h2{
 
 <div class="dashboard">
 
-<!-- NOTÍCIAS GERAIS -->
 <div class="section" id="mercado">
   <h2>📰 Mercado Financeiro — Visão Geral</h2>
 </div>
@@ -63,25 +127,22 @@ h2{
   <h2>🚨 Breaking News — Impacto Imediato</h2>
 </div>
 
-<!-- COMMODITIES -->
 <div class="section" id="minerio">
   <h2>🪨 Commodities — Minério de Ferro</h2>
 </div>
 
 <div class="section" id="petroleo">
-  <h2>🛢️ Commodities — Petróleo (Brent / WTI)</h2>
+  <h2>🛢️ Commodities — Petróleo</h2>
 </div>
 
-<!-- MACRO -->
 <div class="section" id="dxy">
-  <h2>💵 Macro — DXY & Dólar Global</h2>
+  <h2>💵 Macro — DXY & Dólar</h2>
 </div>
 
 <div class="section" id="juros">
-  <h2>📈 Macro — Juros Americanos (FED & Treasuries)</h2>
+  <h2>📈 Macro — Juros Americanos</h2>
 </div>
 
-<!-- SETORES & BOLSAS -->
 <div class="section" id="bancos">
   <h2>🏦 Setor Financeiro — Bancos</h2>
 </div>
@@ -161,7 +222,7 @@ function pertenceTema(a,p){
 
 async function atualizarSecao(id,feeds,filtro=null){
  const c=document.getElementById(id);
- c.innerHTML="<em>Carregando...</em>";
+ c.innerHTML=c.querySelector("h2").outerHTML;
 
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
  let noticias=dados;
@@ -169,19 +230,25 @@ async function atualizarSecao(id,feeds,filtro=null){
  if(filtro) noticias=noticias.filter(n=>pertenceTema(n,filtro));
  noticias=noticias.slice(0,8);
 
- c.innerHTML="";
  noticias.forEach(n=>{
   const d=document.createElement("div");
   d.className="news-item";
   const u=getUrgencia(n);
   if(u) d.classList.add(u);
   d.innerHTML=`
-   <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
+   <div class="news-title">
+     <a href="${n.link}" target="_blank">${n.title}</a>
+   </div>
    <div class="news-desc">${stripHTML(n.desc)}</div>`;
   c.appendChild(d);
  });
 
- if(!noticias.length) c.innerHTML="Nenhuma notícia relevante.";
+ if(!noticias.length){
+  const e=document.createElement("div");
+  e.className="news-desc";
+  e.innerText="Nenhuma notícia relevante no momento.";
+  c.appendChild(e);
+ }
 }
 
 // ===== ATUALIZAÇÃO =====
