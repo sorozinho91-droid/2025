@@ -10,15 +10,26 @@ body {
   font-family:Arial, Helvetica, sans-serif;
   margin:20px;
 }
-h2 { color:#fff; }
+h2 { color:#fff; margin-bottom:10px; }
+
+/* Layout flex */
+.dashboard {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Seções */
 .section {
   background:#111;
   padding:15px;
   border-radius:8px;
-  margin-bottom:20px;
-  max-height: 500px;
+  max-height: 600px;
   overflow-y: auto;
+  flex: 1 1 600px;
 }
+
+/* Notícias individuais */
 .news-item {
   border-bottom:1px solid #222;
   padding:8px 0;
@@ -36,19 +47,19 @@ h2 { color:#fff; }
 .urgente-laranja { background:#ff6f00; color:#fff; padding:5px 8px; border-radius:4px; }
 .urgente-amarelo { background:#fbc02d; color:#000; padding:5px 8px; border-radius:4px; }
 
-/* Pulsar para novas notícias críticas */
+/* Pulsar notícias críticas */
 .pulsar {
   animation: pulse 1s infinite;
 }
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
-  70% { box-shadow: 0 0 15px 15px rgba(255,0,0,0); }
+  50% { box-shadow: 0 0 15px 15px rgba(255,0,0,0); }
   100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
 }
 
 /* Pulsar especial para Breaking News críticas */
 .breaking-critica {
-  background:#ff1744 !important; /* vermelho mais chamativo */
+  background:#ff1744 !important;
   color:#fff;
   animation: pulseBreaking 1s infinite;
 }
@@ -57,15 +68,34 @@ h2 { color:#fff; }
   50% { box-shadow: 0 0 20px 20px rgba(255,23,68,0); }
   100% { box-shadow: 0 0 0 0 rgba(255,23,68,0); }
 }
+
+/* Cabeçalho das seções */
+.section h2 {
+  margin-top:0;
+  margin-bottom:10px;
+}
+
+/* Responsividade */
+@media(max-width:1000px){
+  .dashboard { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
-<h2>📰 Notícias de Mercado Financeiro</h2>
-<div class="section" id="finance-news">Carregando...</div>
+<div class="dashboard">
+  <!-- Notícias Financeiras à esquerda -->
+  <div class="section" id="finance-news">
+    <h2>📰 Notícias de Mercado Financeiro</h2>
+    Carregando...
+  </div>
 
-<h2>🚨 Breaking News</h2>
-<div class="section" id="breaking-news">Carregando...</div>
+  <!-- Breaking News à direita -->
+  <div class="section" id="breaking-news">
+    <h2>🚨 Breaking News</h2>
+    Carregando...
+  </div>
+</div>
 
 <script>
 // Palavras-chave urgentes e cores
@@ -156,14 +186,12 @@ async function atualizarSecao(feeds, containerId, isBreaking=false){
         const classeUrgente = getUrgencia(article);
 
         if(classeUrgente){
-            // Para Breaking News críticas, use destaque especial
             if(isBreaking && classeUrgente === 'urgente-vermelho'){
                 item.classList.add('breaking-critica');
             } else {
                 item.classList.add(classeUrgente);
             }
 
-            // Pulsar se notícia nova crítica
             const idUnique = article.title + article.link;
             if(!noticiasCriticasHistorico.has(idUnique)){
                 item.classList.add('pulsar');
