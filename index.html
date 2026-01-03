@@ -6,16 +6,17 @@
 
 <style>
 :root{
-  --bg:#0e0e0e;
-  --mod:#121212;
-  --card:#181818;
-  --line:#242424;
-  --text:#e0e0e0;
-  --muted:#b0b0b0;
-  --blue:#03a9f4;
-  --red:#ff5252;
-  --orange:#ff9800;
-  --yellow:#fbc02d;
+  --bg:#f2f4f7;
+  --mod:#ffffff;
+  --card:#f7f7f7;
+  --line:#dcdcdc;
+  --text:#000000;
+  --muted:#333333;
+  --blue:#0d47a1;
+
+  --red:#ef5350;
+  --orange:#ffb74d;
+  --yellow:#fff176;
 }
 
 body{
@@ -31,36 +32,35 @@ body{
   gap:22px;
 }
 
-/* ===== MÓDULO ===== */
+/* ===== MÓDULOS ===== */
 .section{
   background:var(--mod);
   border-radius:10px;
-  padding:14px 14px 10px;
+  padding:14px;
   max-height:540px;
-  display:flex;
-  flex-direction:column;
+  overflow-y:auto;
+  border:1px solid var(--line);
 }
 
-/* Cabeçalho fixo */
+/* ===== BREAKING NEWS FIXO ===== */
+.section.breaking{
+  grid-column:1 / -1;
+  order:-1;
+  border:2px solid var(--red);
+  background:#fff5f5;
+}
+
+/* Cabeçalho */
 .section h2{
   font-size:16px;
   margin:0 0 12px;
   padding-bottom:8px;
   border-bottom:1px solid var(--line);
-  letter-spacing:0.3px;
   position:sticky;
   top:0;
-  background:var(--mod);
+  background:inherit;
   z-index:2;
-}
-
-/* Lista */
-.section::-webkit-scrollbar{
-  width:6px;
-}
-.section::-webkit-scrollbar-thumb{
-  background:#333;
-  border-radius:4px;
+  color:#000;
 }
 
 /* ===== CARD DE NOTÍCIA ===== */
@@ -71,10 +71,6 @@ body{
   padding:10px 12px;
   margin-bottom:10px;
   position:relative;
-}
-
-.news-item:last-child{
-  margin-bottom:0;
 }
 
 /* Barra lateral de urgência */
@@ -99,18 +95,15 @@ body{
   font-weight:bold;
   font-size:14.5px;
   text-decoration:none;
-  line-height:1.3;
 }
-.news-title a:hover{
-  text-decoration:underline;
-}
+.news-title a:hover{text-decoration:underline;}
 
 /* Descrição */
 .news-desc{
   font-size:13px;
   color:var(--muted);
   margin-top:6px;
-  line-height:1.35;
+  line-height:1.4;
 }
 </style>
 </head>
@@ -119,12 +112,12 @@ body{
 
 <div class="dashboard">
 
-<div class="section" id="mercado">
-  <h2>📰 Mercado Financeiro — Visão Geral</h2>
+<div class="section breaking" id="breaking">
+  <h2>🚨 Breaking News — Impacto Imediato</h2>
 </div>
 
-<div class="section" id="breaking">
-  <h2>🚨 Breaking News — Impacto Imediato</h2>
+<div class="section" id="mercado">
+  <h2>📰 Mercado Financeiro — Visão Geral</h2>
 </div>
 
 <div class="section" id="minerio">
@@ -222,7 +215,8 @@ function pertenceTema(a,p){
 
 async function atualizarSecao(id,feeds,filtro=null){
  const c=document.getElementById(id);
- c.innerHTML=c.querySelector("h2").outerHTML;
+ const titulo=c.querySelector("h2").outerHTML;
+ c.innerHTML=titulo;
 
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
  let noticias=dados;
@@ -253,8 +247,8 @@ async function atualizarSecao(id,feeds,filtro=null){
 
 // ===== ATUALIZAÇÃO =====
 async function atualizarTudo(){
- atualizarSecao("mercado",feedsMercado);
  atualizarSecao("breaking",feedsBreaking);
+ atualizarSecao("mercado",feedsMercado);
 
  for(const t in temas){
    atualizarSecao(t,feedsMercado,temas[t]);
