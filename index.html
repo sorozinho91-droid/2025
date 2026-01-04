@@ -1,250 +1,65 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard Financeiro Global</title>
-
-<style>
-:root{
-  --bg:#f2f4f7;
-  --mod:#ffffff;
-  --card:#f7f7f7;
-  --line:#dcdcdc;
-  --text:#000;
-  --muted:#333;
-  --blue:#0d47a1;
-  --red:#ef5350;
-  --orange:#ffb74d;
-  --yellow:#fff176;
-}
-
-/* ===== BASE ===== */
-html,body{
-  height:100%;
-  margin:0;
-  overflow:hidden;
-}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial, Helvetica, sans-serif;
-  padding:12px;
-}
-
-/* ===== GRID PRINCIPAL ===== */
-.dashboard{
-  display:grid;
-  grid-template-rows:auto 1fr;
-  height:100%;
-  gap:12px;
-}
-
-/* ===== BREAKING ===== */
-.section.breaking{
-  background:#fff5f5;
-  border:2px solid var(--red);
-  border-radius:10px;
-  padding:10px;
-  max-height:22vh;
-  overflow-y:auto;
-}
-
-/* ===== GRID DE MÓDULOS ===== */
-.main{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  grid-auto-rows:minmax(0, 1fr);
-  gap:12px;
-  height:100%;
-  overflow-y:auto;
-}
-
-/* ===== MÓDULOS ===== */
-.section{
-  background:var(--mod);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  contain:layout paint;
-  box-shadow:0 1px 2px rgba(0,0,0,.05);
-}
-
-.section h2{
-  font-size:14px;
-  margin:0 0 6px;
-  padding-bottom:4px;
-  border-bottom:1px solid var(--line);
-  flex-shrink:0;
-}
-
-/* ===== LISTA ===== */
-.list{
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  scrollbar-width:thin;
-}
-
-/* ===== CARD ===== */
-.news-item{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:6px;
-  padding:6px 8px;
-  margin-bottom:6px;
-  position:relative;
-  will-change:transform;
-}
-
-.news-item::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
-  width:3px;
-  border-radius:6px 0 0 6px;
-}
-
-.urgente-vermelho::before{background:var(--red);}
-.urgente-laranja::before{background:var(--orange);}
-.urgente-amarelo::before{background:var(--yellow);}
-
-.news-title a{
-  color:var(--blue);
-  font-size:12.5px;
-  font-weight:bold;
-  text-decoration:none;
-}
-
-.news-desc{
-  font-size:11.5px;
-  color:var(--muted);
-  margin-top:4px;
-  line-height:1.3;
-}
-
-/* ===== 4K ===== */
-@media (min-width:2560px){
-  body{font-size:15px;padding:20px}
-  .dashboard{max-width:2800px;margin:0 auto}
-  .main{grid-template-columns:repeat(4,1fr)}
-  .section h2{font-size:16px}
-  .news-title a{font-size:14px}
-  .news-desc{font-size:13px;line-height:1.4;max-height:3.6em;overflow:hidden}
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Seguro x Risco</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
-<div class="dashboard">
 
-<div class="section breaking" id="breaking">
-  <h2>🚨 Breaking News — Impacto Imediato</h2>
-  <div class="list"></div>
-</div>
-
-<div class="main">
-  <div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2><div class="list"></div></div>
-  <div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2><div class="list"></div></div>
-  <div class="section" id="petroleo"><h2>🛢️ Petróleo</h2><div class="list"></div></div>
-  <div class="section" id="dxy"><h2>💵 DXY & Dólar</h2><div class="list"></div></div>
-  <div class="section" id="juros"><h2>📈 Juros Americanos</h2><div class="list"></div></div>
-  <div class="section" id="bancos"><h2>🏦 Bancos</h2><div class="list"></div></div>
-  <div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas EUA</h2><div class="list"></div></div>
-  <div class="section" id="bolsasGlobal"><h2>🌍 Bolsas Europa & Ásia</h2><div class="list"></div></div>
-</div>
-</div>
+<h2>Ativos de Segurança x Risco</h2>
+<canvas id="grafico"></canvas>
 
 <script>
-const palavrasUrgentes=[
- {p:'guerra',c:'urgente-vermelho'},
- {p:'crise',c:'urgente-laranja'},
- {p:'queda',c:'urgente-laranja'},
- {p:'falência',c:'urgente-laranja'},
- {p:'alta forte',c:'urgente-amarelo'}
-];
+let chart;
+let labels = [];
+let dadosRisco = [];
+let dadosSeguranca = [];
 
-function getUrgencia(a){
- const t=(a.title+a.desc).toLowerCase();
- for(const p of palavrasUrgentes) if(t.includes(p.p)) return p.c;
- return '';
+async function atualizar() {
+  const res = await fetch("dados.json"); // ou endpoint da API
+  const data = await res.json();
+
+  const media = arr =>
+    arr.reduce((s, x) => s + x.var, 0) / arr.length;
+
+  labels.push(data.timestamp);
+  dadosRisco.push(media(data.risco));
+  dadosSeguranca.push(media(data.seguranca));
+
+  renderizar();
 }
 
-const temas={
- mercado:null,
- minerio:["minério","iron ore","vale","aço"],
- petroleo:["petróleo","oil","brent","wti","opec"],
- dxy:["dxy","dólar","usd","fed"],
- juros:["juros","interest","fomc","yield"],
- bancos:["banco","bank","itaú","jpmorgan"],
- bolsasUSA:["dow","nasdaq","s&p","wall street"],
- bolsasGlobal:["nikkei","hang seng","dax","ftse","asia","europa"]
-};
+function renderizar() {
+  if (chart) chart.destroy();
 
-const feedsMercado=[
- "https://valor.globo.com/rss/mercados/",
- "https://www.infomoney.com.br/feed/"
-];
-
-const feedsBreaking=[
- "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
-];
-
-function stripHTML(h){
- const d=document.createElement("div");
- d.innerHTML=h;
- return d.textContent||"";
+  chart = new Chart(document.getElementById("grafico"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Risco",
+          data: dadosRisco,
+          borderWidth: 2
+        },
+        {
+          label: "Segurança",
+          data: dadosSeguranca,
+          borderWidth: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false }
+    }
+  });
 }
 
-async function buscarRSS(url){
- try{
-  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const x=await r.text();
-  const xml=new DOMParser().parseFromString(x,"text/xml");
-  return [...xml.querySelectorAll("item")].map(i=>({
-    title:i.querySelector("title")?.textContent||"",
-    link:i.querySelector("link")?.textContent||"",
-    desc:i.querySelector("description")?.textContent||""
-  }));
- }catch{return []}
-}
-
-function pertenceTema(a,p){
- if(!p) return true;
- const t=(a.title+a.desc).toLowerCase();
- return p.some(x=>t.includes(x));
-}
-
-async function atualizarSecao(id,feeds,filtro){
- const box=document.querySelector(`#${id} .list`);
- while(box.firstChild) box.removeChild(box.firstChild);
-
- const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
- dados.filter(n=>pertenceTema(n,filtro)).slice(0,5).forEach(n=>{
-  const d=document.createElement("div");
-  d.className="news-item";
-  const u=getUrgencia(n);
-  if(u) d.classList.add(u);
-  d.innerHTML=`
-   <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
-   <div class="news-desc">${stripHTML(n.desc)}</div>`;
-  box.appendChild(d);
- });
-}
-
-async function atualizarTudo(){
- await atualizarSecao("breaking",feedsBreaking);
- for(const t in temas){
-   await atualizarSecao(t,feedsMercado,temas[t]);
- }
-}
-
-atualizarTudo();
-setInterval(atualizarTudo,60000);
+atualizar();
+setInterval(atualizar, 60000);
 </script>
+
 </body>
 </html>
