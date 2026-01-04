@@ -2,49 +2,54 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Cotações Globais em Tempo Real</title>
-    <!-- Adicione seu CSS personalizado aqui para estilizar a tabela -->
+    <title>Cotações Risco x Segurança</title>
+    <!-- Você pode adicionar seu CSS aqui para personalizar o visual -->
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .tradingview-widget-container { width: 100%; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f0f0f0; }
+        .widget-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .risk-header { color: #D32F2F; }
+        .security-header { color: #388E3C; }
     </style>
 </head>
 <body>
 
-    <h1>Tabela de Cotações de Bolsas Globais</h1>
+    <h1>Tabela de Cotações Globais - Risco vs Segurança</h1>
+    <p>Dados em tempo real/atraso padrão, fornecidos pelo TradingView.</p>
 
-    <!-- TradingView Widget de Cotações - Início -->
+    <!-- Widget Principal com Máximo de Ativos (Agrupados) -->
     <div class="tradingview-widget-container">
+      <div class="widget-title risk-header">Ativos de Risco (Índices Globais e Futuros)</div>
       <div class="tradingview-widget-container__widget"></div>
       <script type="text/javascript" src="s3.tradingview.com" async>
       {
-      "title": "Principais Índices Globais",
       "width": "100%",
-      "height": "600",
+      "height": "400",
       "symbolsGroup": [
         {
           "name": "Américas",
           "symbols": [
             { "name": "INDEXSP:.INX", "displayName": "S&P 500" },
             { "name": "INDEXDJX:.DJI", "displayName": "Dow Jones" },
-            { "name": "INDEXNASDAQ:.IXIC", "displayName": "Nasdaq Comp" },
-            { "name": "INDEXBVMF:IBOV", "displayName": "Ibovespa" }
+            { "name": "INDEXNASDAQ:.IXIC", "displayName": "Nasdaq Composite" },
+            { "name": "INDEXBVMF:IBOV", "displayName": "Ibovespa" },
+            { "name": "INDEXRCMP:RUT", "displayName": "Russell 2000" }
           ]
         },
         {
-          "name": "Europa",
+          "name": "Europa/ME",
           "symbols": [
-            { "name": "INDEXDB:DAX", "displayName": "DAX" },
-            { "name": "INDEXFTSE:UKX", "displayName": "FTSE 100" },
-            { "name": "INDEXCAC:CAC40", "displayName": "CAC 40" }
+            { "name": "INDEXDB:DAX", "displayName": "DAX (Alemanha)" },
+            { "name": "INDEXFTSE:UKX", "displayName": "FTSE 100 (UK)" },
+            { "name": "INDEXCAC:CAC40", "displayName": "CAC 40 (França)" },
+            { "name": "INDEXSTX:SX5E", "displayName": "Euro Stoxx 50" }
           ]
         },
         {
-          "name": "Ásia-Pacífico",
+          "name": "Ásia",
           "symbols": [
-            { "name": "INDEXNIKKEI:NI225", "displayName": "Nikkei 225" },
-            { "name": "INDEXSHANGHAI:000001", "displayName": "SSE Composite" },
-            { "name": "INDEXHANGSENG:HSI", "displayName": "Hang Seng" }
+            { "name": "INDEXNIKKEI:NI225", "displayName": "Nikkei 225 (Japão)" },
+            { "name": "INDEXSHANGHAI:000001", "displayName": "SSE Comp (China)" },
+            { "name": "INDEXHANGSENG:HSI", "displayName": "Hang Seng (HK)" }
           ]
         }
       ],
@@ -54,7 +59,29 @@
     }
       </script>
     </div>
-    <!-- TradingView Widget de Cotações - Fim -->
+    <!-- Fim Widget Risco -->
+    
+    <!-- Widget Ativos de Segurança (Safe Havens) -->
+    <div class="tradingview-widget-container" style="margin-top: 30px;">
+        <div class="widget-title security-header">Ativos de Segurança (Dólar, Ouro, Títulos)</div>
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="s3.tradingview.com" async>
+        {
+        "width": "100%",
+        "height": 250,
+        "symbols": [
+            { "proName": "FX:DXY", "title": "Índice Dólar (DXY)" },
+            { "proName": "COMEX:GC1!", "title": "Ouro Futuro (GC)" },
+            { "proName": "CURRENCYCOM:USDBRL", "title": "USD/BRL" },
+            { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+            { "proName": "CME_CBOT:ZN1!", "title": "Título EUA 10A Fut." }
+        ],
+        "colorTheme": "light",
+        "locale": "br"
+        }
+        </script>
+    </div>
+    <!-- Fim Widget Segurança -->
 
 </body>
 </html>
