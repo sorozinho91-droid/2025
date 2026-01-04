@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>Dashboard Financeiro Global</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 :root{
   --bg:#f2f4f7;
@@ -18,7 +20,6 @@
   --yellow:#fff176;
 }
 
-/* ===== BASE ===== */
 html,body{
   height:100%;
   margin:0;
@@ -32,7 +33,6 @@ body{
   padding:12px;
 }
 
-/* ===== GRID PRINCIPAL ===== */
 .dashboard{
   display:grid;
   grid-template-rows:auto 1fr;
@@ -40,7 +40,6 @@ body{
   gap:12px;
 }
 
-/* ===== BREAKING ===== */
 .section.breaking{
   background:#fff5f5;
   border:2px solid var(--red);
@@ -50,7 +49,6 @@ body{
   overflow-y:auto;
 }
 
-/* ===== GRID DE MÓDULOS ===== */
 .main{
   display:grid;
   grid-template-columns:repeat(3, 1fr);
@@ -60,7 +58,6 @@ body{
   overflow-y:auto;
 }
 
-/* ===== MÓDULOS ===== */
 .section{
   background:var(--mod);
   border:1px solid var(--line);
@@ -69,7 +66,6 @@ body{
   display:flex;
   flex-direction:column;
   overflow:hidden;
-  contain:layout paint;
   box-shadow:0 1px 2px rgba(0,0,0,.05);
 }
 
@@ -78,17 +74,13 @@ body{
   margin:0 0 6px;
   padding-bottom:4px;
   border-bottom:1px solid var(--line);
-  flex-shrink:0;
 }
 
-/* ===== LISTA ===== */
 .list{
   overflow-y:auto;
-  overscroll-behavior:contain;
   scrollbar-width:thin;
 }
 
-/* ===== CARD ===== */
 .news-item{
   background:var(--card);
   border:1px solid var(--line);
@@ -96,7 +88,6 @@ body{
   padding:6px 8px;
   margin-bottom:6px;
   position:relative;
-  will-change:transform;
 }
 
 .news-item::before{
@@ -106,7 +97,6 @@ body{
   top:0;
   bottom:0;
   width:3px;
-  border-radius:6px 0 0 6px;
 }
 
 .urgente-vermelho::before{background:var(--red);}
@@ -127,14 +117,13 @@ body{
   line-height:1.3;
 }
 
-/* ===== 4K ===== */
 @media (min-width:2560px){
   body{font-size:15px;padding:20px}
   .dashboard{max-width:2800px;margin:0 auto}
   .main{grid-template-columns:repeat(4,1fr)}
   .section h2{font-size:16px}
   .news-title a{font-size:14px}
-  .news-desc{font-size:13px;line-height:1.4;max-height:3.6em;overflow:hidden}
+  .news-desc{font-size:13px}
 }
 </style>
 </head>
@@ -155,7 +144,8 @@ body{
   <div class="section" id="juros"><h2>📈 Juros Americanos</h2><div class="list"></div></div>
   <div class="section" id="bancos"><h2>🏦 Bancos</h2><div class="list"></div></div>
   <div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas EUA</h2><div class="list"></div></div>
-  <div class="section" id="bolsasGlobal"><h2>🌍 Bolsas Europa & Ásia</h2><div class="list"></div></div>
+  <div class="section" id="bolsasEuropa"><h2>🇪🇺 Bolsas Europa</h2><div class="list"></div></div>
+  <div class="section" id="bolsasAsia"><h2>🌏 Bolsas Ásia</h2><div class="list"></div></div>
 </div>
 </div>
 
@@ -182,7 +172,8 @@ const temas={
  juros:["juros","interest","fomc","yield"],
  bancos:["banco","bank","itaú","jpmorgan"],
  bolsasUSA:["dow","nasdaq","s&p","wall street"],
- bolsasGlobal:["nikkei","hang seng","dax","ftse","asia","europa"]
+ bolsasEuropa:["dax","ftse","cac","ibex","stoxx","europa","londres","frankfurt","paris","madrid"],
+ bolsasAsia:["nikkei","hang seng","shanghai","kospi","asia","china","japão","hong kong"]
 };
 
 const feedsMercado=[
@@ -221,8 +212,7 @@ function pertenceTema(a,p){
 
 async function atualizarSecao(id,feeds,filtro){
  const box=document.querySelector(`#${id} .list`);
- while(box.firstChild) box.removeChild(box.firstChild);
-
+ box.innerHTML="";
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
  dados.filter(n=>pertenceTema(n,filtro)).slice(0,5).forEach(n=>{
   const d=document.createElement("div");
