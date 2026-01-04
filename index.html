@@ -1,60 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <script src="cdn.plot.ly"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: #2d2d2d; padding: 20px; border-radius: 10px; border-left: 5px solid #444; }
-        .risk { border-color: #ff4444; } /* Vermelho para Risco */
-        .safe { border-color: #00c851; } /* Verde para Segurança */
-        .chart-container { margin-top: 20px; background: #2d2d2d; border-radius: 10px; padding: 10px; }
+        .card { background: #222; padding: 15px; border-radius: 8px; border-top: 4px solid #444; }
+        .risk { border-color: #ff4444; } .safe { border-color: #00c851; }
+        #grafico { height: 400px; margin-top: 20px; background: #222; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <h2>Direção Global do Dólar 2026 (Risco vs Segurança)</h2>
-    
+    <h2>Direção do Dólar Global (Risco vs Segurança)</h2>
     <div class="grid">
-        <div class="card risk">
-            <h3>Ativos de Risco (Futuros)</h3>
-            <div id="risk-table">Carregando Índices...</div>
-        </div>
-        <div class="card safe">
-            <h3>Ativos de Segurança</h3>
-            <div id="safe-table">Carregando Safe Havens...</div>
-        </div>
+        <div class="card risk"><h3>Ativos de Risco</h3><div id="tab-risco">Carregando...</div></div>
+        <div class="card safe"><h3>Ativos de Segurança</h3><div id="tab-seguranca">Carregando...</div></div>
     </div>
-
-    <div class="chart-container">
-        <div id="main-chart" style="width:100%;height:400px;"></div>
-    </div>
+    <div id="grafico"></div>
 
     <script>
-        // Lógica de Direção: Se Segurança > Risco, Dólar sobe (DXY Bullish)
-        function updateDashboard() {
-            // Aqui você conectaria a URL da sua planilha publicada em CSV
-            // Exemplo visual do gráfico de comparação
-            const traceRisco = {
-                x: ['06:00', '09:00', '12:00', '15:00', '18:00'],
-                y: [100, 98, 97, 95, 94],
-                name: 'Sentimento de Risco',
-                type: 'scatter', line: {color: '#ff4444'}
-            };
-            const traceSeguranca = {
-                x: ['06:00', '09:00', '12:00', '15:00', '18:00'],
-                y: [100, 102, 105, 108, 110],
-                name: 'Procura por Segurança (Dólar/Ouro)',
-                type: 'scatter', line: {color: '#00c851'}
-            };
+        const CSV_URL = 'SUA_URL_AQUI_DO_CSV_PUBLICADO';
+
+        async function plotar() {
+            const res = await fetch(CSV_URL);
+            const data = await res.text();
+            const rows = data.split('\n').slice(1);
             
-            Plotly.newPlot('main-chart', [traceRisco, traceSeguranca], {
-                title: 'Correlação Inversa: Risco caindo indica Dólar Forte',
-                paper_bgcolor: '#2d2d2d', plot_bgcolor: '#2d2d2d',
-                font: {color: '#fff'}
+            const tempos = [], vRisco = [], vSeguranca = [];
+            rows.forEach(row => {
+                const cols = row.split(',');
+                if(cols[0]) {
+                    tempos.push(cols[0]);
+                    vRisco.push(parseFloat(cols[1]));
+                    vSeguranca.push(parseFloat(cols[2]));
+                }
+            });
+
+            const trace1 = { x: tempos, y: vRisco, name: 'Índice de Risco', line: {color: '#ff4444'} };
+            const trace2 = { x: tempos, y: vSeguranca, name: 'Índice Segurança/Dólar', line: {color: '#00c851'} };
+
+            Plotly.newPlot('grafico', [trace1, trace2], {
+                title: 'Correlação Inversa (Se Risco Cai, Dólar Sobe)',
+                paper_bgcolor: '#222', plot_bgcolor: '#222', font: {color: '#fff'}
             });
         }
-        setInterval(updateDashboard, 60000); // Atualiza a cada 60s
-        updateDashboard();
+        setInterval(plotar, 60000); plotar();
     </script>
 </body>
 </html>
