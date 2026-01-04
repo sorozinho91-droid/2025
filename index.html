@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Financeiro Global - Brasília Time</title>
+    <title>Monitor Global 2026 - Risco vs Segurança</title>
     <style>
+        /* Estilos CSS gerais */
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #1c1e21; }
         .container { max-width: 1200px; margin: auto; }
         
         /* Estilo do Relógio */
-        .clock-container { background: #1c1e21; color: #00ff00; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .clock-container { background: #1c1e21; color: #00ff00; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         #clock { font-size: 2.5em; font-weight: bold; font-family: 'Courier New', Courier, monospace; }
         #date { font-size: 1.1em; color: #aaa; margin-top: 5px; }
 
@@ -80,23 +81,31 @@
     <!-- 3. GRÁFICO DE COMPARAÇÃO EM TEMPO REAL -->
     <div class="card" style="margin-bottom: 25px;">
         <div class="widget-title">GRÁFICO INTRADAY (60s): DÓLAR (DXY) vs S&P 500</div>
-        <div id="compare_chart" style="height: 450px;"></div>
-        <script type="text/javascript" src="s3.tradingview.com"></script>
-        <script type="text/javascript">
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": "FX:DXY",
-                "interval": "1",
-                "timezone": "America/Sao_Paulo",
-                "theme": "light",
-                "style": "2",
-                "locale": "br",
-                "container_id": "compare_chart",
-                "studies": [
-                    { "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } }
-                ]
-            });
-        </script>
+        <!-- Note que aqui eu removi o container_id do JS e deixei o widget criar a div, pois a div interna não tinha altura suficiente no código anterior -->
+        <div class="tradingview-widget-container" style="height: 450px; width: 100%;">
+            <script type="text/javascript" src="s3.tradingview.com"></script>
+            <script type="text/javascript">
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": "FX:DXY", /* Dólar */
+                    "interval": "1",    /* 1 Minuto Intraday */
+                    "timezone": "America/Sao_Paulo",
+                    "theme": "light",
+                    "style": "2",       /* Estilo de linha */
+                    "locale": "br",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "hide_top_toolbar": false,
+                    "hide_legend": false,
+                    "save_image": false,
+                    "container_id": "tradingview_widget_compare", /* Novo ID de container para evitar conflitos */
+                    "studies": [
+                        { "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } } /* S&P 500 */
+                    ]
+                });
+            </script>
+            <div id="tradingview_widget_compare" style="height:100%; width:100%;"></div>
+        </div>
     </div>
 
     <!-- 4. TABELA DE ATIVOS GLOBAIS -->
@@ -143,7 +152,6 @@
     // Função para o Relógio de Brasília
     function updateClock() {
         const now = new Date();
-        
         // Ajuste para Horário de Brasília (GMT-3)
         const options = { timeZone: "America/Sao_Paulo", hour: '2-digit', minute: '2-digit', second: '2-digit' };
         const timeString = now.toLocaleTimeString('pt-BR', options);
