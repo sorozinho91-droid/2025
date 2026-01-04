@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Risco x Segurança</title>
+  <title>Risco x Segurança (Atual)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; }
@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<h2>Ativos de Risco x Segurança</h2>
+<h2>Ativos de Risco x Segurança (Ponto Atual)</h2>
 <canvas id="grafico"></canvas>
 
 <script>
@@ -19,7 +19,7 @@
    DADOS REAIS (Var%)
    ========================= */
 
-// ATIVOS DE RISCO (Var%)
+// ATIVOS DE RISCO
 const riscoVars = [
   0.0101, 0.0042, -0.0001, 0.0036, 0,
   0.0024, -0.001, -0.0131, -0.0022, 0.0039,
@@ -28,14 +28,14 @@ const riscoVars = [
   -0.0133, -0.0006
 ];
 
-// ATIVOS DE SEGURANÇA (Var%)
+// ATIVOS DE SEGURANÇA
 const segurancaVars = [
   0.0056, -0.0405, -0.0052, 0.0049, 0.0052,
   0.0071, 0.0098, 0, -0.0103
 ];
 
 /* =========================
-   FUNÇÕES
+   FUNÇÃO
    ========================= */
 
 function media(arr) {
@@ -47,49 +47,36 @@ function media(arr) {
    ========================= */
 
 const ctx = document.getElementById("grafico");
-let labels = [];
-let riscoSerie = [];
-let segurancaSerie = [];
 let chart;
 
 function atualizar() {
-  const hora = new Date().toLocaleTimeString();
-
   const riscoMedia = media(riscoVars);
   const segurancaMedia = media(segurancaVars);
 
-  labels.push(hora);
-  riscoSerie.push(riscoMedia);
-  segurancaSerie.push(segurancaMedia);
+  const labels = ["Agora"];
 
-  // limita histórico
-  if (labels.length > 30) {
-    labels.shift();
-    riscoSerie.shift();
-    segurancaSerie.shift();
-  }
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Risco",
+        data: [riscoMedia],
+        borderWidth: 2
+      },
+      {
+        label: "Segurança",
+        data: [segurancaMedia],
+        borderWidth: 2
+      }
+    ]
+  };
 
   if (!chart) {
     chart = new Chart(ctx, {
       type: "line",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Risco",
-            data: riscoSerie,
-            borderWidth: 2
-          },
-          {
-            label: "Segurança",
-            data: segurancaSerie,
-            borderWidth: 2
-          }
-        ]
-      },
+      data,
       options: {
         responsive: true,
-        interaction: { mode: "index", intersect: false },
         scales: {
           y: {
             ticks: {
@@ -100,6 +87,7 @@ function atualizar() {
       }
     });
   } else {
+    chart.data = data;
     chart.update();
   }
 }
