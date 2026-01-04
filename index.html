@@ -3,28 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Global 2026 - Risco vs Segurança</title>
+    <title>Dashboard Financeiro Global - Brasília Time</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .header { text-align: center; margin-bottom: 30px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #1c1e21; }
         .container { max-width: 1200px; margin: auto; }
-        .flex-row { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 30px; }
-        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; min-width: 350px; }
-        .widget-title { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        /* Estilo do Relógio */
+        .clock-container { background: #1c1e21; color: #00ff00; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #clock { font-size: 2.5em; font-weight: bold; font-family: 'Courier New', Courier, monospace; }
+        #date { font-size: 1.1em; color: #aaa; margin-top: 5px; }
+
+        .header-title { text-align: center; margin-bottom: 20px; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 25px; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; min-width: 340px; }
+        .widget-title { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
         .risk-text { color: #d32f2f; }
-        .safe-text { color: #388e3c; }
-        footer { text-align: center; margin-top: 40px; font-size: 0.9em; color: #777; }
+        .safe-text { color: #2e7d32; }
+        
+        footer { text-align: center; margin-top: 40px; font-size: 0.85em; color: #65676b; padding-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>Monitor de Sentimento e Direção do Dólar</h1>
-        <p>Dados em Tempo Real - Janeiro de 2026</p>
+    
+    <!-- 1. RELÓGIO DE BRASÍLIA -->
+    <div class="clock-container">
+        <div id="clock">00:00:00</div>
+        <div id="date">Carregando data...</div>
     </div>
 
-    <!-- 1. TERMÔMETROS DE SENTIMENTO -->
+    <div class="header-title">
+        <h1>Monitor Risco Global vs Segurança</h1>
+        <p>Dados Realistas e Automáticos | Direção do Dólar 2026</p>
+    </div>
+
+    <!-- 2. TERMÔMETROS DE SENTIMENTO (RISK-ON / RISK-OFF) -->
     <div class="flex-row">
         <div class="card">
             <div class="widget-title risk-text">SENTIMENTO DE RISCO (S&P 500)</div>
@@ -33,7 +47,7 @@
                 {
                     "interval": "1m",
                     "width": "100%",
-                    "height": "350",
+                    "height": "340",
                     "symbol": "INDEXSP:.INX",
                     "showIntervalTabs": true,
                     "displayMode": "single",
@@ -51,7 +65,7 @@
                 {
                     "interval": "1m",
                     "width": "100%",
-                    "height": "350",
+                    "height": "340",
                     "symbol": "FX:DXY",
                     "showIntervalTabs": true,
                     "displayMode": "single",
@@ -63,10 +77,10 @@
         </div>
     </div>
 
-    <!-- 2. GRÁFICO COMPARATIVO INTRADAY -->
-    <div class="card" style="margin-bottom: 30px;">
-        <div class="widget-title">CORRELAÇÃO EM TEMPO REAL: DÓLAR vs BOLSAS (RISCO)</div>
-        <div id="tv_chart_compare" style="height: 500px;"></div>
+    <!-- 3. GRÁFICO DE COMPARAÇÃO EM TEMPO REAL -->
+    <div class="card" style="margin-bottom: 25px;">
+        <div class="widget-title">GRÁFICO INTRADAY (60s): DÓLAR (DXY) vs S&P 500</div>
+        <div id="compare_chart" style="height: 450px;"></div>
         <script type="text/javascript" src="s3.tradingview.com"></script>
         <script type="text/javascript">
             new TradingView.widget({
@@ -77,7 +91,7 @@
                 "theme": "light",
                 "style": "2",
                 "locale": "br",
-                "container_id": "tv_chart_compare",
+                "container_id": "compare_chart",
                 "studies": [
                     { "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } }
                 ]
@@ -85,39 +99,31 @@
         </script>
     </div>
 
-    <!-- 3. TABELA DE COTAÇÕES TUDO-EM-UM -->
+    <!-- 4. TABELA DE ATIVOS GLOBAIS -->
     <div class="card">
-        <div class="widget-title">COTAÇÕES GLOBAIS ATUALIZADAS</div>
+        <div class="widget-title">COTAÇÕES TUDO-EM-UM (RISCO X SEGURANÇA)</div>
         <div class="tradingview-widget-container">
             <script type="text/javascript" src="s3.tradingview.com" async>
             {
                 "width": "100%",
-                "height": "600",
+                "height": "500",
                 "symbolsGroup": [
                     {
-                        "name": "Segurança (Dólar/Ouro)",
+                        "name": "Ativos de Segurança",
                         "symbols": [
                             { "name": "FX:DXY", "displayName": "Índice Dólar" },
                             { "name": "TVC:GOLD", "displayName": "Ouro" },
-                            { "name": "FX:USDBRL", "displayName": "USD/BRL" },
+                            { "name": "FX:USDBRL", "displayName": "Dólar/Real" },
                             { "name": "TVC:US10Y", "displayName": "Treasury 10Y" }
                         ]
                     },
                     {
-                        "name": "Risco (Américas)",
+                        "name": "Ativos de Risco",
                         "symbols": [
                             { "name": "INDEXSP:.INX", "displayName": "S&P 500" },
                             { "name": "INDEXNASDAQ:.IXIC", "displayName": "Nasdaq Comp" },
-                            { "name": "BMFBOVESPA:IBOV", "displayName": "Ibovespa" }
-                        ]
-                    },
-                    {
-                        "name": "Risco (Europa/Ásia)",
-                        "symbols": [
-                            { "name": "INDEXDB:DAX", "displayName": "DAX 40" },
-                            { "name": "INDEXFTSE:UKX", "displayName": "FTSE 100" },
-                            { "name": "INDEXNIKKEI:NI225", "displayName": "Nikkei 225" },
-                            { "name": "INDEXHANGSENG:HSI", "displayName": "Hang Seng" }
+                            { "name": "BMFBOVESPA:IBOV", "displayName": "Ibovespa" },
+                            { "name": "INDEXDB:DAX", "displayName": "DAX 40" }
                         ]
                     }
                 ],
@@ -129,9 +135,30 @@
     </div>
 
     <footer>
-        Monitor Financeiro Automático 2026 | Dados via TradingView & Provedores Globais
+        &copy; 2026 Dashboard Financeiro Automático | Horário de Brasília (GMT-3)
     </footer>
 </div>
+
+<script>
+    // Função para o Relógio de Brasília
+    function updateClock() {
+        const now = new Date();
+        
+        // Ajuste para Horário de Brasília (GMT-3)
+        const options = { timeZone: "America/Sao_Paulo", hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const timeString = now.toLocaleTimeString('pt-BR', options);
+        
+        const dateOptions = { timeZone: "America/Sao_Paulo", weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateString = now.toLocaleDateString('pt-BR', dateOptions);
+
+        document.getElementById('clock').textContent = timeString;
+        document.getElementById('date').textContent = dateString;
+    }
+
+    // Atualiza o relógio a cada segundo
+    setInterval(updateClock, 1000);
+    updateClock(); // Chamada inicial
+</script>
 
 </body>
 </html>
