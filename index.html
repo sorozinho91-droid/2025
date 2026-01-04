@@ -2,37 +2,136 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Teste de Gráfico TradingView</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Global 2026 - Risco vs Segurança</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .container { max-width: 1200px; margin: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 30px; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; min-width: 350px; }
+        .widget-title { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .risk-text { color: #d32f2f; }
+        .safe-text { color: #388e3c; }
+        footer { text-align: center; margin-top: 40px; font-size: 0.9em; color: #777; }
+    </style>
 </head>
 <body>
 
-    <h2>Gráfico de Teste (Dólar vs Risco)</h2>
-
-    <!-- Início do Código do Gráfico -->
-    <div class="tradingview-widget-container" style="height:500px; width:100%;">
-      <div id="tradingview_chart" style="height:100%;"></div>
-      <script type="text/javascript" src="s3.tradingview.com"></script>
-      <script type="text/javascript">
-      new TradingView.widget(
-      {
-        "autosize": true,
-        "symbol": "FX:DXY", /* Dólar como base */
-        "interval": "1",    /* Tempo Real */
-        "theme": "light",
-        "locale": "br",
-        "container_id": "tradingview_chart",
-        "studies": [
-          {
-            "id": "Overlay@tv-basicstudies",
-            "inputs": {
-              "symbol": "INDEXSP:.INX" /* S&P 500 para comparação */
-            }
-          }
-        ]
-      });
-      </script>
+<div class="container">
+    <div class="header">
+        <h1>Monitor de Sentimento e Direção do Dólar</h1>
+        <p>Dados em Tempo Real - Janeiro de 2026</p>
     </div>
-    <!-- Fim do Código do Gráfico -->
+
+    <!-- 1. TERMÔMETROS DE SENTIMENTO -->
+    <div class="flex-row">
+        <div class="card">
+            <div class="widget-title risk-text">SENTIMENTO DE RISCO (S&P 500)</div>
+            <div class="tradingview-widget-container">
+                <script type="text/javascript" src="s3.tradingview.com" async>
+                {
+                    "interval": "1m",
+                    "width": "100%",
+                    "height": "350",
+                    "symbol": "INDEXSP:.INX",
+                    "showIntervalTabs": true,
+                    "displayMode": "single",
+                    "locale": "br",
+                    "colorTheme": "light"
+                }
+                </script>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="widget-title safe-text">DIREÇÃO DO DÓLAR (DXY INDEX)</div>
+            <div class="tradingview-widget-container">
+                <script type="text/javascript" src="s3.tradingview.com" async>
+                {
+                    "interval": "1m",
+                    "width": "100%",
+                    "height": "350",
+                    "symbol": "FX:DXY",
+                    "showIntervalTabs": true,
+                    "displayMode": "single",
+                    "locale": "br",
+                    "colorTheme": "light"
+                }
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. GRÁFICO COMPARATIVO INTRADAY -->
+    <div class="card" style="margin-bottom: 30px;">
+        <div class="widget-title">CORRELAÇÃO EM TEMPO REAL: DÓLAR vs BOLSAS (RISCO)</div>
+        <div id="tv_chart_compare" style="height: 500px;"></div>
+        <script type="text/javascript" src="s3.tradingview.com"></script>
+        <script type="text/javascript">
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "FX:DXY",
+                "interval": "1",
+                "timezone": "America/Sao_Paulo",
+                "theme": "light",
+                "style": "2",
+                "locale": "br",
+                "container_id": "tv_chart_compare",
+                "studies": [
+                    { "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } }
+                ]
+            });
+        </script>
+    </div>
+
+    <!-- 3. TABELA DE COTAÇÕES TUDO-EM-UM -->
+    <div class="card">
+        <div class="widget-title">COTAÇÕES GLOBAIS ATUALIZADAS</div>
+        <div class="tradingview-widget-container">
+            <script type="text/javascript" src="s3.tradingview.com" async>
+            {
+                "width": "100%",
+                "height": "600",
+                "symbolsGroup": [
+                    {
+                        "name": "Segurança (Dólar/Ouro)",
+                        "symbols": [
+                            { "name": "FX:DXY", "displayName": "Índice Dólar" },
+                            { "name": "TVC:GOLD", "displayName": "Ouro" },
+                            { "name": "FX:USDBRL", "displayName": "USD/BRL" },
+                            { "name": "TVC:US10Y", "displayName": "Treasury 10Y" }
+                        ]
+                    },
+                    {
+                        "name": "Risco (Américas)",
+                        "symbols": [
+                            { "name": "INDEXSP:.INX", "displayName": "S&P 500" },
+                            { "name": "INDEXNASDAQ:.IXIC", "displayName": "Nasdaq Comp" },
+                            { "name": "BMFBOVESPA:IBOV", "displayName": "Ibovespa" }
+                        ]
+                    },
+                    {
+                        "name": "Risco (Europa/Ásia)",
+                        "symbols": [
+                            { "name": "INDEXDB:DAX", "displayName": "DAX 40" },
+                            { "name": "INDEXFTSE:UKX", "displayName": "FTSE 100" },
+                            { "name": "INDEXNIKKEI:NI225", "displayName": "Nikkei 225" },
+                            { "name": "INDEXHANGSENG:HSI", "displayName": "Hang Seng" }
+                        ]
+                    }
+                ],
+                "colorTheme": "light",
+                "locale": "br"
+            }
+            </script>
+        </div>
+    </div>
+
+    <footer>
+        Monitor Financeiro Automático 2026 | Dados via TradingView & Provedores Globais
+    </footer>
+</div>
 
 </body>
 </html>
