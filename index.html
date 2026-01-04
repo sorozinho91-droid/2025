@@ -1,50 +1,60 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <script src="cdn.plot.ly"></script>
+    <meta charset="UTF-8">
+    <title>Cotações Globais em Tempo Real</title>
+    <!-- Adicione seu CSS personalizado aqui para estilizar a tabela -->
     <style>
-        body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: #222; padding: 15px; border-radius: 8px; border-top: 4px solid #444; }
-        .risk { border-color: #ff4444; } .safe { border-color: #00c851; }
-        #grafico { height: 400px; margin-top: 20px; background: #222; border-radius: 8px; }
+        body { font-family: sans-serif; padding: 20px; }
+        .tradingview-widget-container { width: 100%; }
     </style>
 </head>
 <body>
-    <h2>Direção do Dólar Global (Risco vs Segurança)</h2>
-    <div class="grid">
-        <div class="card risk"><h3>Ativos de Risco</h3><div id="tab-risco">Carregando...</div></div>
-        <div class="card safe"><h3>Ativos de Segurança</h3><div id="tab-seguranca">Carregando...</div></div>
-    </div>
-    <div id="grafico"></div>
 
-    <script>
-        const CSV_URL = 'SUA_URL_AQUI_DO_CSV_PUBLICADO';
+    <h1>Tabela de Cotações de Bolsas Globais</h1>
 
-        async function plotar() {
-            const res = await fetch(CSV_URL);
-            const data = await res.text();
-            const rows = data.split('\n').slice(1);
-            
-            const tempos = [], vRisco = [], vSeguranca = [];
-            rows.forEach(row => {
-                const cols = row.split(',');
-                if(cols[0]) {
-                    tempos.push(cols[0]);
-                    vRisco.push(parseFloat(cols[1]));
-                    vSeguranca.push(parseFloat(cols[2]));
-                }
-            });
-
-            const trace1 = { x: tempos, y: vRisco, name: 'Índice de Risco', line: {color: '#ff4444'} };
-            const trace2 = { x: tempos, y: vSeguranca, name: 'Índice Segurança/Dólar', line: {color: '#00c851'} };
-
-            Plotly.newPlot('grafico', [trace1, trace2], {
-                title: 'Correlação Inversa (Se Risco Cai, Dólar Sobe)',
-                paper_bgcolor: '#222', plot_bgcolor: '#222', font: {color: '#fff'}
-            });
+    <!-- TradingView Widget de Cotações - Início -->
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="s3.tradingview.com" async>
+      {
+      "title": "Principais Índices Globais",
+      "width": "100%",
+      "height": "600",
+      "symbolsGroup": [
+        {
+          "name": "Américas",
+          "symbols": [
+            { "name": "INDEXSP:.INX", "displayName": "S&P 500" },
+            { "name": "INDEXDJX:.DJI", "displayName": "Dow Jones" },
+            { "name": "INDEXNASDAQ:.IXIC", "displayName": "Nasdaq Comp" },
+            { "name": "INDEXBVMF:IBOV", "displayName": "Ibovespa" }
+          ]
+        },
+        {
+          "name": "Europa",
+          "symbols": [
+            { "name": "INDEXDB:DAX", "displayName": "DAX" },
+            { "name": "INDEXFTSE:UKX", "displayName": "FTSE 100" },
+            { "name": "INDEXCAC:CAC40", "displayName": "CAC 40" }
+          ]
+        },
+        {
+          "name": "Ásia-Pacífico",
+          "symbols": [
+            { "name": "INDEXNIKKEI:NI225", "displayName": "Nikkei 225" },
+            { "name": "INDEXSHANGHAI:000001", "displayName": "SSE Composite" },
+            { "name": "INDEXHANGSENG:HSI", "displayName": "Hang Seng" }
+          ]
         }
-        setInterval(plotar, 60000); plotar();
-    </script>
+      ],
+      "showSymbolLogo": true,
+      "colorTheme": "light",
+      "locale": "br"
+    }
+      </script>
+    </div>
+    <!-- TradingView Widget de Cotações - Fim -->
+
 </body>
 </html>
