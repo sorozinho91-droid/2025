@@ -1,111 +1,60 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Risco vs Segurança - Tempo Real</title>
+    <script src="cdn.plot.ly"></script>
     <style>
-        body {
-            font-family: sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #e9e9e9;
-        }
-        .positive { color: green; font-weight: bold; }
-        .negative { color: red; font-weight: bold; }
-        .neutral { color: gray; }
-        .header-risk { background-color: #ffcccc !important; }
-        .header-security { background-color: #ccffcc !important; }
-        .update-time { font-size: 0.8em; color: #666; margin-top: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #2d2d2d; padding: 20px; border-radius: 10px; border-left: 5px solid #444; }
+        .risk { border-color: #ff4444; } /* Vermelho para Risco */
+        .safe { border-color: #00c851; } /* Verde para Segurança */
+        .chart-container { margin-top: 20px; background: #2d2d2d; border-radius: 10px; padding: 10px; }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>Indicador Automático de Mercados</h1>
-        <p>Atualização a cada 60 segundos.</p>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Ativo</th>
-                    <th>Tipo</th>
-                    <th>Preço Atual</th>
-                    <th>Variação Diária (%)</th>
-                </tr>
-            </thead>
-            <tbody id="market-data">
-                <!-- Linhas serão inseridas aqui via JavaScript -->
-            </tbody>
-        </table>
-        
-        <div class="update-time">Última atualização: <span id="timestamp">--:--:--</span></div>
+    <h2>Direção Global do Dólar 2026 (Risco vs Segurança)</h2>
+    
+    <div class="grid">
+        <div class="card risk">
+            <h3>Ativos de Risco (Futuros)</h3>
+            <div id="risk-table">Carregando Índices...</div>
+        </div>
+        <div class="card safe">
+            <h3>Ativos de Segurança</h3>
+            <div id="safe-table">Carregando Safe Havens...</div>
+        </div>
     </div>
 
-    <!-- Script para buscar dados -->
+    <div class="chart-container">
+        <div id="main-chart" style="width:100%;height:400px;"></div>
+    </div>
+
     <script>
-        const API_URL = 'api.alternative.me'; // API para cripto (exemplo)
-        // Para ações e índices, APIs como Twelve Data ou Alpha Vantage seriam usadas em um projeto real.
-        // Como o Google Finance bloqueia acesso direto via navegador (CORS), usamos exemplos genéricos.
-
-        // Dados estáticos simulados para ilustrar o layout com base nos dados de jan/2026
-        const staticData = {
-            'SPX:INDEXSP': { name: 'S&P 500', type: 'Risco', price: 6858.47, change: 0.45 },
-            'IBOV:INDEXBV': { name: 'Ibovespa', type: 'Risco', price: 160539.00, change: -1.2 },
-            'XAU-USD:CURRENCY': { name: 'Ouro (Oz)', type: 'Segurança', price: 2350.20, change: -0.1 },
-            'CURRENCY:USDBRL': { name: 'Dólar/Real', type: 'Segurança', price: 5.12, change: 0.05 }
-        };
-
-        function updateTable() {
-            const tbody = document.getElementById('market-data');
-            tbody.innerHTML = ''; // Limpa a tabela para recarregar
-
-            // Iterando sobre os dados simulados para criar as linhas da tabela
-            for (const ticker in staticData) {
-                const item = staticData[ticker];
-                const row = document.createElement('tr');
-                const changeClass = item.change > 0 ? 'positive' : (item.change < 0 ? 'negative' : 'neutral');
-                const priceFormat = item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                const changeFormat = item.change.toFixed(2) + '%';
-
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.type}</td>
-                    <td>R$ ${priceFormat}</td>
-                    <td class="${changeClass}">${changeFormat}</td>
-                `;
-                tbody.appendChild(row);
-            }
-
-            document.getElementById('timestamp').textContent = new Date().toLocaleTimeString();
+        // Lógica de Direção: Se Segurança > Risco, Dólar sobe (DXY Bullish)
+        function updateDashboard() {
+            // Aqui você conectaria a URL da sua planilha publicada em CSV
+            // Exemplo visual do gráfico de comparação
+            const traceRisco = {
+                x: ['06:00', '09:00', '12:00', '15:00', '18:00'],
+                y: [100, 98, 97, 95, 94],
+                name: 'Sentimento de Risco',
+                type: 'scatter', line: {color: '#ff4444'}
+            };
+            const traceSeguranca = {
+                x: ['06:00', '09:00', '12:00', '15:00', '18:00'],
+                y: [100, 102, 105, 108, 110],
+                name: 'Procura por Segurança (Dólar/Ouro)',
+                type: 'scatter', line: {color: '#00c851'}
+            };
+            
+            Plotly.newPlot('main-chart', [traceRisco, traceSeguranca], {
+                title: 'Correlação Inversa: Risco caindo indica Dólar Forte',
+                paper_bgcolor: '#2d2d2d', plot_bgcolor: '#2d2d2d',
+                font: {color: '#fff'}
+            });
         }
-
-        // Atualiza imediatamente ao carregar a página
-        updateTable(); 
-
-        // Configura atualização automática a cada 60 segundos (60000 ms)
-        setInterval(updateTable, 60000);
+        setInterval(updateDashboard, 60000); // Atualiza a cada 60s
+        updateDashboard();
     </script>
 </body>
 </html>
