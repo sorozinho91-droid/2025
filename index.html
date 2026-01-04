@@ -15,29 +15,58 @@
 <canvas id="grafico"></canvas>
 
 <script>
-const ctx = document.getElementById("grafico");
-let labels = [];
-let risco = [];
-let seguranca = [];
-let chart;
+/* =========================
+   DADOS REAIS (Var%)
+   ========================= */
 
-// gera número aleatório (simula mercado)
-function aleatorio(min, max) {
-  return (Math.random() * (max - min) + min).toFixed(4);
+// ATIVOS DE RISCO (Var%)
+const riscoVars = [
+  0.0101, 0.0042, -0.0001, 0.0036, 0,
+  0.0024, -0.001, -0.0131, -0.0022, 0.0039,
+  -0.0007, -0.0106, -0.0125, 0.0002, 0.0002,
+  -0.0017, 0.0071, -0.0062, -0.0024, 0,
+  -0.0133, -0.0006
+];
+
+// ATIVOS DE SEGURANÇA (Var%)
+const segurancaVars = [
+  0.0056, -0.0405, -0.0052, 0.0049, 0.0052,
+  0.0071, 0.0098, 0, -0.0103
+];
+
+/* =========================
+   FUNÇÕES
+   ========================= */
+
+function media(arr) {
+  return arr.reduce((s, v) => s + v, 0) / arr.length;
 }
 
+/* =========================
+   GRÁFICO
+   ========================= */
+
+const ctx = document.getElementById("grafico");
+let labels = [];
+let riscoSerie = [];
+let segurancaSerie = [];
+let chart;
+
 function atualizar() {
-  const agora = new Date().toLocaleTimeString();
+  const hora = new Date().toLocaleTimeString();
 
-  labels.push(agora);
-  risco.push(parseFloat(aleatorio(-0.01, 0.01)));
-  seguranca.push(parseFloat(aleatorio(-0.01, 0.01)));
+  const riscoMedia = media(riscoVars);
+  const segurancaMedia = media(segurancaVars);
 
-  // limita pontos no gráfico
-  if (labels.length > 20) {
+  labels.push(hora);
+  riscoSerie.push(riscoMedia);
+  segurancaSerie.push(segurancaMedia);
+
+  // limita histórico
+  if (labels.length > 30) {
     labels.shift();
-    risco.shift();
-    seguranca.shift();
+    riscoSerie.shift();
+    segurancaSerie.shift();
   }
 
   if (!chart) {
@@ -48,12 +77,12 @@ function atualizar() {
         datasets: [
           {
             label: "Risco",
-            data: risco,
+            data: riscoSerie,
             borderWidth: 2
           },
           {
             label: "Segurança",
-            data: seguranca,
+            data: segurancaSerie,
             borderWidth: 2
           }
         ]
@@ -62,7 +91,11 @@ function atualizar() {
         responsive: true,
         interaction: { mode: "index", intersect: false },
         scales: {
-          y: { ticks: { callback: v => (v * 100).toFixed(2) + "%" } }
+          y: {
+            ticks: {
+              callback: v => (v * 100).toFixed(2) + "%"
+            }
+          }
         }
       }
     });
@@ -71,7 +104,7 @@ function atualizar() {
   }
 }
 
-// primeira execução + atualização a cada 60s
+// executa agora e a cada 60s
 atualizar();
 setInterval(atualizar, 60000);
 </script>
