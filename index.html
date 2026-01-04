@@ -2,61 +2,76 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Seguro x Risco</title>
+  <title>Risco x Segurança</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    canvas { max-width: 900px; }
+  </style>
 </head>
 <body>
 
-<h2>Ativos de Segurança x Risco</h2>
+<h2>Ativos de Risco x Segurança</h2>
 <canvas id="grafico"></canvas>
 
 <script>
-let chart;
+const ctx = document.getElementById("grafico");
 let labels = [];
-let dadosRisco = [];
-let dadosSeguranca = [];
+let risco = [];
+let seguranca = [];
+let chart;
 
-async function atualizar() {
-  const res = await fetch("dados.json"); // ou endpoint da API
-  const data = await res.json();
-
-  const media = arr =>
-    arr.reduce((s, x) => s + x.var, 0) / arr.length;
-
-  labels.push(data.timestamp);
-  dadosRisco.push(media(data.risco));
-  dadosSeguranca.push(media(data.seguranca));
-
-  renderizar();
+// gera número aleatório (simula mercado)
+function aleatorio(min, max) {
+  return (Math.random() * (max - min) + min).toFixed(4);
 }
 
-function renderizar() {
-  if (chart) chart.destroy();
+function atualizar() {
+  const agora = new Date().toLocaleTimeString();
 
-  chart = new Chart(document.getElementById("grafico"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Risco",
-          data: dadosRisco,
-          borderWidth: 2
-        },
-        {
-          label: "Segurança",
-          data: dadosSeguranca,
-          borderWidth: 2
+  labels.push(agora);
+  risco.push(parseFloat(aleatorio(-0.01, 0.01)));
+  seguranca.push(parseFloat(aleatorio(-0.01, 0.01)));
+
+  // limita pontos no gráfico
+  if (labels.length > 20) {
+    labels.shift();
+    risco.shift();
+    seguranca.shift();
+  }
+
+  if (!chart) {
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Risco",
+            data: risco,
+            borderWidth: 2
+          },
+          {
+            label: "Segurança",
+            data: seguranca,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          y: { ticks: { callback: v => (v * 100).toFixed(2) + "%" } }
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      interaction: { mode: "index", intersect: false }
-    }
-  });
+      }
+    });
+  } else {
+    chart.update();
+  }
 }
 
+// primeira execução + atualização a cada 60s
 atualizar();
 setInterval(atualizar, 60000);
 </script>
