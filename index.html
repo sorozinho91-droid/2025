@@ -34,6 +34,16 @@ html,body{
   padding:12px;
 }
 
+/* ===== BREAKING ===== */
+.section.breaking{
+  background:#fff5f5;
+  border:2px solid var(--red);
+  border-radius:10px;
+  padding:10px;
+  max-height:22vh;
+  overflow-y:auto;
+}
+
 .section{
   background:var(--mod);
   border-radius:10px;
@@ -74,7 +84,7 @@ html,body{
   height:100%;
 }
 
-/* Sentimento */
+/* ===== SENTIMENTO ===== */
 #ibovScore{
   font-size:26px;
   font-weight:bold;
@@ -92,9 +102,15 @@ html,body{
 
 <div class="dashboard">
 
+<!-- BREAKING NEWS -->
+<div class="section breaking" id="breaking">
+  <h2>🚨 Breaking News — Impacto Imediato</h2>
+  <div class="list"></div>
+</div>
+
 <div class="main">
 
-  <!-- SEÇÕES DE NOTÍCIAS (MANTIDAS) -->
+  <!-- NOTÍCIAS -->
   <div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2><div class="list"></div></div>
   <div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2><div class="list"></div></div>
   <div class="section" id="petroleo"><h2>🛢️ Petróleo</h2><div class="list"></div></div>
@@ -117,17 +133,21 @@ html,body{
 
 <script>
 /* =========================
-   NOTÍCIAS (ORIGINAL)
+   RSS NOTÍCIAS
    ========================= */
 
-const feeds = [
+const feedsMercado=[
  "https://valor.globo.com/rss/mercados/",
  "https://www.infomoney.com.br/feed/"
 ];
 
-const temas = {
+const feedsBreaking=[
+ "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
+];
+
+const temas={
  mercado:null,
- minerio:["minério","iron ore","vale","aço"],
+ minerio:["minério","iron","vale","aço"],
  petroleo:["petróleo","oil","brent","wti"],
  dxy:["dxy","dólar","usd","fed"],
  juros:["juros","yield","fomc"],
@@ -155,16 +175,21 @@ function filtrar(n,p){
  return p.some(x=>t.includes(x));
 }
 
-async function atualizarNoticias(){
+async function atualizarSecao(id,feeds,filtro){
+ const box=document.querySelector(`#${id} .list`);
+ box.innerHTML="";
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
- for(const id in temas){
-  const box=document.querySelector(`#${id} .list`);
-  box.innerHTML="";
-  dados.filter(n=>filtrar(n,temas[id])).slice(0,6).forEach(n=>{
-    box.innerHTML+=`<div class="news-item">
-      <a href="${n.link}" target="_blank">${n.title}</a>
-    </div>`;
-  });
+ dados.filter(n=>filtrar(n,filtro)).slice(0,6).forEach(n=>{
+  box.innerHTML+=`<div class="news-item">
+    <a href="${n.link}" target="_blank">${n.title}</a>
+  </div>`;
+ });
+}
+
+async function atualizarNoticias(){
+ await atualizarSecao("breaking",feedsBreaking);
+ for(const t in temas){
+  await atualizarSecao(t,feedsMercado,temas[t]);
  }
 }
 
@@ -172,15 +197,15 @@ atualizarNoticias();
 setInterval(atualizarNoticias,60000);
 
 /* =========================
-   SENTIMENTO IBOV — TEMPO REAL
+   SENTIMENTO IBOV
    ========================= */
 
-const PESOS = {
+const PESOS={
  china:0.25, commodities:0.25, petroleo:0.15,
  dolar:0.15, vix:0.10, bolsas:0.10
 };
 
-const ATIVOS = {
+const ATIVOS={
  china:"FXI",
  commodities:"BHP",
  petroleo:"CL=F",
@@ -191,8 +216,8 @@ const ATIVOS = {
 
 let dados={}, hist=[], labels=[], chart;
 
-async function cotacao(symbol){
- const r=await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
+async function cotacao(s){
+ const r=await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${s}`);
  const j=await r.json();
  return j.quoteResponse.result[0]?.regularMarketChangePercent||0;
 }
@@ -224,11 +249,7 @@ function iniciarGrafico(){
  chart=new Chart(document.getElementById("ibovChart"),{
   type:"line",
   data:{labels,datasets:[{data:hist,borderWidth:2,tension:.3}]},
-  options:{
-   animation:false,
-   scales:{y:{min:-100,max:100}},
-   plugins:{legend:{display:false}}
-  }
+  options:{animation:false,scales:{y:{min:-100,max:100}},plugins:{legend:{display:false}}}
  });
 }
 
