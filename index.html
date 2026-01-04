@@ -1,274 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Dashboard Macro + Sentimento IBOV</title>
+function monitorarMercadoIntraday() {
+  var agora = new Date();
+  // Horário de funcionamento da B3 (Exemplo: 10:00 às 18:00 no fuso de SP)
+  var horaInicio = 10;
+  var horaFim = 18;
+  
+  // Verifica se a hora atual está dentro do intraday
+  if (agora.getHours() >= horaInicio && agora.getHours() < horaFim) {
+    // Código para armazenar os dados (o mesmo do exemplo anterior)
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var painel = ss.getSheetByName("Painel");
+    var hist = ss.getSheetByName("Historico");
+    
+    // Adicione os tickers desejados na sua aba "Painel"
+    var tickers = ["NASDAQ:AAPL", "GOLD", "CURRENCY:USDBRL", "INDEXSP:.INX"];
+    var linha = [agora];
+    
+    tickers.forEach(function(t) {
+      // Supondo que o ticker esteja na coluna A e o preço na coluna B da aba Painel
+      var preco = painel.getRange("B" + (tickers.indexOf(t) + 1)).getValue(); 
+      linha.push(preco);
+    });
+    
+    hist.appendRow(linha);
+    
+    // Limpeza automática: Mantém apenas dados do dia atual
+    var dados = hist.getDataRange().getValues();
+    var hoje = agora.toLocaleDateString();
+    
+    for (var i = dados.length - 1; i >= 1; i--) {
+      // Verifica se a data do registro é diferente de hoje
+      if (new Date(dados[i][0]).toLocaleDateString() !== hoje) {
+        hist.deleteRow(i + 1);
+      }
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-:root{
-  --bg:#f2f4f7;
-  --mod:#ffffff;
-  --card:#f7f7f7;
-  --line:#dcdcdc;
-  --text:#000;
-  --muted:#333;
-  --blue:#0d47a1;
-  --red:#c62828;
-  --green:#2e7d32;
+  } else {
+    // Opcional: Registrar que o mercado está fechado, se necessário
+    Logger.log("Mercado fechado. Pulando o armazenamento.");
+  }
 }
-
-html,body{
-  margin:0;
-  height:100%;
-  font-family:Arial,Helvetica,sans-serif;
-  background:var(--bg);
-}
-
-.dashboard{
-  display:grid;
-  grid-template-rows:auto 1fr;
-  height:100%;
-  gap:12px;
-  padding:12px;
-}
-
-/* ===== BREAKING ===== */
-.section.breaking{
-  background:#fff5f5;
-  border:2px solid var(--red);
-  border-radius:10px;
-  padding:10px;
-  max-height:22vh;
-  overflow-y:auto;
-}
-
-.section{
-  background:var(--mod);
-  border-radius:10px;
-  border:1px solid var(--line);
-  padding:10px;
-  overflow:hidden;
-}
-
-.section h2{
-  margin:0 0 6px;
-  font-size:14px;
-  border-bottom:1px solid var(--line);
-  padding-bottom:4px;
-}
-
-.list{
-  overflow-y:auto;
-  font-size:12px;
-}
-
-.news-item{
-  background:var(--card);
-  border-radius:6px;
-  padding:6px;
-  margin-bottom:6px;
-}
-
-.news-item a{
-  color:var(--blue);
-  text-decoration:none;
-  font-weight:bold;
-}
-
-.main{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-  height:100%;
-}
-
-/* ===== SENTIMENTO ===== */
-#ibovScore{
-  font-size:26px;
-  font-weight:bold;
-}
-
-#ibovStatus{
-  font-size:12px;
-  margin-bottom:6px;
-  color:#555;
-}
-</style>
-</head>
-
-<body>
-
-<div class="dashboard">
-
-<!-- BREAKING NEWS -->
-<div class="section breaking" id="breaking">
-  <h2>🚨 Breaking News — Impacto Imediato</h2>
-  <div class="list"></div>
-</div>
-
-<div class="main">
-
-  <!-- NOTÍCIAS -->
-  <div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2><div class="list"></div></div>
-  <div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2><div class="list"></div></div>
-  <div class="section" id="petroleo"><h2>🛢️ Petróleo</h2><div class="list"></div></div>
-  <div class="section" id="dxy"><h2>💵 Dólar & DXY</h2><div class="list"></div></div>
-  <div class="section" id="juros"><h2>📈 Juros EUA</h2><div class="list"></div></div>
-  <div class="section" id="bancos"><h2>🏦 Bancos</h2><div class="list"></div></div>
-  <div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas EUA</h2><div class="list"></div></div>
-  <div class="section" id="bolsasGlobal"><h2>🌍 Bolsas Europa & Ásia</h2><div class="list"></div></div>
-
-  <!-- SENTIMENTO IBOV -->
-  <div class="section" id="sentimentoIbov">
-    <h2>🇧🇷 Sentimento IBOV — Tempo Real</h2>
-    <div id="ibovScore">0</div>
-    <div id="ibovStatus">NEUTRO</div>
-    <canvas id="ibovChart"></canvas>
-  </div>
-
-</div>
-</div>
-
-<script>
-/* =========================
-   RSS NOTÍCIAS
-   ========================= */
-
-const feedsMercado=[
- "https://valor.globo.com/rss/mercados/",
- "https://www.infomoney.com.br/feed/"
-];
-
-const feedsBreaking=[
- "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
-];
-
-const temas={
- mercado:null,
- minerio:["minério","iron","vale","aço"],
- petroleo:["petróleo","oil","brent","wti"],
- dxy:["dxy","dólar","usd","fed"],
- juros:["juros","yield","fomc"],
- bancos:["banco","bank","itaú","bradesco","jpmorgan"],
- bolsasUSA:["dow","nasdaq","s&p","wall street"],
- bolsasGlobal:["china","asia","europa","hang seng","nikkei","dax"]
-};
-
-async function buscarRSS(url){
- try{
-  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const t=await r.text();
-  const xml=new DOMParser().parseFromString(t,"text/xml");
-  return [...xml.querySelectorAll("item")].map(i=>({
-    title:i.querySelector("title")?.textContent||"",
-    link:i.querySelector("link")?.textContent||"",
-    desc:i.querySelector("description")?.textContent||""
-  }));
- }catch{return []}
-}
-
-function filtrar(n,p){
- if(!p) return true;
- const t=(n.title+n.desc).toLowerCase();
- return p.some(x=>t.includes(x));
-}
-
-async function atualizarSecao(id,feeds,filtro){
- const box=document.querySelector(`#${id} .list`);
- box.innerHTML="";
- const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
- dados.filter(n=>filtrar(n,filtro)).slice(0,6).forEach(n=>{
-  box.innerHTML+=`<div class="news-item">
-    <a href="${n.link}" target="_blank">${n.title}</a>
-  </div>`;
- });
-}
-
-async function atualizarNoticias(){
- await atualizarSecao("breaking",feedsBreaking);
- for(const t in temas){
-  await atualizarSecao(t,feedsMercado,temas[t]);
- }
-}
-
-atualizarNoticias();
-setInterval(atualizarNoticias,60000);
-
-/* =========================
-   SENTIMENTO IBOV
-   ========================= */
-
-const PESOS={
- china:0.25, commodities:0.25, petroleo:0.15,
- dolar:0.15, vix:0.10, bolsas:0.10
-};
-
-const ATIVOS={
- china:"FXI",
- commodities:"BHP",
- petroleo:"CL=F",
- dolar:"DX-Y.NYB",
- vix:"^VIX",
- bolsas:"^GSPC"
-};
-
-let dados={}, hist=[], labels=[], chart;
-
-async function cotacao(s){
- const r=await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${s}`);
- const j=await r.json();
- return j.quoteResponse.result[0]?.regularMarketChangePercent||0;
-}
-
-async function atualizarDados(){
- for(const k in ATIVOS) dados[k]=await cotacao(ATIVOS[k]);
-}
-
-function scoreIBOV(){
- return Math.round((
-  dados.china*PESOS.china +
-  dados.commodities*PESOS.commodities +
-  dados.petroleo*PESOS.petroleo +
-  (-dados.dolar)*PESOS.dolar +
-  (-dados.vix)*PESOS.vix +
-  dados.bolsas*PESOS.bolsas
- )*10);
-}
-
-function status(score){
- if(score>40) return "RISK-ON FORTE";
- if(score>15) return "RISK-ON";
- if(score<-40) return "RISK-OFF FORTE";
- if(score<-15) return "RISK-OFF";
- return "NEUTRO";
-}
-
-function iniciarGrafico(){
- chart=new Chart(document.getElementById("ibovChart"),{
-  type:"line",
-  data:{labels,datasets:[{data:hist,borderWidth:2,tension:.3}]},
-  options:{animation:false,scales:{y:{min:-100,max:100}},plugins:{legend:{display:false}}}
- });
-}
-
-async function loopIbov(){
- await atualizarDados();
- const s=scoreIBOV();
- const h=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
- hist.push(s); labels.push(h);
- if(hist.length>90){hist.shift();labels.shift();}
- document.getElementById("ibovScore").textContent=s;
- document.getElementById("ibovScore").style.color=s>0?"#2e7d32":s<0?"#c62828":"#555";
- document.getElementById("ibovStatus").textContent=status(s);
- chart.update();
-}
-
-iniciarGrafico();
-loopIbov();
-setInterval(loopIbov,30000);
-</script>
-
-</body>
-</html>
