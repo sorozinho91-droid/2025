@@ -1,87 +1,46 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Cotações Risco x Segurança</title>
-    <!-- Você pode adicionar seu CSS aqui para personalizar o visual -->
-    <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f0f0f0; }
-        .widget-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #333; }
-        .risk-header { color: #D32F2F; }
-        .security-header { color: #388E3C; }
-    </style>
-</head>
-<body>
-
-    <h1>Tabela de Cotações Globais - Risco vs Segurança</h1>
-    <p>Dados em tempo real/atraso padrão, fornecidos pelo TradingView.</p>
-
-    <!-- Widget Principal com Máximo de Ativos (Agrupados) -->
-    <div class="tradingview-widget-container">
-      <div class="widget-title risk-header">Ativos de Risco (Índices Globais e Futuros)</div>
-      <div class="tradingview-widget-container__widget"></div>
-      <script type="text/javascript" src="s3.tradingview.com" async>
-      {
+<div class="tradingview-widget-container" style="margin-top: 30px;">
+    <div class="widget-title" style="color: #2962FF;">Gráfico Comparativo: Risco vs Segurança (Direção do Dólar)</div>
+    <div id="tradingview_comparativo"></div>
+    <script type="text/javascript" src="s3.tradingview.com"></script>
+    <script type="text/javascript">
+    new TradingView.widget(
+    {
       "width": "100%",
-      "height": "400",
-      "symbolsGroup": [
+      "height": 500,
+      "symbol": "FX:DXY", // O DXY (Dólar) será a base principal
+      "interval": "1",    // Gráfico de 1 minuto para tempo real
+      "timezone": "America/Sao_Paulo",
+      "theme": "light",
+      "style": "3",       // Estilo de Área/Linha para melhor comparação
+      "locale": "br",
+      "toolbar_bg": "#f1f3f6",
+      "enable_publishing": false,
+      "hide_top_toolbar": false,
+      "hide_legend": false,
+      "save_image": false,
+      "container_id": "tradingview_comparativo",
+      // AQUI ADICIONAMOS OS ATIVOS DE RISCO PARA COMPARAR NO MESMO GRÁFICO
+      "studies": [
         {
-          "name": "Américas",
-          "symbols": [
-            { "name": "INDEXSP:.INX", "displayName": "S&P 500" },
-            { "name": "INDEXDJX:.DJI", "displayName": "Dow Jones" },
-            { "name": "INDEXNASDAQ:.IXIC", "displayName": "Nasdaq Composite" },
-            { "name": "INDEXBVMF:IBOV", "displayName": "Ibovespa" },
-            { "name": "INDEXRCMP:RUT", "displayName": "Russell 2000" }
-          ]
+          "id": "Overlay@tv-basicstudies",
+          "inputs": {
+            "symbol": "INDEXSP:.INX" // S&P 500 (Risco)
+          }
         },
         {
-          "name": "Europa/ME",
-          "symbols": [
-            { "name": "INDEXDB:DAX", "displayName": "DAX (Alemanha)" },
-            { "name": "INDEXFTSE:UKX", "displayName": "FTSE 100 (UK)" },
-            { "name": "INDEXCAC:CAC40", "displayName": "CAC 40 (França)" },
-            { "name": "INDEXSTX:SX5E", "displayName": "Euro Stoxx 50" }
-          ]
-        },
-        {
-          "name": "Ásia",
-          "symbols": [
-            { "name": "INDEXNIKKEI:NI225", "displayName": "Nikkei 225 (Japão)" },
-            { "name": "INDEXSHANGHAI:000001", "displayName": "SSE Comp (China)" },
-            { "name": "INDEXHANGSENG:HSI", "displayName": "Hang Seng (HK)" }
-          ]
+          "id": "Overlay@tv-basicstudies",
+          "inputs": {
+            "symbol": "COMEX:GC1!" // Ouro (Segurança)
+          }
         }
       ],
-      "showSymbolLogo": true,
-      "colorTheme": "light",
-      "locale": "br"
+      "disabled_features": [
+        "use_localstorage_for_settings"
+      ],
+      "enabled_features": [
+        "study_templates"
+      ]
     }
-      </script>
-    </div>
-    <!-- Fim Widget Risco -->
-    
-    <!-- Widget Ativos de Segurança (Safe Havens) -->
-    <div class="tradingview-widget-container" style="margin-top: 30px;">
-        <div class="widget-title security-header">Ativos de Segurança (Dólar, Ouro, Títulos)</div>
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="s3.tradingview.com" async>
-        {
-        "width": "100%",
-        "height": 250,
-        "symbols": [
-            { "proName": "FX:DXY", "title": "Índice Dólar (DXY)" },
-            { "proName": "COMEX:GC1!", "title": "Ouro Futuro (GC)" },
-            { "proName": "CURRENCYCOM:USDBRL", "title": "USD/BRL" },
-            { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
-            { "proName": "CME_CBOT:ZN1!", "title": "Título EUA 10A Fut." }
-        ],
-        "colorTheme": "light",
-        "locale": "br"
-        }
-        </script>
-    </div>
-    <!-- Fim Widget Segurança -->
-
-</body>
-</html>
+    );
+    </script>
+</div>
