@@ -2,114 +2,51 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gráfico Risco x Segurança Intraday</title>
-    <!-- Inclui a biblioteca Chart.js para desenhar o gráfico -->
-    <script src="cdn.jsdelivr.net"></script>
+    <title>Teste de Grafico</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1, p { color: #333; }
-        canvas { max-width: 100%; height: auto; }
+        .container { width: 600px; margin: auto; padding: 20px; }
+        canvas { border: 1px solid #ccc; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Gráfico de Direção (Risco vs Segurança)</h1>
-        <p>Performance acumulada intraday, atualizando a cada 60 segundos. Última atualização: <span id="last-updated">--:--:--</span></p>
-        
-        <!-- O Canvas é onde o gráfico será desenhado -->
-        <canvas id="riskSafetyChart"></canvas>
+        <h1>Teste Simples de Gráfico</h1>
+        <canvas id="meuGrafico"></canvas>
     </div>
 
+    <!-- Script para carregar Chart.js localmente (embutido) -->
+    <script src="cdn.jsdelivr.net"></script>
+
     <script>
-        // Mapeamento dos ativos da sua tabela para Tickers de mercado reais
-        const ASSETS_MAP = {
-            'Risco': ['VALE', 'PBR', 'EWZ', 'GC=F', '^DJI'], // Ex: Vale ADR, Petrobras ADR, ETF Brasil, Ouro Futuros, Dow Futuros
-            'Segurança': ['DXY', 'EURBRL=X', '^VIX'] // Ex: Índice Dólar, Euro x Real, Índice de Volatilidade VIX
-        };
-        
-        const UPDATE_INTERVAL = 60000; // 60 segundos
-        const accumulatedData = { labels: [], riskAvg: [], safetyAvg: [] };
-        let chart;
+        // Dados de teste simples
+        const labels = ['Min 1', 'Min 2', 'Min 3', 'Min 4', 'Min 5'];
+        const dataRisco = [0, 0.5, 1.2, 0.8, 1.5];
+        const dataSeguranca = [0, -0.2, -0.5, -0.3, -0.8];
 
-        // FUNÇÃO DE SIMULAÇÃO DE API (Substitua esta função pela sua API real)
-        // Esta função apenas gera dados aleatórios para fins de demonstração.
-        async function fetchQuotesMock(assetList) {
-            const quotes = {};
-            assetList.forEach(symbol => {
-                quotes[symbol] = {
-                    change: (Math.random() * 0.5) - 0.25 // Variação aleatória pequena
-                };
-            });
-            return quotes;
-        }
-        // FIM DA FUNÇÃO DE SIMULAÇÃO
-
-        async function updateChartData() {
-            const allAssets = [...ASSETS_MAP['Risco'], ...ASSETS_MAP['Segurança']];
-            
-            // SUBSTITUA "fetchQuotesMock" pela sua função de API real
-            const quotes = await fetchQuotesMock(allAssets); 
-
-            if (!quotes) return;
-
-            // Calcula a variação média de risco e segurança
-            const riskChanges = ASSETS_MAP['Risco'].map(s => quotes[s]?.change || 0);
-            const safetyChanges = ASSETS_MAP['Segurança'].map(s => quotes[s]?.change || 0);
-            const avgRisk = riskChanges.reduce((a, b) => a + b, 0) / riskChanges.length;
-            const avgSafety = safetyChanges.reduce((a, b) => a + b, 0) / safetyChanges.length;
-
-            // Acumula o histórico
-            const lastRisk = accumulatedData.riskAvg.length > 0 ? accumulatedData.riskAvg[accumulatedData.riskAvg.length - 1] : 0;
-            const lastSafety = accumulatedData.safetyAvg.length > 0 ? accumulatedData.safetyAvg[accumulatedData.safetyAvg.length - 1] : 0;
-            accumulatedData.labels.push(new Date().toLocaleTimeString());
-            accumulatedData.riskAvg.push(lastRisk + avgRisk);
-            accumulatedData.safetyAvg.push(lastSafety + avgSafety);
-
-            // Mantém apenas os últimos 60 pontos de dados (1 hora de histórico)
-            if (accumulatedData.labels.length > 60) {
-                accumulatedData.labels.shift();
-                accumulatedData.riskAvg.shift();
-                accumulatedData.safetyAvg.shift();
-            }
-
-            if (chart) {
-                chart.update(); // Atualiza o gráfico na tela
-                document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
-            }
-        }
-
-        function initializeChart() {
-            const ctx = document.getElementById('riskSafetyChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: accumulatedData.labels,
-                    datasets: [{
-                        label: 'Acumulado Risco (%)',
-                        data: accumulatedData.riskAvg,
-                        borderColor: '#e65c5c', // Vermelho para Risco
-                        tension: 0.4
-                    }, {
-                        label: 'Acumulado Segurança (%)',
-                        data: accumulatedData.safetyAvg,
-                        borderColor: '#4682B4', // Azul para Segurança
-                        tension: 0.4
-                    }]
-                },
-                options: { 
-                    responsive: true,
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Performance Acumulada (%)' } } } 
+        const ctx = document.getElementById('meuGrafico').getContext('2d');
+        const meuGrafico = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Acumulado Risco (%)',
+                    data: dataRisco,
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }, {
+                    label: 'Acumulado Segurança (%)',
+                    data: dataSeguranca,
+                    borderColor: 'rgb(54, 162, 235)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
                 }
-            });
-        }
-
-        // Inicia o gráfico na carga da página
-        initializeChart();
-        // Faz a primeira atualização imediatamente
-        updateChartData();
-        // Configura a atualização automática a cada 60 segundos
-        setInterval(updateChartData, UPDATE_INTERVAL);
+            }
+        });
     </script>
 </body>
 </html>
