@@ -68,7 +68,6 @@ h2 {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ───── FUNÇÃO HORÁRIO DE BRASÍLIA ───── */
     function timeBrasilia() {
         return Math.floor(Date.now() / 1000) - (3 * 60 * 60);
     }
@@ -79,6 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
         layout: {
             background: { color: "#0e0e0e" },
             textColor: "#cccccc"
+        },
+        grid: {
+            vertLines: { visible: false },
+            horzLines: { visible: false }
         },
         timeScale: {
             timeVisible: true,
@@ -107,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return v * (1 + (Math.random() - 0.5) * vol);
     }
 
-    /* ───── HISTÓRICO INICIAL (BRASÍLIA) ───── */
     let t = timeBrasilia() - MINUTES * 60;
 
     for (let i = 0; i < MINUTES; i++) {
@@ -122,10 +124,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     riskSeries.setData(riskData);
     safetySeries.setData(safetyData);
-
     chart.timeScale().scrollToRealTime();
 
-    /* ───── ATUALIZA A CADA 1 MINUTO ───── */
     setInterval(() => {
         const now = timeBrasilia();
 
