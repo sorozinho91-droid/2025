@@ -2,193 +2,37 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Monitor Risco x Segurança (Intraday)</title>
-    <script src="cdn.jsdelivr.net"></script>
+    <title>Monitor Risco x Segurança (Widgets)</title>
     <style>
         body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
-        .container { max-width: 1200px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .asset-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .asset-table th, .asset-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-        .asset-table th { background-color: #007bff; color: white; }
-        .change-pct.positive { color: #28a745; }
-        .change-pct.negative { color: #dc3545; }
-        .risk-header { background-color: #e65c5c !important; }
-        .safety-header { background-color: #4682B4 !important; }
+        .container { max-width: 1000px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { color: #333; }
     </style>
 </head>
 <body>
     <div class="container">
+        <h1>Dashboard Financeiro</h1>
+        <p>Cotações em tempo real via Investing.com widgets.</p>
+
         <div class="card">
-            <h1>Cotações Online em Tempo Real</h1>
-            <p>Última atualização: <span id="last-updated">--:--:--</span></p>
+            <h2>Ativos de Risco</h2>
+            <!-- COLE O CÓDIGO DO WIDGET DE COTAÇÕES (RISCO) AQUI -->
+            <iframe src="br.investing.com..." style="width:100%; height:300px; border:0;" frameborder="0" allowTransparency="true" scrolling="no"></iframe>
         </div>
 
-        <div class="grid-container">
-            <div class="card">
-                <h2 class="risk-header">Ativos de Risco</h2>
-                <table class="asset-table">
-                    <thead><tr><th>Cód.</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
-                    <tbody id="risk-assets-body"></tbody>
-                </table>
-            </div>
-
-            <div class="card">
-                <h2 class="safety-header">Ativos de Segurança</h2>
-                <table class="asset-table">
-                    <thead><tr class="safety-header"><th>Cód.</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
-                    <tbody id="safety-assets-body"></tbody>
-                </table>
-            </div>
+        <div class="card">
+            <h2>Ativos de Segurança</h2>
+            <!-- COLE O CÓDIGO DO WIDGET DE COTAÇÕES (SEGURANÇA) AQUI -->
+             <iframe src="br.investing.com..." style="width:100%; height:300px; border:0;" frameborder="0" allowTransparency="true" scrolling="no"></iframe>
         </div>
         
-        <div class="card">
-            <h2>Gráfico de Direção (Risco vs Segurança)</h2>
-            <canvas id="riskSafetyChart"></canvas>
+         <div class="card">
+            <h2>Gráfico de Linha (Global Market Index Exemplo)</h2>
+            <!-- COLE O CÓDIGO DO WIDGET DE GRÁFICO TÉCNICO AQUI -->
+             <iframe src="br.investing.com" style="width:100%; height:400px; border:0;" frameborder="0" allowTransparency="true" scrolling="no"></iframe>
         </div>
+
     </div>
-
-    <script>
-        // Mapeamento dos ativos da sua imagem para Tickers de mercado reais e categorizados
-        const ASSETS_MAP = {
-            'Risco': {
-                'GC=F': 'Gold Futures', // Ouro Futuros
-                'HG=F': 'Cobre Futuros',
-                'CL=F': 'Petróleo WTI Futuros', 
-                '^OSEAX': 'Oslo All Share',
-                'ZS=F': 'Soja Chicago Futuros',
-                '^DJI': 'Dow Jones Futuros', 
-                '^TGDOW': 'The Global Dow USD',
-                'VALE': 'Vale SA ADR', 
-                'PBR': 'Petrobras SA ADR', 
-                'EWZ': 'iShares MSCI Brazil ETF', 
-                'XLF': 'Financial Select Sector SPDR®',
-                'XLP': 'Consumer Staples Select Sector SPDR®',
-                'XLE': 'Energy Select Sector SPDR®',
-                'XME': 'SPDR S&P Metals and Mining ETF',
-                'EEM': 'iShares MSCI Emerging Markets ETF',
-                'SOXX': 'iShares Semiconductor ETF',
-                '^BSESN': 'BSE Sensex 30',
-                'FXI': 'Bolsas China (ETF Exemplo)', 
-            },
-            'Segurança': {
-                'DXY': 'Índice Dólar Futuros', // Índice Dólar
-                '^VIX': 'S&P 500 VIX Futuros',
-                'MXN=X': 'USD/MXN', 
-                'NOK=X': 'USD/NOK',
-                'NZD=X': 'USD/NZD',
-                'AUD=X': 'USD/AUD',
-                'KRW=X': 'USD/KRW',
-                'CNY=X': 'USD/CNY',
-                'EURBRL=X': 'EUR/BRL'
-            }
-        };
-
-        const UPDATE_INTERVAL = 60000; // 60 segundos
-        const accumulatedData = { labels: [], riskAvg: [], safetyAvg: [] };
-        let chart;
-
-        // FUNÇÃO DE SIMULAÇÃO DE API (Substitua por uma API real)
-        async function fetchQuotesMock(assetMap) {
-            const quotes = {};
-            for (const type in assetMap) {
-                for (const name in assetMap[type]) {
-                    const symbol = assetMap[type][name];
-                    quotes[symbol] = {
-                        price: (Math.random() * 100) + 50, 
-                        change: (Math.random() * 3) - 1.5 
-                    };
-                }
-            }
-            return quotes;
-        }
-
-        function updateUI(quotes) {
-            if (!quotes) return;
-
-            for (const type in ASSETS_MAP) {
-                const tbody = document.getElementById(`${type.toLowerCase()}-assets-body`);
-                tbody.innerHTML = ''; 
-                for (const name in ASSETS_MAP[type]) {
-                    const symbol = ASSETS_MAP[type][name];
-                    const asset = quotes[symbol];
-                    if (asset) {
-                        const row = document.createElement('tr');
-                        const changeClass = asset.change >= 0 ? 'positive' : 'negative';
-                        row.innerHTML = `
-                            <td>${symbol}</td>
-                            <td>${name}</td>
-                            <td>${asset.price.toFixed(2)}</td>
-                            <td class="change-pct ${changeClass}">${asset.change.toFixed(2)}%</td>
-                        `;
-                        tbody.appendChild(row);
-                    }
-                }
-            }
-            document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
-
-            // Lógica para o Gráfico (Acumulando histórico)
-            const riskChanges = Object.values(ASSETS_MAP['Risco']).map(s => quotes[s]?.change || 0);
-            const safetyChanges = Object.values(ASSETS_MAP['Segurança']).map(s => quotes[s]?.change || 0);
-
-            const avgRisk = riskChanges.reduce((a, b) => a + b, 0) / riskChanges.length;
-            const avgSafety = safetyChanges.reduce((a, b) => a + b, 0) / safetyChanges.length;
-
-            accumulatedData.labels.push(new Date().toLocaleTimeString());
-            const lastRisk = accumulatedData.riskAvg.length > 0 ? accumulatedData.riskAvg[accumulatedData.riskAvg.length - 1] : 0;
-            const lastSafety = accumulatedData.safetyAvg.length > 0 ? accumulatedData.safetyAvg[accumulatedData.safetyAvg.length - 1] : 0;
-
-            accumulatedData.riskAvg.push(lastRisk + avgRisk);
-            accumulatedData.safetyAvg.push(lastSafety + avgSafety);
-
-            if (accumulatedData.labels.length > 60) { // Mantém 1 hora de dados
-                accumulatedData.labels.shift();
-                accumulatedData.riskAvg.shift();
-                accumulatedData.safetyAvg.shift();
-            }
-
-            if (chart) {
-                chart.update(); // Atualiza o gráfico
-            }
-        }
-
-        function initializeChart() {
-            const ctx = document.getElementById('riskSafetyChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: accumulatedData.labels,
-                    datasets: [{
-                        label: 'Acumulado Risco (%)',
-                        data: accumulatedData.riskAvg,
-                        borderColor: '#e65c5c', // Vermelho (Risco)
-                        tension: 0.4
-                    }, {
-                        label: 'Acumulado Segurança (%)',
-                        data: accumulatedData.safetyAvg,
-                        borderColor: '#4682B4', // Azul (Segurança)
-                        tension: 0.4
-                    }]
-                },
-                options: { 
-                    responsive: true,
-                    plugins: { title: { display: true, text: 'Performance Acumulada Intraday (Últimos 60 minutos)' } },
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Performance Acumulada (%)' } } } 
-                }
-            });
-        }
-
-        async function main() {
-            initializeChart();
-            const quotes = await fetchQuotesMock(ASSETS_MAP); // Usando MOCK para demonstração
-            updateUI(quotes);
-            setInterval(async () => {
-                const quotes = await fetchQuotesMock(ASSETS_MAP); 
-                updateUI(quotes);
-            }, UPDATE_INTERVAL);
-        }
-
-        main();
-    </script>
 </body>
 </html>
