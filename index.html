@@ -1,120 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Global 2026 - Risco vs Segurança</title>
-    <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #1c1e21; }
-        .container { max-width: 1200px; margin: auto; }
-        .clock-container { background: #1c1e21; color: #00ff00; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        #clock { font-size: 2.5em; font-weight: bold; font-family: 'Courier New', Courier, monospace; }
-        #date { font-size: 1.1em; color: #aaa; margin-top: 5px; }
-        .header-title { text-align: center; margin-bottom: 20px; }
-        .flex-row { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 25px; }
-        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; min-width: 340px; }
-        .widget-title { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
-        footer { text-align: center; margin-top: 40px; font-size: 0.85em; color: #65676b; padding-bottom: 20px; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Risk-On x Risk-Off Intraday</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; }
+    h1 { text-align:center; }
+    canvas { background:#020617; border-radius:12px; padding:10px; }
+    .container { width:90%; margin:auto; }
+    .note { font-size:14px; color:#94a3b8; margin-top:10px; text-align:center; }
+    .error { color:#f87171; text-align:center; margin-top:10px; }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>📊 Risk-On x Risk-Off (Intraday Automático)</h1>
+    <canvas id="chart"></canvas>
+    <p class="note">
+      Dados intraday reais via Yahoo Finance (5min). Base 100 no início do pregão.
+    </p>
+    <p id="error" class="error"></p>
+  </div>
 
-<div class="container">
-    <div class="clock-container">
-        <div id="clock">00:00:00</div>
-        <div id="date">Carregando data...</div>
-    </div>
+<script>
+// ================================
+// UTIL: fetch com proxy CORS-safe
+// ================================
+async function fetchYahoo(symbol) {
+  // Proxy público para contornar CORS (leitura apenas)
+  const proxy = 'https://corsproxy.io/?';
+  const url = `${proxy}https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
 
-    <div class="header-title">
-        <h1>Monitor Risco Global vs Segurança</h1>
-        <p>Direção dos Ativos em Tempo Real | Janeiro 2026</p>
-    </div>
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('Falha ao buscar dados de ' + symbol);
+  }
 
-    <div class="flex-row">
-        <!-- Gráfico de Linha: S&P 500 -->
-        <div class="card">
-            <div class="widget-title" style="color: #d32f2f;">DIREÇÃO: S&P 500 (RISCO)</div>
-            <div class="tradingview-widget-container" style="height: 300px;">
-                <div id="tv_sp500" style="height: 100%;"></div>
-            </div>
-        </div>
+  const json = await res.json();
+  const result = json?.chart?.result?.[0];
 
-        <!-- Gráfico de Linha: DXY -->
-        <div class="card">
-            <div class="widget-title" style="color: #2e7d32;">DIREÇÃO: DÓLAR INDEX (SEGURANÇA)</div>
-            <div class="tradingview-widget-container" style="height: 300px;">
-                <div id="tv_dxy" style="height: 100%;"></div>
-            </div>
-        </div>
-    </div>
+  if (!result || !result.timestamp) {
+    throw new Error('Dados inválidos para ' + symbol);
+  }
 
-    <!-- Gráfico Comparativo Central -->
-    <div class="card">
-        <div class="widget-title">COMPARAÇÃO INTRADAY: DXY vs S&P 500</div>
-        <div id="tradingview_compare" style="height: 450px;"></div>
-    </div>
+  return {
+    time: result.timestamp.map(t => new Date(t * 1000).toLocaleTimeString()),
+    price: result.indicators.quote[0].close
+  };
+}
 
-    <footer>
-        &copy; 2026 Dashboard Financeiro Automático | Dados via [TradingView](br.tradingview.com)
-    </footer>
-</div>
+function normalize(series) {
+  const base = series.find(v => v !== null && !isNaN(v));
+  return series.map(v => (v / base) * 100);
+}
 
-<!-- Scripts Necessários -->
-<script type="text/javascript" src="s3.tradingview.com"></script>
-<script type="text/javascript">
-    // Gráfico S&P 500
-    new TradingView.MediumWidget({
-        "symbols": [["S&P 500", "INDEXSP:.INX|1D"]],
-        "chartOnly": true,
-        "width": "100%",
-        "height": "100%",
-        "locale": "br",
-        "colorTheme": "light",
-        "gridLineColor": "rgba(240, 243, 250, 0)",
-        "fontColor": "#787b86",
-        "isTransparent": false,
-        "autosize": true,
-        "container_id": "tv_sp500"
+async function loadChart() {
+  try {
+    // 🛡️ Segurança (Risk-Off)
+    const gold = await fetchYahoo('GC=F');
+    const dollar = await fetchYahoo('DX-Y.NYB');
+
+    // ⚠️ Risco (Risk-On)
+    const sp500 = await fetchYahoo('^GSPC');
+    const oil = await fetchYahoo('CL=F');
+
+    const len = Math.min(
+      gold.price.length,
+      dollar.price.length,
+      sp500.price.length,
+      oil.price.length
+    );
+
+    const riskOffRaw = gold.price.slice(0, len).map((v, i) => (v + dollar.price[i]) / 2);
+    const riskOnRaw  = sp500.price.slice(0, len).map((v, i) => (v + oil.price[i]) / 2);
+
+    const riskOff = normalize(riskOffRaw);
+    const riskOn  = normalize(riskOnRaw);
+
+    const labels = gold.time.slice(0, len);
+
+    new Chart(document.getElementById('chart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '🛡️ Segurança (Risk-Off)',
+            data: riskOff,
+            borderWidth: 2
+          },
+          {
+            label: '⚠️ Risco (Risk-On)',
+            data: riskOn,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#e5e7eb' } }
+        },
+        scales: {
+          x: { ticks: { color: '#cbd5f5' } },
+          y: { ticks: { color: '#cbd5f5' } }
+        }
+      }
     });
 
-    // Gráfico DXY
-    new TradingView.MediumWidget({
-        "symbols": [["DXY", "FX:DXY|1D"]],
-        "chartOnly": true,
-        "width": "100%",
-        "height": "100%",
-        "locale": "br",
-        "colorTheme": "light",
-        "gridLineColor": "rgba(240, 243, 250, 0)",
-        "fontColor": "#787b86",
-        "isTransparent": false,
-        "autosize": true,
-        "container_id": "tv_dxy"
-    });
+  } catch (err) {
+    document.getElementById('error').innerText =
+      'Erro ao carregar dados intraday. Se estiver rodando localmente, use um servidor HTTP (ex: Live Server).';
+    console.error(err);
+  }
+}
 
-    // Gráfico de Comparação (Linha)
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": "FX:DXY",
-        "interval": "1",
-        "timezone": "America/Sao_Paulo",
-        "theme": "light",
-        "style": "2", // Estilo de Linha
-        "locale": "br",
-        "enable_publishing": false,
-        "hide_top_toolbar": false,
-        "container_id": "tradingview_compare",
-        "studies": [{ "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } }]
-    });
-
-    function updateClock() {
-        const now = new Date();
-        const options = { timeZone: "America/Sao_Paulo", hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        document.getElementById('clock').textContent = now.toLocaleTimeString('pt-BR', options);
-        document.getElementById('date').textContent = now.toLocaleDateString('pt-BR', { timeZone: "America/Sao_Paulo", weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+loadChart();
 </script>
 </body>
 </html>
