@@ -2,20 +2,24 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção do Mercado – Risco x Segurança</title>
+<title>Direção do Dia – Risco x Segurança</title>
 
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 <style>
     body {
+        margin: 0;
         background: #0f0f0f;
         color: #eee;
         font-family: Arial, sans-serif;
-        padding: 20px;
-        margin: 0;
     }
+
+    h2 {
+        padding: 15px;
+    }
+
     #chart {
-        width: 100%;
+        width: 100vw;
         height: 500px;
     }
 </style>
@@ -27,11 +31,16 @@
 <div id="chart"></div>
 
 <script>
+/* ───── Container ───── */
+const container = document.getElementById('chart');
+
 /* ───── Criar gráfico ───── */
-const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+const chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: container.clientHeight,
     layout: {
         background: { color: '#0f0f0f' },
-        textColor: '#bbb',
+        textColor: '#ccc',
     },
     grid: {
         vertLines: { color: '#222' },
@@ -43,20 +52,18 @@ const chart = LightweightCharts.createChart(document.getElementById('chart'), {
     }
 });
 
-/* ───── Linhas ───── */
+/* ───── Séries ───── */
 const riskSeries = chart.addLineSeries({
     color: '#00ff88',
     lineWidth: 3,
-    title: 'Risco (Risk-On)'
 });
 
 const safetySeries = chart.addLineSeries({
     color: '#ff4444',
     lineWidth: 3,
-    title: 'Segurança (Risk-Off)'
 });
 
-/* ───── Simulação (substitua por dados reais depois) ───── */
+/* ───── Dados (simulação) ───── */
 let time = Math.floor(Date.now() / 1000);
 let risk = 100;
 let safety = 100;
@@ -71,13 +78,18 @@ function update() {
     time += 60;
 }
 
-/* ───── Histórico de 1 dia (~390 min) ───── */
+/* ───── Histórico 1 dia (~390 min) ───── */
 for (let i = 0; i < 390; i++) {
     update();
 }
 
 /* ───── Atualiza a cada 60s ───── */
 setInterval(update, 60000);
+
+/* ───── Resize automático ───── */
+window.addEventListener('resize', () => {
+    chart.resize(container.clientWidth, container.clientHeight);
+});
 </script>
 
 </body>
