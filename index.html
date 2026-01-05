@@ -2,67 +2,46 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Direção Global – Risco x Segurança</title>
+  <title>Risco x Segurança — Comparação em Tempo Real</title>
   <style>
     body { margin:0; background:#0f172a; color:#e5e7eb; font-family: Arial, sans-serif; }
     h1 { text-align:center; padding:10px; font-size:18px; }
-    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:10px; }
+    .wrap { padding:10px; }
     .box { background:#020617; border-radius:12px; padding:6px; }
+    .subtitle { text-align:center; font-size:13px; color:#94a3b8; margin-bottom:8px; }
   </style>
 </head>
 <body>
 
-<h1>Direção Global — Risco x Segurança (Tempo Real)</h1>
-<p style="text-align:center;font-size:13px;color:#94a3b8">Esquerda = Ativo de Risco (S&P 500) • Direita = Ativo de Segurança (Dólar)</p>
+<h1>Direção Global — Risco x Segurança</h1>
+<div class="subtitle">Duas linhas no mesmo gráfico • Tempo real • Intraday (1D)</div>
 
-<div class="grid">
-
-  <!-- RISCO GLOBAL -->
+<div class="wrap">
   <div class="box">
     <div class="tradingview-widget-container">
-      <div id="risk"></div>
+      <div id="risk_safe"></div>
       <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
       <script type="text/javascript">
-      new TradingView.widget({
-        "container_id": "risk",
-        "symbol": "SP:SPX",
-        "interval": "5",
-        "range": "1D",
-        "timezone": "exchange",
-        "theme": "dark",
-        "style": "1",
-        "hide_side_toolbar": true,
-        "hide_top_toolbar": true,
-        "hide_legend": true,
-        "allow_symbol_change": false,
-        "save_image": false
-      });
+        new TradingView.widget({
+          "container_id": "risk_safe",
+          "symbol": "SP:SPX",
+          "interval": "5",
+          "range": "1D",
+          "timezone": "exchange",
+          "theme": "dark",
+          "style": "1",
+          "hide_side_toolbar": true,
+          "hide_top_toolbar": true,
+          "hide_legend": false,
+          "allow_symbol_change": false,
+          "save_image": false,
+          "compareSymbols": [
+            { "symbol": "TVC:DXY", "title": "Segurança (DXY)" }
+          ]
+        });
       </script>
     </div>
   </div>
-
-  <!-- SEGURANÇA GLOBAL -->
-  <div class="box">
-    <div class="tradingview-widget-container">
-      <div id="safe"></type="text/javascript">
-      new TradingView.widget({
-        "container_id": "safe",
-        "symbol": "TVC:DXY",
-        "interval": "5",
-        "range": "1D",
-        "timezone": "exchange",
-        "theme": "dark",
-        "style": "1",
-        "hide_side_toolbar": true,
-        "hide_top_toolbar": true,
-        "hide_legend": true,
-        "allow_symbol_change": false,
-        "save_image": false
-      });
-      </script>
-    </div>
-  </div>
-
 </div>
 
 </body>
