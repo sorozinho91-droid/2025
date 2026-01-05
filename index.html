@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Risco x Segurança – Direção</title>
+  <title>Direção – Risco x Segurança (Macro)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; }
@@ -14,9 +14,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>Direção: Risco x Segurança</h1>
+    <h1>Direção Macro: Risco x Segurança</h1>
     <canvas id="chart"></canvas>
-    <p class="note">Atualização automática • Apenas direção relativa</p>
+    <p class="note">Cestas macro • Atualização automática • Apenas direção</p>
   </div>
 
 <script>
@@ -26,6 +26,9 @@ let labels = [];
 let riscoRaw = [];
 let segurancaRaw = [];
 
+// ================================
+// FETCH YAHOO (CORS SAFE)
+// ================================
 async function fetchYahoo(symbol) {
   const proxy = 'https://corsproxy.io/?';
   const url = `${proxy}https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
@@ -39,32 +42,33 @@ async function fetchYahoo(symbol) {
 }
 
 function normalize(arr) {
-  if (arr.length < 2) return arr; // precisa de pelo menos 2 pontos
+  if (arr.length < 2) return arr;
   const base = arr[0];
   return arr.map(v => (v / base) * 100);
 }
 
+// ================================
+// INIT CHART
+// ================================
 function initChart() {
   chart = new Chart(document.getElementById('chart'), {
     type: 'line',
     data: {
-      labels: labels,
+      labels,
       datasets: [
         {
-          label: 'Risco',
+          label: '⚠️ Risco',
           data: [],
           borderColor: '#22c55e',
           borderWidth: 2,
-          pointRadius: 0,
-          spanGaps: true
+          pointRadius: 0
         },
         {
-          label: 'Segurança',
+          label: '🛡️ Segurança',
           data: [],
           borderColor: '#ef4444',
           borderWidth: 2,
-          pointRadius: 0,
-          spanGaps: true
+          pointRadius: 0
         }
       ]
     },
@@ -80,20 +84,48 @@ function initChart() {
   });
 }
 
+// ================================
+// UPDATE LOOP
+// ================================
 async function update() {
-  const sp = await fetchYahoo('^GSPC');
-  const oil = await fetchYahoo('CL=F');
+  // 🔐 Segurança (Defensivos)
   const gold = await fetchYahoo('GC=F');
-  const usd = await fetchYahoo('DX-Y.NYB');
+  const dollar = await fetchYahoo('DX-Y.NYB');
+  const usdjpy = await fetchYahoo('JPY=X');
+  const xlp = await fetchYahoo('XLP');
 
-  const i = sp.price.length - 1;
-  const t = sp.time[i];
+  // ⚠️ Risco (Cíclicos)
+  const sp = await fetchYahoo('^GSPC');
+  const dow = await fetchYahoo('YM=F');
+  const copper = await fetchYahoo('HG=F');
+  const oil = await fetchYahoo('CL=F');
+  const soy = await fetchYahoo('ZS=F');
+  const xlf = await fetchYahoo('XLF');
+  const xle = await fetchYahoo('XLE');
+  const soxx = await fetchYahoo('SOXX');
+  const eem = await fetchYahoo('EEM');
+  const vale = await fetchYahoo('VALE');
+  const pbr = await fetchYahoo('PBR');
+
+  const i = gold.price.length - 1;
+  const t = gold.time[i];
 
   if (labels.includes(t)) return;
 
   labels.push(t);
-  riscoRaw.push((sp.price[i] + oil.price[i]) / 2);
-  segurancaRaw.push((gold.price[i] + usd.price[i]) / 2);
+
+  // médias simples das cestas
+  const seguranca = (
+    gold.price[i] + dollar.price[i] + usdjpy.price[i] + xlp.price[i]
+  ) / 4;
+
+  const risco = (
+    sp.price[i] + dow.price[i] + copper.price[i] + oil.price[i] + soy.price[i] +
+    xlf.price[i] + xle.price[i] + soxx.price[i] + eem.price[i] + vale.price[i] + pbr.price[i]
+  ) / 11;
+
+  segurancaRaw.push(seguranca);
+  riscoRaw.push(risco);
 
   chart.data.labels = labels;
   chart.data.datasets[0].data = normalize(riscoRaw);
