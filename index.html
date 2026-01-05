@@ -4,39 +4,17 @@
   <meta charset="UTF-8" />
   <title>Risco x Segurança — Direção Global</title>
   <style>
-    body {
-      margin: 0;
-      background: #0f172a;
-      color: #e5e7eb;
-      font-family: Arial, sans-serif;
-    }
-    h1 {
-      text-align: center;
-      padding: 10px;
-      font-size: 18px;
-    }
-    .subtitle {
-      text-align: center;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 8px;
-    }
-    .wrap {
-      padding: 10px;
-    }
-    .box {
-      background: #020617;
-      border-radius: 12px;
-      padding: 6px;
-    }
+    body { margin:0; background:#0f172a; color:#e5e7eb; font-family: Arial, sans-serif; }
+    h1 { text-align:center; padding:10px; font-size:18px; }
+    .subtitle { text-align:center; font-size:13px; color:#94a3b8; margin-bottom:8px; }
+    .wrap { padding:10px; }
+    .box { background:#020617; border-radius:12px; padding:6px; }
   </style>
 </head>
 <body>
 
 <h1>Direção Global — Risco x Segurança</h1>
-<div class="subtitle">
-  Duas linhas • Tempo real • Intraday (1D) • Atualização automática
-</div>
+<div class="subtitle">Somente linhas • Tempo real • Intraday (1D)</div>
 
 <div class="wrap">
   <div class="box">
@@ -49,24 +27,25 @@
           container_id: "risk_safe",
           autosize: true,
 
-          // ATIVO DE RISCO
-          symbol: "TVC:SPX",
+          /* ATIVO DE RISCO – S&P 500 (ÍNDICE, NÃO AÇÃO) */
+          symbol: "INDEX:SPX",
 
           interval: "5",
           range: "1D",
           timezone: "exchange",
           theme: "dark",
 
-          // FORÇA LINHA (SEM CANDLE)
+          /* FORÇA GRÁFICO DE LINHA */
           style: "2",
 
           hide_side_toolbar: true,
           hide_top_toolbar: true,
           hide_legend: false,
           allow_symbol_change: false,
+          disabled_features: ["symbol_search_hot_key"],
           save_image: false,
 
-          // ATIVO DE SEGURANÇA
+          /* ATIVO DE SEGURANÇA – DÓLAR INDEX */
           compareSymbols: [
             { symbol: "TVC:DXY", title: "Segurança (Dólar)" }
           ]
