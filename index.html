@@ -1,138 +1,96 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Sentimento de Mercado - Risk On x Risk Off</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #eee;
-            padding: 20px;
-        }
-        canvas {
-            background: #1c1c1c;
-            border-radius: 8px;
-        }
-        h2 {
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Sentimento de Mercado – Risk On x Risk Off</title>
+
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+<style>
+    body {
+        background: #0f0f0f;
+        color: #eee;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    #chart {
+        width: 100%;
+        height: 500px;
+    }
+</style>
 </head>
+
 <body>
 
-<h2>📊 Sentimento de Mercado – Intraday</h2>
-<canvas id="marketChart"></canvas>
+<h2>📊 Sentimento de Mercado (HTML + TradingView)</h2>
+<div id="chart"></div>
 
 <script>
-    const ctx = document.getElementById('marketChart').getContext('2d');
+/* ───── Criação do gráfico ───── */
+const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+    layout: {
+        background: { color: '#0f0f0f' },
+        textColor: '#ccc',
+    },
+    grid: {
+        vertLines: { color: '#222' },
+        horzLines: { color: '#222' },
+    },
+    timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+    },
+    rightPriceScale: {
+        borderColor: '#333',
+    },
+});
 
-    // Gera timestamps intraday (1 ponto por minuto)
-    function generateTimeLabels(minutes = 390) {
-        const labels = [];
-        let now = new Date();
-        now.setHours(9, 30, 0, 0);
+/* ───── Séries ───── */
+const riskOnSeries = chart.addLineSeries({
+    color: '#00ff88',
+    lineWidth: 2,
+    title: 'Risk-On'
+});
 
-        for (let i = 0; i < minutes; i++) {
-            labels.push(
-                now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-            );
-            now.setMinutes(now.getMinutes() + 1);
-        }
-        return labels;
-    }
+const riskOffSeries = chart.addLineSeries({
+    color: '#ff5555',
+    lineWidth: 2,
+    lineStyle: LightweightCharts.LineStyle.Dashed,
+    title: 'Risk-Off'
+});
 
-    // Simulação de preços normalizados
-    function generateSeries(base = 100, volatility = 0.05, points = 390) {
-        const data = [base];
-        for (let i = 1; i < points; i++) {
-            let change = (Math.random() - 0.5) * volatility;
-            data.push(data[i - 1] * (1 + change));
-        }
-        return data;
-    }
+const sentimentSeries = chart.addLineSeries({
+    color: '#3399ff',
+    lineWidth: 3,
+    title: 'Sentimento'
+});
 
-    const labels = generateTimeLabels();
+/* ───── Simulação de dados (substitua por API/WebSocket) ───── */
+let t = Math.floor(Date.now() / 1000);
+let riskOn = 100;
+let riskOff = 100;
 
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                // Risk-On
-                {
-                    label: 'SP500 (Risk-On)',
-                    data: generateSeries(100, 0.002),
-                    borderColor: '#00ff88',
-                    borderWidth: 2,
-                    tension: 0.3
-                },
-                {
-                    label: 'Nasdaq (Risk-On)',
-                    data: generateSeries(100, 0.003),
-                    borderColor: '#00ccff',
-                    borderWidth: 2,
-                    tension: 0.3
-                },
+function updateData() {
+    riskOn *= 1 + (Math.random() - 0.5) * 0.002;
+    riskOff *= 1 + (Math.random() - 0.5) * 0.001;
 
-                // Risk-Off
-                {
-                    label: 'Ouro (Risk-Off)',
-                    data: generateSeries(100, 0.001),
-                    borderColor: '#ffd700',
-                    borderDash: [5, 5],
-                    borderWidth: 2,
-                    tension: 0.3
-                },
-                {
-                    label: 'Dólar (Risk-Off)',
-                    data: generateSeries(100, 0.001),
-                    borderColor: '#ff5555',
-                    borderDash: [5, 5],
-                    borderWidth: 2,
-                    tension: 0.3
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#eee'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { color: '#aaa' },
-                    grid: { color: '#333' }
-                },
-                y: {
-                    ticks: { color: '#aaa' },
-                    grid: { color: '#333' },
-                    title: {
-                        display: true,
-                        text: 'Performance Normalizada (Base 100)',
-                        color: '#aaa'
-                    }
-                }
-            }
-        }
-    });
+    const sentiment = riskOn - riskOff;
 
-    // Atualização a cada 60s (simulada)
-    setInterval(() => {
-        chart.data.datasets.forEach(ds => {
-            const last = ds.data[ds.data.length - 1];
-            const change = (Math.random() - 0.5) * 0.002;
-            ds.data.push(last * (1 + change));
-            ds.data.shift();
-        });
+    riskOnSeries.update({ time: t, value: riskOn });
+    riskOffSeries.update({ time: t, value: riskOff });
+    sentimentSeries.update({ time: t, value: sentiment });
 
-        chart.update();
-    }, 60000);
+    t += 60;
+}
+
+/* ───── Histórico inicial (1 dia ~ 390 minutos) ───── */
+for (let i = 0; i < 390; i++) {
+    updateData();
+}
+
+/* ───── Atualização a cada 60s ───── */
+setInterval(updateData, 60000);
 </script>
 
 </body>
