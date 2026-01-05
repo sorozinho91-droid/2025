@@ -28,7 +28,7 @@
             <div class="card">
                 <h2 class="risk-header">Ativos de Risco</h2>
                 <table class="asset-table">
-                    <thead><tr><th>Ativo</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
+                    <thead><tr><th>Cód.</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
                     <tbody id="risk-assets-body"></tbody>
                 </table>
             </div>
@@ -36,7 +36,7 @@
             <div class="card">
                 <h2 class="safety-header">Ativos de Segurança</h2>
                 <table class="asset-table">
-                    <thead><tr class="safety-header"><th>Ativo</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
+                    <thead><tr class="safety-header"><th>Cód.</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
                     <tbody id="safety-assets-body"></tbody>
                 </table>
             </div>
@@ -49,41 +49,38 @@
     </div>
 
     <script>
-        // Use uma API Key real de um serviço como brapi.dev, Finage, Alpha Vantage ou IEX Cloud
-        const API_KEY = "SUA_API_KEY"; 
-        
-        // Mapeamento dos ativos da sua imagem para Tickers de mercado reais (exatos para ADRs e ETFs)
+        // Mapeamento dos ativos da sua imagem para Tickers de mercado reais e categorizados
         const ASSETS_MAP = {
             'Risco': {
-                'Gold Futures': 'GC=F', 
-                'Cobre Futuros': 'HG=F',
-                'Petróleo WTI Futuros': 'CL=F', // Ticker para WTI Futures
-                'Oslo All Share': '^OSEAX',
-                'Soja Chicago Futuros': 'ZS=F',
-                'Dow Jones Futuros': '^DJI', // Índice Futuro Dow Jones
-                'The Global Dow USD': '^TGDOW',
-                'Vale SA ADR': 'VALE', // Ticker BDR/ADR Vale
-                'Petrobras SA ADR': 'PBR', // Ticker BDR/ADR Petrobras
-                'iShares MSCI Brazil ETF': 'EWZ', // Ticker para o ETF do Brasil
-                'The Financial Select Sector SPDR® Fund': 'XLF',
-                'The Consumer Staples Select Sector SPDR® Fund': 'XLP',
-                'The Energy Select Sector SPDR® Fund': 'XLE',
-                'SPDR S&P Metals and Mining ETF': 'XME',
-                'iShares MSCI Emerging Markets ETF': 'EEM',
-                'iShares Semiconductor ETF': 'SOXX',
-                'BSE Sensex 30': '^BSESN',
-                'Bolsas China': 'FXI', // Exemplo de ETF China Large-Cap
+                'GC=F': 'Gold Futures', // Ouro Futuros
+                'HG=F': 'Cobre Futuros',
+                'CL=F': 'Petróleo WTI Futuros', 
+                '^OSEAX': 'Oslo All Share',
+                'ZS=F': 'Soja Chicago Futuros',
+                '^DJI': 'Dow Jones Futuros', 
+                '^TGDOW': 'The Global Dow USD',
+                'VALE': 'Vale SA ADR', 
+                'PBR': 'Petrobras SA ADR', 
+                'EWZ': 'iShares MSCI Brazil ETF', 
+                'XLF': 'Financial Select Sector SPDR®',
+                'XLP': 'Consumer Staples Select Sector SPDR®',
+                'XLE': 'Energy Select Sector SPDR®',
+                'XME': 'SPDR S&P Metals and Mining ETF',
+                'EEM': 'iShares MSCI Emerging Markets ETF',
+                'SOXX': 'iShares Semiconductor ETF',
+                '^BSESN': 'BSE Sensex 30',
+                'FXI': 'Bolsas China (ETF Exemplo)', 
             },
             'Segurança': {
-                'Índice Dólar Futuros': 'DXY', // Ticker para DXY Index
-                'S&P 500 VIX Futuros': '^VIX',
-                'USD/MXN': 'MXN=X', // Tickers comuns para pares de moeda em APIs como Yahoo Finance
-                'USD/NOK': 'NOK=X',
-                'USD/NZD': 'NZD=X',
-                'USD/AUD': 'AUD=X',
-                'USD/KRW': 'KRW=X',
-                'USD/CNY': 'CNY=X',
-                'EUR/BRL': 'EURBRL=X' // Par Euro x Real
+                'DXY': 'Índice Dólar Futuros', // Índice Dólar
+                '^VIX': 'S&P 500 VIX Futuros',
+                'MXN=X': 'USD/MXN', 
+                'NOK=X': 'USD/NOK',
+                'NZD=X': 'USD/NZD',
+                'AUD=X': 'USD/AUD',
+                'KRW=X': 'USD/KRW',
+                'CNY=X': 'USD/CNY',
+                'EURBRL=X': 'EUR/BRL'
             }
         };
 
@@ -91,16 +88,15 @@
         const accumulatedData = { labels: [], riskAvg: [], safetyAvg: [] };
         let chart;
 
-        // Função de simulação de API, pois não tenho acesso a uma API real de mercado
+        // FUNÇÃO DE SIMULAÇÃO DE API (Substitua por uma API real)
         async function fetchQuotesMock(assetMap) {
-            // Este é um MOCK (simulação) que retorna valores aleatórios para fins de demonstração
             const quotes = {};
             for (const type in assetMap) {
                 for (const name in assetMap[type]) {
                     const symbol = assetMap[type][name];
                     quotes[symbol] = {
-                        price: (Math.random() * 100) + 50, // Preço aleatório
-                        change: (Math.random() * 3) - 1.5 // Variação aleatória entre -1.5% e +1.5%
+                        price: (Math.random() * 100) + 50, 
+                        change: (Math.random() * 3) - 1.5 
                     };
                 }
             }
@@ -110,7 +106,6 @@
         function updateUI(quotes) {
             if (!quotes) return;
 
-            // Update Tables
             for (const type in ASSETS_MAP) {
                 const tbody = document.getElementById(`${type.toLowerCase()}-assets-body`);
                 tbody.innerHTML = ''; 
@@ -132,7 +127,7 @@
             }
             document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
 
-            // Update Chart Data
+            // Lógica para o Gráfico (Acumulando histórico)
             const riskChanges = Object.values(ASSETS_MAP['Risco']).map(s => quotes[s]?.change || 0);
             const safetyChanges = Object.values(ASSETS_MAP['Segurança']).map(s => quotes[s]?.change || 0);
 
@@ -140,22 +135,20 @@
             const avgSafety = safetyChanges.reduce((a, b) => a + b, 0) / safetyChanges.length;
 
             accumulatedData.labels.push(new Date().toLocaleTimeString());
-            // Acumulando o histórico
             const lastRisk = accumulatedData.riskAvg.length > 0 ? accumulatedData.riskAvg[accumulatedData.riskAvg.length - 1] : 0;
             const lastSafety = accumulatedData.safetyAvg.length > 0 ? accumulatedData.safetyAvg[accumulatedData.safetyAvg.length - 1] : 0;
 
             accumulatedData.riskAvg.push(lastRisk + avgRisk);
             accumulatedData.safetyAvg.push(lastSafety + avgSafety);
 
-            // Keep only the last 60 data points (1 hora de histórico a cada minuto)
-            if (accumulatedData.labels.length > 60) {
+            if (accumulatedData.labels.length > 60) { // Mantém 1 hora de dados
                 accumulatedData.labels.shift();
                 accumulatedData.riskAvg.shift();
                 accumulatedData.safetyAvg.shift();
             }
 
             if (chart) {
-                chart.update(); // Atualiza o gráfico com novos dados
+                chart.update(); // Atualiza o gráfico
             }
         }
 
@@ -169,19 +162,17 @@
                         label: 'Acumulado Risco (%)',
                         data: accumulatedData.riskAvg,
                         borderColor: '#e65c5c', // Vermelho (Risco)
-                        backgroundColor: 'rgba(230, 92, 92, 0.2)',
                         tension: 0.4
                     }, {
                         label: 'Acumulado Segurança (%)',
                         data: accumulatedData.safetyAvg,
                         borderColor: '#4682B4', // Azul (Segurança)
-                        backgroundColor: 'rgba(70, 130, 180, 0.2)',
                         tension: 0.4
                     }]
                 },
                 options: { 
                     responsive: true,
-                    plugins: { legend: { position: 'top' }, title: { display: true, text: 'Performance Acumulada Intraday (Últimos 60 minutos)' } },
+                    plugins: { title: { display: true, text: 'Performance Acumulada Intraday (Últimos 60 minutos)' } },
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Performance Acumulada (%)' } } } 
                 }
             });
@@ -192,7 +183,7 @@
             const quotes = await fetchQuotesMock(ASSETS_MAP); // Usando MOCK para demonstração
             updateUI(quotes);
             setInterval(async () => {
-                const quotes = await fetchQuotesMock(ASSETS_MAP); // Substituir por fetchQuotes(allAssets) reais
+                const quotes = await fetchQuotesMock(ASSETS_MAP); 
                 updateUI(quotes);
             }, UPDATE_INTERVAL);
         }
