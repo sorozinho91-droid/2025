@@ -2,32 +2,43 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Direção – Risco x Segurança (Macro)</title>
+  <title>Risco x Segurança – Macro</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; }
-    h1 { text-align:center; margin-bottom:10px; }
-    canvas { background:#020617; border-radius:12px; padding:10px; }
-    .container { width:90%; margin:auto; }
-    .note { font-size:13px; color:#94a3b8; text-align:center; margin-top:8px; }
+    h1 { text-align:center; margin-bottom:6px; }
+    h2 { text-align:center; font-size:16px; margin:16px 0 6px; color:#cbd5f5; }
+    canvas { background:#020617; border-radius:12px; padding:10px; margin-bottom:12px; }
+    .container { width:92%; margin:auto; }
+    .note { font-size:12px; color:#94a3b8; text-align:center; margin-top:6px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Direção Macro: Risco x Segurança</h1>
-    <canvas id="chart"></canvas>
-    <p class="note">Cestas macro • Atualização automática • Apenas direção</p>
+    <h1>Direção Macro</h1>
+
+    <h2>Global — Risco x Segurança</h2>
+    <canvas id="chartGlobal"></canvas>
+
+    <h2>Emergentes — Risco</h2>
+    <canvas id="chartEmerg"></canvas>
+
+    <p class="note">Atualização automática • Direção relativa • Painel macro simples</p>
   </div>
 
 <script>
 const UPDATE_INTERVAL = 60000;
-let chart;
+
 let labels = [];
-let riscoRaw = [];
-let segurancaRaw = [];
+let globalRiskRaw = [];
+let globalSafeRaw = [];
+let emergRiskRaw = [];
+
+let chartGlobal;
+let chartEmerg;
 
 // ================================
-// FETCH YAHOO (CORS SAFE)
+// FETCH YAHOO (ROBUSTO)
 // ================================
 async function fetchYahoo(symbol) {
   const proxy = 'https://corsproxy.io/?';
@@ -35,6 +46,7 @@ async function fetchYahoo(symbol) {
   const res = await fetch(url);
   const json = await res.json();
   const r = json?.chart?.result?.[0];
+  if (!r || !r.timestamp) return null;
   return {
     time: r.timestamp.map(t => new Date(t * 1000).toLocaleTimeString()),
     price: r.indicators.quote[0].close
@@ -42,38 +54,25 @@ async function fetchYahoo(symbol) {
 }
 
 function normalize(arr) {
-  if (arr.length < 2) return arr;
+  if (arr.length < 2) return [];
   const base = arr[0];
   return arr.map(v => (v / base) * 100);
 }
 
 // ================================
-// INIT CHART
+// INIT CHARTS
 // ================================
-function initChart() {
-  chart = new Chart(document.getElementById('chart'), {
+function initCharts() {
+  chartGlobal = new Chart(document.getElementById('chartGlobal'), {
     type: 'line',
     data: {
       labels,
       datasets: [
-        {
-          label: '⚠️ Risco',
-          data: [],
-          borderColor: '#22c55e',
-          borderWidth: 2,
-          pointRadius: 0
-        },
-        {
-          label: '🛡️ Segurança',
-          data: [],
-          borderColor: '#ef4444',
-          borderWidth: 2,
-          pointRadius: 0
-        }
+        { label: 'Risco Global', data: [], borderColor: '#22c55e', borderWidth: 2, pointRadius: 0 },
+        { label: 'Segurança Global', data: [], borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 }
       ]
     },
     options: {
-      responsive: true,
       animation: false,
       plugins: { legend: { labels: { color: '#e5e7eb' } } },
       scales: {
@@ -81,59 +80,66 @@ function initChart() {
         y: { ticks: { color: '#cbd5f5' } }
       }
     }
-  });
+  );
+
+  chartEmerg = new Chart(document.getElementById('chartEmerg'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Risco Emergente', data: [], borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0 }
+      ]
+    },
+    options: {
+      animation: false,
+      plugins: { legend: { labels: { color: '#e5e7eb' } } },
+      scales: {
+        x: { ticks: { color: '#cbd5f5' } },
+        y: { ticks: { color: '#cbd5f5' } }
+      }
+    }
+  );
 }
 
 // ================================
 // UPDATE LOOP
 // ================================
 async function update() {
-  // 🔐 Segurança (Defensivos)
-  const gold = await fetchYahoo('GC=F');
-  const dollar = await fetchYahoo('DX-Y.NYB');
-  const usdjpy = await fetchYahoo('JPY=X');
-  const xlp = await fetchYahoo('XLP');
-
-  // ⚠️ Risco (Cíclicos)
+  // Global
   const sp = await fetchYahoo('^GSPC');
-  const dow = await fetchYahoo('YM=F');
-  const copper = await fetchYahoo('HG=F');
   const oil = await fetchYahoo('CL=F');
-  const soy = await fetchYahoo('ZS=F');
-  const xlf = await fetchYahoo('XLF');
-  const xle = await fetchYahoo('XLE');
-  const soxx = await fetchYahoo('SOXX');
-  const eem = await fetchYahoo('EEM');
-  const vale = await fetchYahoo('VALE');
-  const pbr = await fetchYahoo('PBR');
+  const gold = await fetchYahoo('GC=F');
+  const usd = await fetchYahoo('DX-Y.NYB');
 
-  const i = gold.price.length - 1;
-  const t = gold.time[i];
+  // Emergentes
+  const eem = await fetchYahoo('EEM');
+  const copper = await fetchYahoo('HG=F');
+
+  if (!sp || !oil || !gold || !usd || !eem || !copper) return;
+
+  const i = sp.price.length - 1;
+  const t = sp.time[i];
 
   if (labels.includes(t)) return;
 
   labels.push(t);
 
-  // médias simples das cestas
-  const seguranca = (
-    gold.price[i] + dollar.price[i] + usdjpy.price[i] + xlp.price[i]
-  ) / 4;
+  globalRiskRaw.push((sp.price[i] + oil.price[i]) / 2);
+  globalSafeRaw.push((gold.price[i] + usd.price[i]) / 2);
+  emergRiskRaw.push((eem.price[i] + copper.price[i]) / 2);
 
-  const risco = (
-    sp.price[i] + dow.price[i] + copper.price[i] + oil.price[i] + soy.price[i] +
-    xlf.price[i] + xle.price[i] + soxx.price[i] + eem.price[i] + vale.price[i] + pbr.price[i]
-  ) / 11;
+  chartGlobal.data.labels = labels;
+  chartGlobal.data.datasets[0].data = normalize(globalRiskRaw);
+  chartGlobal.data.datasets[1].data = normalize(globalSafeRaw);
 
-  segurancaRaw.push(seguranca);
-  riscoRaw.push(risco);
+  chartEmerg.data.labels = labels;
+  chartEmerg.data.datasets[0].data = normalize(emergRiskRaw);
 
-  chart.data.labels = labels;
-  chart.data.datasets[0].data = normalize(riscoRaw);
-  chart.data.datasets[1].data = normalize(segurancaRaw);
-  chart.update();
+  chartGlobal.update();
+  chartEmerg.update();
 }
 
-initChart();
+initCharts();
 update();
 setInterval(update, UPDATE_INTERVAL);
 </script>
