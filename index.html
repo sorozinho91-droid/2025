@@ -2,121 +2,47 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento de Mercado – Direção do Dia</title>
-
+<title>Direção do Dia – Risco x Segurança</title>
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
 <style>
-    body {
-        margin: 0;
-        background: #0e0e0e;
-        color: #e0e0e0;
-        font-family: Arial, sans-serif;
-    }
-    h2 {
-        padding: 12px;
-    }
-    #chart {
-        width: 100vw;
-        height: 520px;
-    }
+  body{margin:0;background:#0e0e0e;color:#eee;font-family:Arial}
+  #chart{width:100vw;height:520px}
 </style>
 </head>
-
 <body>
 
-<h2>📊 Sentimento de Mercado – Direção do Dia</h2>
+<h2 style="padding:12px">📊 Direção do Mercado</h2>
 <div id="chart"></div>
 
 <script>
-/* ───── Configuração ───── */
-const container = document.getElementById('chart');
-const MAX_POINTS = 390; // 1 dia intraday (1 min)
+const chart = LightweightCharts.createChart(
+  document.getElementById('chart'),
+  { layout:{ background:{color:'#0e0e0e'}, textColor:'#ccc' } }
+);
 
-/* ───── Gráfico ───── */
-const chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight,
-    layout: {
-        background: { color: '#0e0e0e' },
-        textColor: '#cfcfcf',
-    },
-    grid: {
-        vertLines: { color: '#222' },
-        horzLines: { color: '#222' },
-    },
-    timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
-    },
-});
-
-/* ───── Séries ───── */
-const riskSeries = chart.addLineSeries({
-    color: '#00ff88',
-    lineWidth: 3,
-});
-
-const safetySeries = chart.addLineSeries({
-    color: '#ff4444',
-    lineWidth: 3,
-});
-
-/* ───── Estado ───── */
-let risk = 100;
-let safety = 100;
+const riskSeries   = chart.addLineSeries({ color:'#00ff88', lineWidth:3 });
+const safetySeries = chart.addLineSeries({ color:'#ff4444', lineWidth:3 });
 
 const riskData = [];
 const safetyData = [];
+const MAX = 390;
 
-/* ───── Função de update (1 minuto real) ───── */
-function update() {
+const ws = new WebSocket('ws://localhost:8080');
 
-    const now = Math.floor(Date.now() / 1000);
+ws.onmessage = e => {
+  const d = JSON.parse(e.data);
 
-    // movimentos coerentes com sua tabela
-    risk *= 1 + (Math.random() - 0.5) * 0.003;
-    safety *= 1 + (Math.random() - 0.5) * 0.0015;
+  riskData.push({ time:d.time, value:d.risk });
+  safetyData.push({ time:d.time, value:d.safety });
 
-    riskData.push({ time: now, value: risk });
-    safetyData.push({ time: now, value: safety });
+  if (riskData.length > MAX) {
+    riskData.shift();
+    safetyData.shift();
+  }
 
-    // manter apenas 1 dia
-    if (riskData.length > MAX_POINTS) {
-        riskData.shift();
-        safetyData.shift();
-    }
-
-    riskSeries.setData(riskData);
-    safetySeries.setData(safetyData);
-}
-
-/* ───── Inicialização (preenche histórico até agora) ───── */
-(function init() {
-    const now = Math.floor(Date.now() / 1000);
-    let t = now - MAX_POINTS * 60;
-
-    for (let i = 0; i < MAX_POINTS; i++) {
-        risk *= 1 + (Math.random() - 0.5) * 0.002;
-        safety *= 1 + (Math.random() - 0.5) * 0.001;
-
-        riskData.push({ time: t, value: risk });
-        safetyData.push({ time: t, value: safety });
-
-        t += 60;
-    }
-
-    riskSeries.setData(riskData);
-    safetySeries.setData(safetyData);
-})();
-
-/* ───── Atualização automática a cada 1 minuto ───── */
-setInterval(update, 60000);
-
-/* ───── Resize ───── */
-window.addEventListener('resize', () => {
-    chart.resize(container.clientWidth, container.clientHeight);
-});
+  riskSeries.setData(riskData);
+  safetySeries.setData(safetyData);
+};
 </script>
 
 </body>
