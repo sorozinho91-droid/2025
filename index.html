@@ -2,90 +2,61 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Risk-On x Risk-Off Intraday</title>
+  <title>Risco x Segurança – Direção</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; }
-    h1 { text-align:center; }
+    h1 { text-align:center; margin-bottom:10px; }
     canvas { background:#020617; border-radius:12px; padding:10px; }
     .container { width:90%; margin:auto; }
-    .note { font-size:14px; color:#94a3b8; margin-top:10px; text-align:center; }
-    .error { color:#f87171; text-align:center; margin-top:10px; }
+    .note { font-size:13px; color:#94a3b8; text-align:center; margin-top:8px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📊 Risk-On x Risk-Off (Intraday Automático)</h1>
+    <h1>Direção: Risco x Segurança</h1>
     <canvas id="chart"></canvas>
-    <p class="note">
-      Atualização automática a cada 60s • Histórico acumulado (sessão ativa)
-    </p>
-    <p id="error" class="error"></p>
+    <p class="note">Atualização automática • Direção relativa apenas</p>
   </div>
 
 <script>
-// ================================
-// CONFIGURAÇÃO
-// ================================
-const UPDATE_INTERVAL = 60000; // 60s
-
+const UPDATE_INTERVAL = 60000;
 let chart;
 let labels = [];
-let riskOnData = [];
-let riskOffData = [];
+let risco = [];
+let seguranca = [];
 
-// ================================
-// FETCH YAHOO (CORS SAFE)
-// ================================
 async function fetchYahoo(symbol) {
   const proxy = 'https://corsproxy.io/?';
   const url = `${proxy}https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
-
   const res = await fetch(url);
-  if (!res.ok) throw new Error('Falha ao buscar ' + symbol);
-
   const json = await res.json();
-  const result = json?.chart?.result?.[0];
-  if (!result) throw new Error('Dados inválidos ' + symbol);
-
+  const r = json.chart.result[0];
   return {
-    time: result.timestamp.map(t => new Date(t * 1000).toLocaleTimeString()),
-    price: result.indicators.quote[0].close
+    time: r.timestamp.map(t => new Date(t * 1000).toLocaleTimeString()),
+    price: r.indicators.quote[0].close
   };
 }
 
-function normalize(series) {
-  const base = series.find(v => v !== null && !isNaN(v));
-  return series.map(v => (v / base) * 100);
+function normalize(arr) {
+  const base = arr[0];
+  return arr.map(v => (v / base) * 100);
 }
 
-// ================================
-// CHART INIT
-// ================================
 function initChart() {
   chart = new Chart(document.getElementById('chart'), {
     type: 'line',
     data: {
       labels,
       datasets: [
-        {
-          label: '🛡️ Segurança (Risk-Off)',
-          data: riskOffData,
-          borderWidth: 2
-        },
-        {
-          label: '⚠️ Risco (Risk-On)',
-          data: riskOnData,
-          borderWidth: 2
-        }
+        { label: 'Risco', data: risco, borderWidth: 2 },
+        { label: 'Segurança', data: seguranca, borderWidth: 2 }
       ]
     },
     options: {
       responsive: true,
       animation: false,
-      plugins: {
-        legend: { labels: { color: '#e5e7eb' } }
-      },
+      plugins: { legend: { labels: { color: '#e5e7eb' } } },
       scales: {
         x: { ticks: { color: '#cbd5f5' } },
         y: { ticks: { color: '#cbd5f5' } }
@@ -94,50 +65,33 @@ function initChart() {
   });
 }
 
-// ================================
-// UPDATE LOOP
-// ================================
-async function updateData() {
-  try {
-    const gold   = await fetchYahoo('GC=F');
-    const dollar = await fetchYahoo('DX-Y.NYB');
-    const sp500  = await fetchYahoo('^GSPC');
-    const oil    = await fetchYahoo('CL=F');
+async function update() {
+  const sp = await fetchYahoo('^GSPC');
+  const oil = await fetchYahoo('CL=F');
+  const gold = await fetchYahoo('GC=F');
+  const usd = await fetchYahoo('DX-Y.NYB');
 
-    const i = gold.price.length - 1; // último candle
-    const time = gold.time[i];
+  const i = sp.price.length - 1;
+  const t = sp.time[i];
 
-    // evita duplicar timestamp
-    if (labels.includes(time)) return;
+  if (labels.includes(t)) return;
 
-    const riskOff = (gold.price[i] + dollar.price[i]) / 2;
-    const riskOn  = (sp500.price[i] + oil.price[i]) / 2;
+  labels.push(t);
+  risco.push((sp.price[i] + oil.price[i]) / 2);
+  seguranca.push((gold.price[i] + usd.price[i]) / 2);
 
-    labels.push(time);
-    riskOffData.push(riskOff);
-    riskOnData.push(riskOn);
+  risco = normalize(risco);
+  seguranca = normalize(seguranca);
 
-    // normaliza tudo novamente (base 100 no primeiro ponto da sessão)
-    riskOffData = normalize(riskOffData);
-    riskOnData  = normalize(riskOnData);
-
-    chart.data.labels = labels;
-    chart.data.datasets[0].data = riskOffData;
-    chart.data.datasets[1].data = riskOnData;
-    chart.update();
-
-  } catch (err) {
-    document.getElementById('error').innerText = 'Erro ao atualizar dados intraday';
-    console.error(err);
-  }
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = risco;
+  chart.data.datasets[1].data = seguranca;
+  chart.update();
 }
 
-// ================================
-// START
-// ================================
 initChart();
-updateData();
-setInterval(updateData, UPDATE_INTERVAL);
+update();
+setInterval(update, UPDATE_INTERVAL);
 </script>
 </body>
 </html>
