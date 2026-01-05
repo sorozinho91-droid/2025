@@ -2,43 +2,37 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Risco x Segurança – Macro</title>
+  <title>Direção Global – Risco x Segurança</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; }
-    h1 { text-align:center; margin-bottom:6px; }
-    h2 { text-align:center; font-size:16px; margin:16px 0 6px; color:#cbd5f5; }
-    canvas { background:#020617; border-radius:12px; padding:10px; margin-bottom:12px; }
-    .container { width:92%; margin:auto; }
+    h1 { text-align:center; margin-bottom:8px; }
+    canvas { background:#020617; border-radius:12px; padding:10px; }
+    .container { width:95%; margin:auto; }
     .note { font-size:12px; color:#94a3b8; text-align:center; margin-top:6px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Direção Macro</h1>
-
-    <h2>Global — Risco x Segurança</h2>
-    <canvas id="chartGlobal"></canvas>
-
-    <h2>Emergentes — Risco</h2>
-    <canvas id="chartEmerg"></canvas>
-
-    <p class="note">Atualização automática • Direção relativa • Painel macro simples</p>
+    <h1>Direção Global — Risco x Segurança</h1>
+    <canvas id="chart"></canvas>
+    <p class="note">Atualização a cada 60s • Histórico rolling de 1 dia • Uso: Mini Índice</p>
   </div>
 
 <script>
-const UPDATE_INTERVAL = 60000;
+// ================================
+// CONFIG
+// ================================
+const UPDATE_INTERVAL = 60000; // 60s
+const MAX_POINTS = 288; // 1 dia (5min candles)
 
+let chart;
 let labels = [];
-let globalRiskRaw = [];
-let globalSafeRaw = [];
-let emergRiskRaw = [];
-
-let chartGlobal;
-let chartEmerg;
+let riskRaw = [];
+let safeRaw = [];
 
 // ================================
-// FETCH YAHOO (ROBUSTO)
+// FETCH YAHOO (INTRADAY LÍQUIDO)
 // ================================
 async function fetchYahoo(symbol) {
   const proxy = 'https://corsproxy.io/?';
@@ -60,10 +54,10 @@ function normalize(arr) {
 }
 
 // ================================
-// INIT CHARTS
+// INIT CHART
 // ================================
-function initCharts() {
-  chartGlobal = new Chart(document.getElementById('chartGlobal'), {
+function initChart() {
+  chart = new Chart(document.getElementById('chart'), {
     type: 'line',
     data: {
       labels,
@@ -73,6 +67,7 @@ function initCharts() {
       ]
     },
     options: {
+      responsive: true,
       animation: false,
       plugins: { legend: { labels: { color: '#e5e7eb' } } },
       scales: {
@@ -80,42 +75,20 @@ function initCharts() {
         y: { ticks: { color: '#cbd5f5' } }
       }
     }
-  );
-
-  chartEmerg = new Chart(document.getElementById('chartEmerg'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Risco Emergente', data: [], borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0 }
-      ]
-    },
-    options: {
-      animation: false,
-      plugins: { legend: { labels: { color: '#e5e7eb' } } },
-      scales: {
-        x: { ticks: { color: '#cbd5f5' } },
-        y: { ticks: { color: '#cbd5f5' } }
-      }
-    }
-  );
+  });
 }
 
 // ================================
 // UPDATE LOOP
 // ================================
 async function update() {
-  // Global
+  // Proxy global simples (robusto)
   const sp = await fetchYahoo('^GSPC');
   const oil = await fetchYahoo('CL=F');
   const gold = await fetchYahoo('GC=F');
   const usd = await fetchYahoo('DX-Y.NYB');
 
-  // Emergentes
-  const eem = await fetchYahoo('EEM');
-  const copper = await fetchYahoo('HG=F');
-
-  if (!sp || !oil || !gold || !usd || !eem || !copper) return;
+  if (!sp || !oil || !gold || !usd) return;
 
   const i = sp.price.length - 1;
   const t = sp.time[i];
@@ -123,23 +96,23 @@ async function update() {
   if (labels.includes(t)) return;
 
   labels.push(t);
+  riskRaw.push((sp.price[i] + oil.price[i]) / 2);
+  safeRaw.push((gold.price[i] + usd.price[i]) / 2);
 
-  globalRiskRaw.push((sp.price[i] + oil.price[i]) / 2);
-  globalSafeRaw.push((gold.price[i] + usd.price[i]) / 2);
-  emergRiskRaw.push((eem.price[i] + copper.price[i]) / 2);
+  // rolling 1 dia
+  if (labels.length > MAX_POINTS) {
+    labels.shift();
+    riskRaw.shift();
+    safeRaw.shift();
+  }
 
-  chartGlobal.data.labels = labels;
-  chartGlobal.data.datasets[0].data = normalize(globalRiskRaw);
-  chartGlobal.data.datasets[1].data = normalize(globalSafeRaw);
-
-  chartEmerg.data.labels = labels;
-  chartEmerg.data.datasets[0].data = normalize(emergRiskRaw);
-
-  chartGlobal.update();
-  chartEmerg.update();
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = normalize(riskRaw);
+  chart.data.datasets[1].data = normalize(safeRaw);
+  chart.update();
 }
 
-initCharts();
+initChart();
 update();
 setInterval(update, UPDATE_INTERVAL);
 </script>
