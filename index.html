@@ -2,45 +2,42 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Direção do Dia – Risco x Segurança</title>
+<title>Sentimento de Mercado – Risco x Segurança</title>
 
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 <style>
     body {
         margin: 0;
-        background: #0f0f0f;
-        color: #eee;
+        background: #0e0e0e;
+        color: #e0e0e0;
         font-family: Arial, sans-serif;
     }
-
     h2 {
-        padding: 15px;
+        padding: 12px;
     }
-
     #chart {
         width: 100vw;
-        height: 500px;
+        height: 520px;
     }
 </style>
 </head>
 
 <body>
 
-<h2>📈 Direção do Mercado – Risco x Segurança</h2>
+<h2>📊 Sentimento de Mercado – Direção do Dia</h2>
 <div id="chart"></div>
 
 <script>
-/* ───── Container ───── */
+/* ───── Gráfico ───── */
 const container = document.getElementById('chart');
 
-/* ───── Criar gráfico ───── */
 const chart = LightweightCharts.createChart(container, {
     width: container.clientWidth,
     height: container.clientHeight,
     layout: {
-        background: { color: '#0f0f0f' },
-        textColor: '#ccc',
+        background: { color: '#0e0e0e' },
+        textColor: '#cfcfcf',
     },
     grid: {
         vertLines: { color: '#222' },
@@ -56,37 +53,53 @@ const chart = LightweightCharts.createChart(container, {
 const riskSeries = chart.addLineSeries({
     color: '#00ff88',
     lineWidth: 3,
+    title: 'RISCO'
 });
 
 const safetySeries = chart.addLineSeries({
     color: '#ff4444',
     lineWidth: 3,
+    title: 'SEGURANÇA'
 });
 
-/* ───── Dados (simulação) ───── */
-let time = Math.floor(Date.now() / 1000);
+/* ───── Simulação baseada na sua tabela ───── */
+let t = Math.floor(Date.now() / 1000);
+
+// base 100
 let risk = 100;
 let safety = 100;
 
 function update() {
-    risk *= 1 + (Math.random() - 0.5) * 0.002;
-    safety *= 1 + (Math.random() - 0.5) * 0.001;
 
-    riskSeries.update({ time: time, value: risk });
-    safetySeries.update({ time: time, value: safety });
+    // risco: bolsas + commodities (mais volátil)
+    let riskMove =
+        (Math.random() - 0.5) * 0.003 +   // ações
+        (Math.random() - 0.5) * 0.002 +   // commodities
+        (Math.random() - 0.5) * 0.002;    // minério (peso)
 
-    time += 60;
+    // segurança: ouro + dólar + vix (menos volátil)
+    let safetyMove =
+        (Math.random() - 0.5) * 0.0015 +
+        (Math.random() - 0.5) * 0.001;
+
+    risk *= (1 + riskMove);
+    safety *= (1 + safetyMove);
+
+    riskSeries.update({ time: t, value: risk });
+    safetySeries.update({ time: t, value: safety });
+
+    t += 60;
 }
 
-/* ───── Histórico 1 dia (~390 min) ───── */
+/* ───── Histórico de 1 dia (~390 minutos) ───── */
 for (let i = 0; i < 390; i++) {
     update();
 }
 
-/* ───── Atualiza a cada 60s ───── */
+/* ───── Atualização a cada 60s ───── */
 setInterval(update, 60000);
 
-/* ───── Resize automático ───── */
+/* ───── Resize ───── */
 window.addEventListener('resize', () => {
     chart.resize(container.clientWidth, container.clientHeight);
 });
