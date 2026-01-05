@@ -4,32 +4,47 @@
 <meta charset="UTF-8">
 <title>Sentimento de Mercado – Risco x Segurança</title>
 
-<!-- Lightweight Charts -->
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 
 <style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: #0e0e0e;
-        color: #e0e0e0;
-        font-family: Arial, sans-serif;
-    }
-    #wrapper {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    h2 {
-        margin: 0;
-        padding: 10px;
-    }
-    #chart {
-        flex: 1;
-    }
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: #0e0e0e;
+    color: #eee;
+    font-family: Arial, sans-serif;
+}
+#wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+h2 {
+    margin: 0;
+    padding: 10px;
+}
+#legend {
+    display: flex;
+    gap: 20px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.box {
+    width: 12px;
+    height: 12px;
+}
+.green { background: #00ff88; }
+.red { background: #ff4444; }
+
+#chart {
+    flex: 1;
+}
 </style>
 </head>
 
@@ -37,34 +52,40 @@
 
 <div id="wrapper">
     <h2>📊 Sentimento de Mercado – Direção do Dia</h2>
+
+    <div id="legend">
+        <div class="legend-item">
+            <div class="box green"></div> RISCO (Risk-On)
+        </div>
+        <div class="legend-item">
+            <div class="box red"></div> SEGURANÇA (Risk-Off)
+        </div>
+    </div>
+
     <div id="chart"></div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
+    /* ───── FUNÇÃO HORÁRIO DE BRASÍLIA ───── */
+    function timeBrasilia() {
+        return Math.floor(Date.now() / 1000) - (3 * 60 * 60);
+    }
+
     const container = document.getElementById("chart");
 
-    /* ───── CRIA GRÁFICO ───── */
     const chart = LightweightCharts.createChart(container, {
         layout: {
             background: { color: "#0e0e0e" },
             textColor: "#cccccc"
         },
-        grid: {
-            vertLines: { color: "#222" },
-            horzLines: { color: "#222" }
-        },
         timeScale: {
             timeVisible: true,
             secondsVisible: false
-        },
-        rightPriceScale: {
-            borderColor: "#555"
         }
     });
 
-    /* ───── SÉRIES ───── */
     const riskSeries = chart.addLineSeries({
         color: "#00ff88",
         lineWidth: 3
@@ -75,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
         lineWidth: 3
     });
 
-    /* ───── ESTADO ───── */
     const MINUTES = 390;
     let risk = 100;
     let safety = 100;
@@ -87,8 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return v * (1 + (Math.random() - 0.5) * vol);
     }
 
-    /* ───── HISTÓRICO DO DIA ───── */
-    let t = Math.floor(Date.now() / 1000) - MINUTES * 60;
+    /* ───── HISTÓRICO INICIAL (BRASÍLIA) ───── */
+    let t = timeBrasilia() - MINUTES * 60;
 
     for (let i = 0; i < MINUTES; i++) {
         risk = step(risk, 0.0025);
@@ -103,26 +123,33 @@ document.addEventListener("DOMContentLoaded", () => {
     riskSeries.setData(riskData);
     safetySeries.setData(safetyData);
 
-    /* ───── ATUALIZA 1x POR MINUTO ───── */
+    chart.timeScale().scrollToRealTime();
+
+    /* ───── ATUALIZA A CADA 1 MINUTO ───── */
     setInterval(() => {
-        const now = Math.floor(Date.now() / 1000);
+        const now = timeBrasilia();
 
         risk = step(risk, 0.003);
         safety = step(safety, 0.0015);
 
-        riskData.push({ time: now, value: risk });
-        safetyData.push({ time: now, value: safety });
+        const rPoint = { time: now, value: risk };
+        const sPoint = { time: now, value: safety };
+
+        riskData.push(rPoint);
+        safetyData.push(sPoint);
 
         if (riskData.length > MINUTES) {
             riskData.shift();
             safetyData.shift();
         }
 
-        riskSeries.setData(riskData);
-        safetySeries.setData(safetyData);
+        riskSeries.update(rPoint);
+        safetySeries.update(sPoint);
+
+        chart.timeScale().scrollToRealTime();
+
     }, 60000);
 
-    /* ───── RESIZE ───── */
     window.addEventListener("resize", () => {
         chart.resize(container.clientWidth, container.clientHeight);
     });
