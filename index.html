@@ -5,157 +5,157 @@
     <title>Monitor Risco x Segurança (Intraday)</title>
     <script src="cdn.jsdelivr.net"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
         .container { max-width: 1200px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .asset-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .asset-table th, .asset-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
         .asset-table th { background-color: #007bff; color: white; }
-        .price { font-weight: bold; }
         .change-pct.positive { color: #28a745; }
         .change-pct.negative { color: #dc3545; }
         .risk-header { background-color: #e65c5c !important; }
-        .safety-header { background-color: #4CAF50 !important; }
-        #direction-indicator { font-size: 20px; font-weight: bold; padding: 10px; border-radius: 5px; text-align: center; margin-top: 15px; }
+        .safety-header { background-color: #4682B4 !important; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Monitor Financeiro Risco x Segurança</h1>
+        <div class="card">
+            <h1>Cotações Online em Tempo Real</h1>
             <p>Última atualização: <span id="last-updated">--:--:--</span></p>
         </div>
 
         <div class="grid-container">
             <div class="card">
-                <h2>Gráfico de Direção (Intraday)</h2>
-                <canvas id="riskSafetyChart"></canvas>
-                <div id="direction-indicator"></div>
+                <h2 class="risk-header">Ativos de Risco</h2>
+                <table class="asset-table">
+                    <thead><tr><th>Ativo</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
+                    <tbody id="risk-assets-body"></tbody>
+                </table>
             </div>
 
-            <div>
-                <div class="card">
-                    <h2>Ativos de Risco</h2>
-                    <table class="asset-table">
-                        <thead>
-                            <tr><th>Ativo</th><th>Preço</th><th>Var. (%)</th></tr>
-                        </thead>
-                        <tbody id="risk-assets-body"></tbody>
-                    </table>
-                </div>
-                <div class="card" style="margin-top: 20px;">
-                    <h2>Ativos de Segurança</h2>
-                    <table class="asset-table">
-                        <thead>
-                            <tr class="safety-header"><th>Ativo</th><th>Preço</th><th>Var. (%)</th></tr>
-                        </thead>
-                        <tbody id="safety-assets-body"></tbody>
-                    </table>
-                </div>
+            <div class="card">
+                <h2 class="safety-header">Ativos de Segurança</h2>
+                <table class="asset-table">
+                    <thead><tr class="safety-header"><th>Ativo</th><th>Nome/Descrição</th><th>Preço</th><th>Var. (%)</th></tr></thead>
+                    <tbody id="safety-assets-body"></tbody>
+                </table>
             </div>
+        </div>
+        
+        <div class="card">
+            <h2>Gráfico de Direção (Risco vs Segurança)</h2>
+            <canvas id="riskSafetyChart"></canvas>
         </div>
     </div>
 
     <script>
         // Use uma API Key real de um serviço como brapi.dev, Finage, Alpha Vantage ou IEX Cloud
         const API_KEY = "SUA_API_KEY"; 
-        // Note que tickers para futuros (FUT) e commodities podem variar por API. 
-        // Os ADRs (VALE, PBR) e ETFs (EWZ) geralmente funcionam em APIs globais.
-        const ASSETS = {
-            'Risco': ['VALE', 'PBR', 'EWZ', 'GLD', '^DJI'], // Exemplo com VALE ADR, Petrobras ADR, iShares Brazil ETF, Ouro spot, Dow Jones Futuro
-            'Segurança': ['DXY', 'EURUSD', 'USDJPY'] // Índice Dólar Futuros (DXY), Pares Forex
+        
+        // Mapeamento dos ativos da sua imagem para Tickers de mercado reais (exatos para ADRs e ETFs)
+        const ASSETS_MAP = {
+            'Risco': {
+                'Gold Futures': 'GC=F', 
+                'Cobre Futuros': 'HG=F',
+                'Petróleo WTI Futuros': 'CL=F', // Ticker para WTI Futures
+                'Oslo All Share': '^OSEAX',
+                'Soja Chicago Futuros': 'ZS=F',
+                'Dow Jones Futuros': '^DJI', // Índice Futuro Dow Jones
+                'The Global Dow USD': '^TGDOW',
+                'Vale SA ADR': 'VALE', // Ticker BDR/ADR Vale
+                'Petrobras SA ADR': 'PBR', // Ticker BDR/ADR Petrobras
+                'iShares MSCI Brazil ETF': 'EWZ', // Ticker para o ETF do Brasil
+                'The Financial Select Sector SPDR® Fund': 'XLF',
+                'The Consumer Staples Select Sector SPDR® Fund': 'XLP',
+                'The Energy Select Sector SPDR® Fund': 'XLE',
+                'SPDR S&P Metals and Mining ETF': 'XME',
+                'iShares MSCI Emerging Markets ETF': 'EEM',
+                'iShares Semiconductor ETF': 'SOXX',
+                'BSE Sensex 30': '^BSESN',
+                'Bolsas China': 'FXI', // Exemplo de ETF China Large-Cap
+            },
+            'Segurança': {
+                'Índice Dólar Futuros': 'DXY', // Ticker para DXY Index
+                'S&P 500 VIX Futuros': '^VIX',
+                'USD/MXN': 'MXN=X', // Tickers comuns para pares de moeda em APIs como Yahoo Finance
+                'USD/NOK': 'NOK=X',
+                'USD/NZD': 'NZD=X',
+                'USD/AUD': 'AUD=X',
+                'USD/KRW': 'KRW=X',
+                'USD/CNY': 'CNY=X',
+                'EUR/BRL': 'EURBRL=X' // Par Euro x Real
+            }
         };
+
         const UPDATE_INTERVAL = 60000; // 60 segundos
         const accumulatedData = { labels: [], riskAvg: [], safetyAvg: [] };
         let chart;
 
-        async function fetchQuotes(assetList) {
-            // Este é um exemplo CONCEITUAL de como chamar uma API
-            // APIs reais para commodities (minério de ferro, cobre) e futuros específicos
-            // geralmente exigem serviços pagos ou endpoints específicos.
-            const apiUrl = `https://api.example.com/quotes?symbols=${assetList.join(',')}&apiKey=${API_KEY}`;
-            
-            try {
-                // Em um cenário real, você faria várias chamadas de API ou usaria uma WebSocket para tempo real.
-                // Esta função mock simula uma resposta:
-                const mockData = {
-                    'VALE': { price: 13.50, change: 1.2 }, 'PBR': { price: 15.00, change: 0.8 }, 
-                    'EWZ': { price: 30.00, change: 1.5 }, 'GLD': { price: 2100, change: 0.5 },
-                    '^DJI': { price: 40000, change: 0.3 }, 
-                    'DXY': { price: 105.00, change: -0.2 }, 'EURUSD': { price: 1.08, change: -0.1 },
-                    'USDJPY': { price: 150.00, change: -0.3 }
-                };
-                return mockData;
-                
-            } catch (error) {
-                console.error("Erro ao buscar cotações:", error);
-                return null;
+        // Função de simulação de API, pois não tenho acesso a uma API real de mercado
+        async function fetchQuotesMock(assetMap) {
+            // Este é um MOCK (simulação) que retorna valores aleatórios para fins de demonstração
+            const quotes = {};
+            for (const type in assetMap) {
+                for (const name in assetMap[type]) {
+                    const symbol = assetMap[type][name];
+                    quotes[symbol] = {
+                        price: (Math.random() * 100) + 50, // Preço aleatório
+                        change: (Math.random() * 3) - 1.5 // Variação aleatória entre -1.5% e +1.5%
+                    };
+                }
             }
+            return quotes;
         }
 
         function updateUI(quotes) {
             if (!quotes) return;
 
             // Update Tables
-            for (const type in ASSETS) {
+            for (const type in ASSETS_MAP) {
                 const tbody = document.getElementById(`${type.toLowerCase()}-assets-body`);
-                tbody.innerHTML = '';
-                ASSETS[type].forEach(symbol => {
+                tbody.innerHTML = ''; 
+                for (const name in ASSETS_MAP[type]) {
+                    const symbol = ASSETS_MAP[type][name];
                     const asset = quotes[symbol];
                     if (asset) {
                         const row = document.createElement('tr');
                         const changeClass = asset.change >= 0 ? 'positive' : 'negative';
                         row.innerHTML = `
                             <td>${symbol}</td>
-                            <td class="price">${asset.price.toFixed(2)}</td>
+                            <td>${name}</td>
+                            <td>${asset.price.toFixed(2)}</td>
                             <td class="change-pct ${changeClass}">${asset.change.toFixed(2)}%</td>
                         `;
                         tbody.appendChild(row);
                     }
-                });
+                }
             }
             document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
 
             // Update Chart Data
-            const riskChanges = ASSETS['Risco'].map(s => quotes[s]?.change || 0);
-            const safetyChanges = ASSETS['Segurança'].map(s => quotes[s]?.change || 0);
+            const riskChanges = Object.values(ASSETS_MAP['Risco']).map(s => quotes[s]?.change || 0);
+            const safetyChanges = Object.values(ASSETS_MAP['Segurança']).map(s => quotes[s]?.change || 0);
 
             const avgRisk = riskChanges.reduce((a, b) => a + b, 0) / riskChanges.length;
             const avgSafety = safetyChanges.reduce((a, b) => a + b, 0) / safetyChanges.length;
 
             accumulatedData.labels.push(new Date().toLocaleTimeString());
-            accumulatedData.riskAvg.push(avgRisk);
-            accumulatedData.safetyAvg.push(avgSafety);
+            // Acumulando o histórico
+            const lastRisk = accumulatedData.riskAvg.length > 0 ? accumulatedData.riskAvg[accumulatedData.riskAvg.length - 1] : 0;
+            const lastSafety = accumulatedData.safetyAvg.length > 0 ? accumulatedData.safetyAvg[accumulatedData.safetyAvg.length - 1] : 0;
 
-            // Keep only the last 30 data points for performance
-            if (accumulatedData.labels.length > 30) {
+            accumulatedData.riskAvg.push(lastRisk + avgRisk);
+            accumulatedData.safetyAvg.push(lastSafety + avgSafety);
+
+            // Keep only the last 60 data points (1 hora de histórico a cada minuto)
+            if (accumulatedData.labels.length > 60) {
                 accumulatedData.labels.shift();
                 accumulatedData.riskAvg.shift();
                 accumulatedData.safetyAvg.shift();
             }
 
             if (chart) {
-                chart.update();
-                updateDirectionIndicator(avgRisk, avgSafety);
-            }
-        }
-
-        function updateDirectionIndicator(risk, safety) {
-            const indicator = document.getElementById('direction-indicator');
-            if (risk > 0 && safety < 0) {
-                indicator.textContent = 'Modo: Risco Ligado (Risk-On)';
-                indicator.style.backgroundColor = '#d4edda';
-                indicator.style.color = '#155724';
-            } else if (risk < 0 && safety > 0) {
-                indicator.textContent = 'Modo: Fuga para Segurança (Risk-Off)';
-                indicator.style.backgroundColor = '#f8d7da';
-                indicator.style.color = '#721c24';
-            } else {
-                indicator.textContent = 'Modo: Indefinido/Lateral';
-                indicator.style.backgroundColor = '#fff3cd';
-                indicator.style.color = '#856404';
+                chart.update(); // Atualiza o gráfico com novos dados
             }
         }
 
@@ -166,32 +166,33 @@
                 data: {
                     labels: accumulatedData.labels,
                     datasets: [{
-                        label: 'Variação Média Risco (%)',
+                        label: 'Acumulado Risco (%)',
                         data: accumulatedData.riskAvg,
-                        borderColor: '#e65c5c',
+                        borderColor: '#e65c5c', // Vermelho (Risco)
                         backgroundColor: 'rgba(230, 92, 92, 0.2)',
-                        fill: false,
-                        tension: 0.1
+                        tension: 0.4
                     }, {
-                        label: 'Variação Média Segurança (%)',
+                        label: 'Acumulado Segurança (%)',
                         data: accumulatedData.safetyAvg,
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                        fill: false,
-                        tension: 0.1
+                        borderColor: '#4682B4', // Azul (Segurança)
+                        backgroundColor: 'rgba(70, 130, 180, 0.2)',
+                        tension: 0.4
                     }]
                 },
-                options: { responsive: true, scales: { y: { beginAtZero: false, title: { display: true, text: 'Variação (%)' } } } }
+                options: { 
+                    responsive: true,
+                    plugins: { legend: { position: 'top' }, title: { display: true, text: 'Performance Acumulada Intraday (Últimos 60 minutos)' } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Performance Acumulada (%)' } } } 
+                }
             });
         }
 
         async function main() {
             initializeChart();
-            const allAssets = [...ASSETS['Risco'], ...ASSETS['Segurança']];
-            const quotes = await fetchQuotes(allAssets);
+            const quotes = await fetchQuotesMock(ASSETS_MAP); // Usando MOCK para demonstração
             updateUI(quotes);
             setInterval(async () => {
-                const quotes = await fetchQuotes(allAssets);
+                const quotes = await fetchQuotesMock(ASSETS_MAP); // Substituir por fetchQuotes(allAssets) reais
                 updateUI(quotes);
             }, UPDATE_INTERVAL);
         }
