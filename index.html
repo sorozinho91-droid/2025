@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento de Mercado – Risk On x Risk Off</title>
+<title>Direção do Mercado – Risco x Segurança</title>
 
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
@@ -11,8 +11,8 @@
         background: #0f0f0f;
         color: #eee;
         font-family: Arial, sans-serif;
-        margin: 0;
         padding: 20px;
+        margin: 0;
     }
     #chart {
         width: 100%;
@@ -23,15 +23,15 @@
 
 <body>
 
-<h2>📊 Sentimento de Mercado (HTML + TradingView)</h2>
+<h2>📈 Direção do Mercado – Risco x Segurança</h2>
 <div id="chart"></div>
 
 <script>
-/* ───── Criação do gráfico ───── */
+/* ───── Criar gráfico ───── */
 const chart = LightweightCharts.createChart(document.getElementById('chart'), {
     layout: {
         background: { color: '#0f0f0f' },
-        textColor: '#ccc',
+        textColor: '#bbb',
     },
     grid: {
         vertLines: { color: '#222' },
@@ -40,57 +40,44 @@ const chart = LightweightCharts.createChart(document.getElementById('chart'), {
     timeScale: {
         timeVisible: true,
         secondsVisible: false,
-    },
-    rightPriceScale: {
-        borderColor: '#333',
-    },
+    }
 });
 
-/* ───── Séries ───── */
-const riskOnSeries = chart.addLineSeries({
+/* ───── Linhas ───── */
+const riskSeries = chart.addLineSeries({
     color: '#00ff88',
-    lineWidth: 2,
-    title: 'Risk-On'
-});
-
-const riskOffSeries = chart.addLineSeries({
-    color: '#ff5555',
-    lineWidth: 2,
-    lineStyle: LightweightCharts.LineStyle.Dashed,
-    title: 'Risk-Off'
-});
-
-const sentimentSeries = chart.addLineSeries({
-    color: '#3399ff',
     lineWidth: 3,
-    title: 'Sentimento'
+    title: 'Risco (Risk-On)'
 });
 
-/* ───── Simulação de dados (substitua por API/WebSocket) ───── */
-let t = Math.floor(Date.now() / 1000);
-let riskOn = 100;
-let riskOff = 100;
+const safetySeries = chart.addLineSeries({
+    color: '#ff4444',
+    lineWidth: 3,
+    title: 'Segurança (Risk-Off)'
+});
 
-function updateData() {
-    riskOn *= 1 + (Math.random() - 0.5) * 0.002;
-    riskOff *= 1 + (Math.random() - 0.5) * 0.001;
+/* ───── Simulação (substitua por dados reais depois) ───── */
+let time = Math.floor(Date.now() / 1000);
+let risk = 100;
+let safety = 100;
 
-    const sentiment = riskOn - riskOff;
+function update() {
+    risk *= 1 + (Math.random() - 0.5) * 0.002;
+    safety *= 1 + (Math.random() - 0.5) * 0.001;
 
-    riskOnSeries.update({ time: t, value: riskOn });
-    riskOffSeries.update({ time: t, value: riskOff });
-    sentimentSeries.update({ time: t, value: sentiment });
+    riskSeries.update({ time: time, value: risk });
+    safetySeries.update({ time: time, value: safety });
 
-    t += 60;
+    time += 60;
 }
 
-/* ───── Histórico inicial (1 dia ~ 390 minutos) ───── */
+/* ───── Histórico de 1 dia (~390 min) ───── */
 for (let i = 0; i < 390; i++) {
-    updateData();
+    update();
 }
 
-/* ───── Atualização a cada 60s ───── */
-setInterval(updateData, 60000);
+/* ───── Atualiza a cada 60s ───── */
+setInterval(update, 60000);
 </script>
 
 </body>
