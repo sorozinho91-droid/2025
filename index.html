@@ -2,123 +2,33 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Global 2026 - Risco vs Segurança</title>
+    <title>Monitor Risco x Segurança (IFrames)</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #1c1e21; }
-        .container { max-width: 1200px; margin: auto; }
-        .clock-container { background: #1c1e21; color: #00ff00; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        #clock { font-size: 2.5em; font-weight: bold; font-family: 'Courier New', Courier, monospace; }
-        #date { font-size: 1.1em; color: #aaa; margin-top: 5px; }
-        .header-title { text-align: center; margin-bottom: 20px; }
-        .flex-row { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 25px; }
-        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; min-width: 340px; }
-        .widget-title { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
-        footer { text-align: center; margin-top: 40px; font-size: 0.85em; color: #65676b; padding-bottom: 20px; }
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .container { max-width: 1000px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { color: #333; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Dashboard Financeiro Simples</h1>
+        <p>Dados em tempo real via Widgets do Investing.com.</p>
 
-<div class="container">
-    <div class="clock-container">
-        <div id="clock">00:00:00</div>
-        <div id="date">Carregando data...</div>
-    </div>
-
-    <div class="header-title">
-        <h1>Monitor Risco Global vs Segurança</h1>
-        <p>Direção dos Ativos em Tempo Real | Janeiro 2026</p>
-    </div>
-
-    <div class="flex-row">
-        <!-- Gráfico de Linha: S&P 500 -->
         <div class="card">
-            <div class="widget-title" style="color: #d32f2f;">DIREÇÃO: S&P 500 (RISCO)</div>
-            <div class="tradingview-widget-container" style="height: 300px;">
-                <div id="tv_sp500" style="height: 100%;"></div>
-            </div>
+            <h2>Tabela de Ativos (Risco e Segurança)</h2>
+            <!-- **COLE O SEU CÓDIGO IFRAME DA TABELA DE COTAÇÕES AQUI** -->
+            <!-- Exemplo (Placeholder): -->
+            <iframe src="br.investing.com" style="width:100%; height:400px; border:0;" frameborder="0" allowTransparency="true" scrolling="no"></iframe>
+        </div>
+        
+         <div class="card">
+            <h2>Gráfico de Linha Intraday (Exemplo)</h2>
+            <!-- **COLE O SEU CÓDIGO IFRAME DO GRÁFICO AQUI** -->
+             <!-- Exemplo (Placeholder): -->
+             <iframe src="br.investing.com" style="width:100%; height:400px; border:0;" frameborder="0" allowTransparency="true" scrolling="no"></iframe>
         </div>
 
-        <!-- Gráfico de Linha: DXY -->
-        <div class="card">
-            <div class="widget-title" style="color: #2e7d32;">DIREÇÃO: DÓLAR INDEX (SEGURANÇA)</div>
-            <div class="tradingview-widget-container" style="height: 300px;">
-                <div id="tv_dxy" style="height: 100%;"></div>
-            </div>
-        </div>
     </div>
-
-    <!-- Gráfico Comparativo Central -->
-    <div class="card">
-        <div class="widget-title">COMPARAÇÃO INTRADAY: DXY vs S&P 500</div>
-        <div id="tradingview_compare" style="height: 450px;"></div>
-    </div>
-
-    <footer>
-        &copy; 2026 Dashboard Financeiro Automático | Dados via <a href="https://br.tradingview.com" target="_blank">TradingView</a>
-    </footer>
-</div>
-
-<!-- Scripts Necessários -->
-<!-- CORREÇÃO AQUI: Adicionado https:// na URL -->
-<script type="text/javascript" src="s3.tradingview.com"></script>
-
-<script type="text/javascript">
-    // Gráfico S&P 500
-    new TradingView.MediumWidget({
-        "symbols": [["S&P 500", "INDEXSP:.INX|1D"]],
-        "chartOnly": true,
-        "width": "100%",
-        "height": "100%",
-        "locale": "br",
-        "colorTheme": "light",
-        "gridLineColor": "rgba(240, 243, 250, 0)",
-        "fontColor": "#787b86",
-        "isTransparent": false,
-        "autosize": true,
-        "container_id": "tv_sp500"
-    });
-
-    // Gráfico DXY
-    new TradingView.MediumWidget({
-        "symbols": [["DXY", "FX:DXY|1D"]],
-        "chartOnly": true,
-        "width": "100%",
-        "height": "100%",
-        "locale": "br",
-        "colorTheme": "light",
-        "gridLineColor": "rgba(240, 243, 250, 0)",
-        "fontColor": "#787b86",
-        "isTransparent": false,
-        "autosize": true,
-        "container_id": "tv_dxy"
-    });
-
-    // Gráfico de Comparação (Linha)
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": "FX:DXY",
-        "interval": "1", // Intervalo de 1 minuto
-        "timezone": "America/Sao_Paulo",
-        "theme": "light",
-        "style": "2", // Estilo de Linha
-        "locale": "br",
-        "enable_publishing": false,
-        "hide_top_toolbar": false,
-        "container_id": "tradingview_compare",
-        // Adicionando S&P 500 como estudo/comparação
-        "studies": [{ "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } }] 
-    });
-
-    // Função do relógio
-    function updateClock() {
-        const now = new Date();
-        const options = { timeZone: "America/Sao_Paulo", hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        document.getElementById('clock').textContent = now.toLocaleTimeString('pt-BR', options);
-        document.getElementById('date').textContent = now.toLocaleDateString('pt-BR', { timeZone: "America/Sao_Paulo", weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-</script>
 </body>
 </html>
