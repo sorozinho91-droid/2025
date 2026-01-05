@@ -3,118 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <title>Direção Global – Risco x Segurança</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; }
-    h1 { text-align:center; margin-bottom:8px; }
-    canvas { background:#020617; border-radius:12px; padding:10px; }
-    .container { width:95%; margin:auto; }
-    .note { font-size:12px; color:#94a3b8; text-align:center; margin-top:6px; }
+    body { margin:0; background:#0f172a; color:#e5e7eb; font-family: Arial, sans-serif; }
+    h1 { text-align:center; padding:10px; font-size:18px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:10px; }
+    .box { background:#020617; border-radius:12px; padding:6px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Direção Global — Risco x Segurança</h1>
-    <canvas id="chart"></canvas>
-    <p class="note">Atualização a cada 60s • Histórico rolling de 1 dia • Uso: Mini Índice</p>
+
+<h1>Direção Global — Risco x Segurança (Tempo Real)</h1>
+
+<div class="grid">
+
+  <!-- RISCO GLOBAL -->
+  <div class="box">
+    <div class="tradingview-widget-container">
+      <div id="risk"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+      <script type="text/javascript">
+      new TradingView.widget({
+        "container_id": "risk",
+        "symbol": "SP:SPX",
+        "interval": "5",
+        "range": "1D",
+        "timezone": "exchange",
+        "theme": "dark",
+        "style": "1",
+        "hide_side_toolbar": true,
+        "hide_top_toolbar": true,
+        "hide_legend": true,
+        "allow_symbol_change": false,
+        "save_image": false
+      });
+      </script>
+    </div>
   </div>
 
-<script>
-// ================================
-// CONFIG
-// ================================
-const UPDATE_INTERVAL = 60000; // 60s
-const MAX_POINTS = 288; // 1 dia (5min candles)
+  <!-- SEGURANÇA GLOBAL -->
+  <div class="box">
+    <div class="tradingview-widget-container">
+      <div id="safe"></div>
+      <script type="text/javascript">
+      new TradingView.widget({
+        "container_id": "safe",
+        "symbol": "TVC:DXY",
+        "interval": "5",
+        "range": "1D",
+        "timezone": "exchange",
+        "theme": "dark",
+        "style": "1",
+        "hide_side_toolbar": true,
+        "hide_top_toolbar": true,
+        "hide_legend": true,
+        "allow_symbol_change": false,
+        "save_image": false
+      });
+      </script>
+    </div>
+  </div>
 
-let chart;
-let labels = [];
-let riskRaw = [];
-let safeRaw = [];
+</div>
 
-// ================================
-// FETCH YAHOO (INTRADAY LÍQUIDO)
-// ================================
-async function fetchYahoo(symbol) {
-  const proxy = 'https://corsproxy.io/?';
-  const url = `${proxy}https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
-  const res = await fetch(url);
-  const json = await res.json();
-  const r = json?.chart?.result?.[0];
-  if (!r || !r.timestamp) return null;
-  return {
-    time: r.timestamp.map(t => new Date(t * 1000).toLocaleTimeString()),
-    price: r.indicators.quote[0].close
-  };
-}
-
-function normalize(arr) {
-  if (arr.length < 2) return [];
-  const base = arr[0];
-  return arr.map(v => (v / base) * 100);
-}
-
-// ================================
-// INIT CHART
-// ================================
-function initChart() {
-  chart = new Chart(document.getElementById('chart'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Risco Global', data: [], borderColor: '#22c55e', borderWidth: 2, pointRadius: 0 },
-        { label: 'Segurança Global', data: [], borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 }
-      ]
-    },
-    options: {
-      responsive: true,
-      animation: false,
-      plugins: { legend: { labels: { color: '#e5e7eb' } } },
-      scales: {
-        x: { ticks: { color: '#cbd5f5' } },
-        y: { ticks: { color: '#cbd5f5' } }
-      }
-    }
-  });
-}
-
-// ================================
-// UPDATE LOOP
-// ================================
-async function update() {
-  // Proxy global simples (robusto)
-  const sp = await fetchYahoo('^GSPC');
-  const oil = await fetchYahoo('CL=F');
-  const gold = await fetchYahoo('GC=F');
-  const usd = await fetchYahoo('DX-Y.NYB');
-
-  if (!sp || !oil || !gold || !usd) return;
-
-  const i = sp.price.length - 1;
-  const t = sp.time[i];
-
-  if (labels.includes(t)) return;
-
-  labels.push(t);
-  riskRaw.push((sp.price[i] + oil.price[i]) / 2);
-  safeRaw.push((gold.price[i] + usd.price[i]) / 2);
-
-  // rolling 1 dia
-  if (labels.length > MAX_POINTS) {
-    labels.shift();
-    riskRaw.shift();
-    safeRaw.shift();
-  }
-
-  chart.data.labels = labels;
-  chart.data.datasets[0].data = normalize(riskRaw);
-  chart.data.datasets[1].data = normalize(safeRaw);
-  chart.update();
-}
-
-initChart();
-update();
-setInterval(update, UPDATE_INTERVAL);
-</script>
 </body>
 </html>
