@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento de Mercado – Risco x Segurança</title>
+<title>Sentimento de Mercado – Direção do Dia</title>
 
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
@@ -29,9 +29,11 @@
 <div id="chart"></div>
 
 <script>
-/* ───── Gráfico ───── */
+/* ───── Configuração ───── */
 const container = document.getElementById('chart');
+const MAX_POINTS = 390; // 1 dia intraday (1 min)
 
+/* ───── Gráfico ───── */
 const chart = LightweightCharts.createChart(container, {
     width: container.clientWidth,
     height: container.clientHeight,
@@ -46,57 +48,69 @@ const chart = LightweightCharts.createChart(container, {
     timeScale: {
         timeVisible: true,
         secondsVisible: false,
-    }
+    },
 });
 
 /* ───── Séries ───── */
 const riskSeries = chart.addLineSeries({
     color: '#00ff88',
     lineWidth: 3,
-    title: 'RISCO'
 });
 
 const safetySeries = chart.addLineSeries({
     color: '#ff4444',
     lineWidth: 3,
-    title: 'SEGURANÇA'
 });
 
-/* ───── Simulação baseada na sua tabela ───── */
-let t = Math.floor(Date.now() / 1000);
-
-// base 100
+/* ───── Estado ───── */
 let risk = 100;
 let safety = 100;
 
+const riskData = [];
+const safetyData = [];
+
+/* ───── Função de update (1 minuto real) ───── */
 function update() {
 
-    // risco: bolsas + commodities (mais volátil)
-    let riskMove =
-        (Math.random() - 0.5) * 0.003 +   // ações
-        (Math.random() - 0.5) * 0.002 +   // commodities
-        (Math.random() - 0.5) * 0.002;    // minério (peso)
+    const now = Math.floor(Date.now() / 1000);
 
-    // segurança: ouro + dólar + vix (menos volátil)
-    let safetyMove =
-        (Math.random() - 0.5) * 0.0015 +
-        (Math.random() - 0.5) * 0.001;
+    // movimentos coerentes com sua tabela
+    risk *= 1 + (Math.random() - 0.5) * 0.003;
+    safety *= 1 + (Math.random() - 0.5) * 0.0015;
 
-    risk *= (1 + riskMove);
-    safety *= (1 + safetyMove);
+    riskData.push({ time: now, value: risk });
+    safetyData.push({ time: now, value: safety });
 
-    riskSeries.update({ time: t, value: risk });
-    safetySeries.update({ time: t, value: safety });
+    // manter apenas 1 dia
+    if (riskData.length > MAX_POINTS) {
+        riskData.shift();
+        safetyData.shift();
+    }
 
-    t += 60;
+    riskSeries.setData(riskData);
+    safetySeries.setData(safetyData);
 }
 
-/* ───── Histórico de 1 dia (~390 minutos) ───── */
-for (let i = 0; i < 390; i++) {
-    update();
-}
+/* ───── Inicialização (preenche histórico até agora) ───── */
+(function init() {
+    const now = Math.floor(Date.now() / 1000);
+    let t = now - MAX_POINTS * 60;
 
-/* ───── Atualização a cada 60s ───── */
+    for (let i = 0; i < MAX_POINTS; i++) {
+        risk *= 1 + (Math.random() - 0.5) * 0.002;
+        safety *= 1 + (Math.random() - 0.5) * 0.001;
+
+        riskData.push({ time: t, value: risk });
+        safetyData.push({ time: t, value: safety });
+
+        t += 60;
+    }
+
+    riskSeries.setData(riskData);
+    safetySeries.setData(safetyData);
+})();
+
+/* ───── Atualização automática a cada 1 minuto ───── */
 setInterval(update, 60000);
 
 /* ───── Resize ───── */
