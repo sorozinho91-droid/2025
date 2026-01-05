@@ -27,10 +27,10 @@ h2 {
 #legend {
     display: flex;
     gap: 20px;
-    padding: 8px 12px;
+    padding: 6px 12px;
     font-size: 14px;
 }
-.legend-item {
+.legend {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -39,11 +39,12 @@ h2 {
     width: 12px;
     height: 12px;
 }
-.green { background: #00ff88; }
-.red { background: #ff4444; }
+.green { background:#00ff88; }
+.red { background:#ff4444; }
 
 #chart {
     flex: 1;
+    min-height: 200px;
 }
 </style>
 </head>
@@ -54,10 +55,10 @@ h2 {
     <h2>📊 Sentimento de Mercado – Direção do Dia</h2>
 
     <div id="legend">
-        <div class="legend-item">
+        <div class="legend">
             <div class="box green"></div> RISCO (Risk-On)
         </div>
-        <div class="legend-item">
+        <div class="legend">
             <div class="box red"></div> SEGURANÇA (Risk-Off)
         </div>
     </div>
@@ -68,12 +69,14 @@ h2 {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    function timeBrasilia() {
-        return Math.floor(Date.now() / 1000) - (3 * 60 * 60);
+    /* ───── HORÁRIO DE BRASÍLIA (UTC-3) ───── */
+    function nowBrasilia() {
+        return Math.floor(Date.now() / 1000) - 3 * 60 * 60;
     }
 
     const container = document.getElementById("chart");
 
+    /* ───── CRIA GRÁFICO ───── */
     const chart = LightweightCharts.createChart(container, {
         layout: {
             background: { color: "#0e0e0e" },
@@ -99,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         lineWidth: 3
     });
 
+    /* ───── PARÂMETROS ───── */
     const MINUTES = 390;
     let risk = 100;
     let safety = 100;
@@ -110,15 +114,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return v * (1 + (Math.random() - 0.5) * vol);
     }
 
-    let t = timeBrasilia() - MINUTES * 60;
+    /* ───── HISTÓRICO INICIAL ───── */
+    let t = nowBrasilia() - MINUTES * 60;
 
     for (let i = 0; i < MINUTES; i++) {
-        risk = step(risk, 0.0025);
+        risk = step(risk, 0.002);
         safety = step(safety, 0.0015);
 
         riskData.push({ time: t, value: risk });
         safetyData.push({ time: t, value: safety });
-
         t += 60;
     }
 
@@ -126,14 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
     safetySeries.setData(safetyData);
     chart.timeScale().scrollToRealTime();
 
+    /* ───── ATUALIZA A CADA 1 MINUTO ───── */
     setInterval(() => {
-        const now = timeBrasilia();
+        const time = nowBrasilia();
 
         risk = step(risk, 0.003);
-        safety = step(safety, 0.0015);
+        safety = step(safety, 0.0018);
 
-        const rPoint = { time: now, value: risk };
-        const sPoint = { time: now, value: safety };
+        const rPoint = { time, value: risk };
+        const sPoint = { time, value: safety };
 
         riskData.push(rPoint);
         safetyData.push(sPoint);
@@ -147,12 +152,37 @@ document.addEventListener("DOMContentLoaded", () => {
         safetySeries.update(sPoint);
 
         chart.timeScale().scrollToRealTime();
-
     }, 60000);
 
-    window.addEventListener("resize", () => {
-        chart.resize(container.clientWidth, container.clientHeight);
+    /* ───── AJUSTE AO MINIMIZAR / RESTAURAR ───── */
+
+    function resizeChart() {
+        if (container.clientWidth > 0 && container.clientHeight > 0) {
+            chart.resize(container.clientWidth, container.clientHeight);
+            chart.timeScale().scrollToRealTime();
+        }
+    }
+
+    // ResizeObserver (principal)
+    const resizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(resizeChart);
     });
+    resizeObserver.observe(container);
+
+    // Quando a aba perde e recupera foco
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            setTimeout(resizeChart, 50);
+        }
+    });
+
+    // Quando a janela é restaurada
+    window.addEventListener("focus", () => {
+        setTimeout(resizeChart, 50);
+    });
+
+    // Fallback clássico
+    window.addEventListener("resize", resizeChart);
 
 });
 </script>
