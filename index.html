@@ -2,51 +2,14 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Teste de Grafico</title>
+    <title>Mapa de Calor Global</title>
     <style>
-        .container { width: 600px; margin: auto; padding: 20px; }
-        canvas { border: 1px solid #ccc; }
+        body { font-family: sans-serif; margin: 0; padding: 0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Teste Simples de Gráfico</h1>
-        <canvas id="meuGrafico"></canvas>
-    </div>
-
-    <!-- Script para carregar Chart.js localmente (embutido) -->
-    <script src="cdn.jsdelivr.net"></script>
-
-    <script>
-        // Dados de teste simples
-        const labels = ['Min 1', 'Min 2', 'Min 3', 'Min 4', 'Min 5'];
-        const dataRisco = [0, 0.5, 1.2, 0.8, 1.5];
-        const dataSeguranca = [0, -0.2, -0.5, -0.3, -0.8];
-
-        const ctx = document.getElementById('meuGrafico').getContext('2d');
-        const meuGrafico = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Acumulado Risco (%)',
-                    data: dataRisco,
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.1
-                }, {
-                    label: 'Acumulado Segurança (%)',
-                    data: dataSeguranca,
-                    borderColor: 'rgb(54, 162, 235)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
+    <!-- Código Iframe do Mapa de Calor do TradingView -->
+    <!-- Ele mostra a direção visual global por cor e tamanho -->
+    <iframe src="br.tradingview.com" style="width: 100vw; height: 100vh; border: 0;" frameborder="0" allowTransparency="true" scrolling="no"></iframe>
 </body>
 </html>
