@@ -81,26 +81,25 @@
     <!-- 3. GRÁFICO DE COMPARAÇÃO EM TEMPO REAL -->
     <div class="card" style="margin-bottom: 25px;">
         <div class="widget-title">GRÁFICO INTRADAY (60s): DÓLAR (DXY) vs S&P 500</div>
-        <!-- Note que aqui eu removi o container_id do JS e deixei o widget criar a div, pois a div interna não tinha altura suficiente no código anterior -->
         <div class="tradingview-widget-container" style="height: 450px; width: 100%;">
             <script type="text/javascript" src="s3.tradingview.com"></script>
             <script type="text/javascript">
                 new TradingView.widget({
                     "autosize": true,
-                    "symbol": "FX:DXY", /* Dólar */
-                    "interval": "1",    /* 1 Minuto Intraday */
+                    "symbol": "FX:DXY",
+                    "interval": "1",
                     "timezone": "America/Sao_Paulo",
                     "theme": "light",
-                    "style": "2",       /* Estilo de linha */
+                    "style": "2",
                     "locale": "br",
                     "toolbar_bg": "#f1f3f6",
                     "enable_publishing": false,
                     "hide_top_toolbar": false,
                     "hide_legend": false,
                     "save_image": false,
-                    "container_id": "tradingview_widget_compare", /* Novo ID de container para evitar conflitos */
+                    "container_id": "tradingview_widget_compare",
                     "studies": [
-                        { "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } } /* S&P 500 */
+                        { "id": "Overlay@tv-basicstudies", "inputs": { "symbol": "INDEXSP:.INX" } }
                     ]
                 });
             </script>
@@ -149,10 +148,8 @@
 </div>
 
 <script>
-    // Função para o Relógio de Brasília
     function updateClock() {
         const now = new Date();
-        // Ajuste para Horário de Brasília (GMT-3)
         const options = { timeZone: "America/Sao_Paulo", hour: '2-digit', minute: '2-digit', second: '2-digit' };
         const timeString = now.toLocaleTimeString('pt-BR', options);
         
@@ -163,9 +160,8 @@
         document.getElementById('date').textContent = dateString;
     }
 
-    // Atualiza o relógio a cada segundo
     setInterval(updateClock, 1000);
-    updateClock(); // Chamada inicial
+    updateClock();
 </script>
 
 </body>
