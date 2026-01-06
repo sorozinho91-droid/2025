@@ -2,190 +2,239 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sentimento de Mercado – Risco x Segurança</title>
+<title>Dashboard Financeiro Global</title>
 
-<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: #0e0e0e;
-    color: #eee;
-    font-family: Arial, sans-serif;
+:root{
+  --bg:#f2f4f7;
+  --mod:#ffffff;
+  --card:#f7f7f7;
+  --line:#dcdcdc;
+  --text:#000;
+  --muted:#333;
+  --blue:#0d47a1;
+  --red:#ef5350;
+  --orange:#ffb74d;
+  --yellow:#fff176;
 }
-#wrapper {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-h2 {
-    margin: 0;
-    padding: 10px;
-}
-#legend {
-    display: flex;
-    gap: 20px;
-    padding: 6px 12px;
-    font-size: 14px;
-}
-.legend {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.box {
-    width: 12px;
-    height: 12px;
-}
-.green { background:#00ff88; }
-.red { background:#ff4444; }
 
-#chart {
-    flex: 1;
-    min-height: 200px;
+html,body{
+  height:100%;
+  margin:0;
+  overflow:hidden;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial, Helvetica, sans-serif;
+  padding:12px;
+}
+
+.dashboard{
+  display:grid;
+  grid-template-rows:auto 1fr;
+  height:100%;
+  gap:12px;
+}
+
+.section.breaking{
+  background:#fff5f5;
+  border:2px solid var(--red);
+  border-radius:10px;
+  padding:10px;
+  max-height:22vh;
+  overflow-y:auto;
+}
+
+.main{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  grid-auto-rows:minmax(0, 1fr);
+  gap:12px;
+  height:100%;
+  overflow-y:auto;
+}
+
+.section{
+  background:var(--mod);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+
+.section h2{
+  font-size:14px;
+  margin:0 0 6px;
+  padding-bottom:4px;
+  border-bottom:1px solid var(--line);
+}
+
+.list{
+  overflow-y:auto;
+  scrollbar-width:thin;
+}
+
+.news-item{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:6px 8px;
+  margin-bottom:6px;
+  position:relative;
+}
+
+.news-item::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:3px;
+}
+
+.urgente-vermelho::before{background:var(--red);}
+.urgente-laranja::before{background:var(--orange);}
+.urgente-amarelo::before{background:var(--yellow);}
+
+.news-title a{
+  color:var(--blue);
+  font-size:12.5px;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+.news-desc{
+  font-size:11.5px;
+  color:var(--muted);
+  margin-top:4px;
+  line-height:1.3;
+}
+
+@media (min-width:2560px){
+  body{font-size:15px;padding:20px}
+  .dashboard{max-width:2800px;margin:0 auto}
+  .main{grid-template-columns:repeat(4,1fr)}
+  .section h2{font-size:16px}
+  .news-title a{font-size:14px}
+  .news-desc{font-size:13px}
 }
 </style>
 </head>
 
 <body>
+<div class="dashboard">
 
-<div id="wrapper">
-    <h2>📊 Sentimento de Mercado – Direção do Dia</h2>
+<div class="section breaking" id="breaking">
+  <h2>🚨 Breaking News — Impacto Imediato</h2>
+  <div class="list"></div>
+</div>
 
-    <div id="legend">
-        <div class="legend">
-            <div class="box green"></div> RISCO (Risk-On)
-        </div>
-        <div class="legend">
-            <div class="box red"></div> SEGURANÇA (Risk-Off)
-        </div>
-    </div>
-
-    <div id="chart"></div>
+<div class="main">
+  <div class="section" id="mercado"><h2>📰 Mercado Financeiro</h2><div class="list"></div></div>
+  <div class="section" id="minerio"><h2>🪨 Minério de Ferro</h2><div class="list"></div></div>
+  <div class="section" id="petroleo"><h2>🛢️ Petróleo</h2><div class="list"></div></div>
+  <div class="section" id="dxy"><h2>💵 DXY & Dólar</h2><div class="list"></div></div>
+  <div class="section" id="juros"><h2>📈 Juros Americanos</h2><div class="list"></div></div>
+  <div class="section" id="bancos"><h2>🏦 Bancos</h2><div class="list"></div></div>
+  <div class="section" id="bolsasUSA"><h2>🇺🇸 Bolsas EUA</h2><div class="list"></div></div>
+  <div class="section" id="bolsasEuropa"><h2>🇪🇺 Bolsas Europa</h2><div class="list"></div></div>
+  <div class="section" id="bolsasAsia"><h2>🌏 Bolsas Ásia</h2><div class="list"></div></div>
+</div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+const palavrasUrgentes=[
+ {p:'guerra',c:'urgente-vermelho'},
+ {p:'crise',c:'urgente-laranja'},
+ {p:'queda',c:'urgente-laranja'},
+ {p:'falência',c:'urgente-laranja'},
+ {p:'alta forte',c:'urgente-amarelo'}
+];
 
-    /* ───── HORÁRIO DE BRASÍLIA (UTC-3) ───── */
-    function nowBrasilia() {
-        return Math.floor(Date.now() / 1000) - 3 * 60 * 60;
-    }
+function getUrgencia(a){
+ const t=(a.title+a.desc).toLowerCase();
+ for(const p of palavrasUrgentes) if(t.includes(p.p)) return p.c;
+ return '';
+}
 
-    const container = document.getElementById("chart");
+const temas={
+ mercado:null,
+ minerio:["minério","iron ore","vale","aço"],
+ petroleo:["petróleo","oil","brent","wti","opec"],
+ dxy:["dxy","dólar","usd","fed"],
+ juros:["juros","interest","fomc","yield"],
+ bancos:["banco","bank","itaú","jpmorgan"],
+ bolsasUSA:["dow","nasdaq","s&p","wall street"],
+ bolsasEuropa:["dax","ftse","cac","ibex","stoxx","europa","londres","frankfurt","paris","madrid"],
+ bolsasAsia:["nikkei","hang seng","shanghai","kospi","asia","china","japão","hong kong"]
+};
 
-    /* ───── CRIA GRÁFICO ───── */
-    const chart = LightweightCharts.createChart(container, {
-        layout: {
-            background: { color: "#0e0e0e" },
-            textColor: "#cccccc"
-        },
-        grid: {
-            vertLines: { visible: false },
-            horzLines: { visible: false }
-        },
-        timeScale: {
-            timeVisible: true,
-            secondsVisible: false
-        }
-    });
+const feedsMercado=[
+ "https://valor.globo.com/rss/mercados/",
+ "https://www.infomoney.com.br/feed/"
+];
 
-    const riskSeries = chart.addLineSeries({
-        color: "#00ff88",
-        lineWidth: 3
-    });
+const feedsBreaking=[
+ "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
+];
 
-    const safetySeries = chart.addLineSeries({
-        color: "#ff4444",
-        lineWidth: 3
-    });
+function stripHTML(h){
+ const d=document.createElement("div");
+ d.innerHTML=h;
+ return d.textContent||"";
+}
 
-    /* ───── PARÂMETROS ───── */
-    const MINUTES = 390;
-    let risk = 100;
-    let safety = 100;
+async function buscarRSS(url){
+ try{
+  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+  const x=await r.text();
+  const xml=new DOMParser().parseFromString(x,"text/xml");
+  return [...xml.querySelectorAll("item")].map(i=>({
+    title:i.querySelector("title")?.textContent||"",
+    link:i.querySelector("link")?.textContent||"",
+    desc:i.querySelector("description")?.textContent||""
+  }));
+ }catch{return []}
+}
 
-    const riskData = [];
-    const safetyData = [];
+function pertenceTema(a,p){
+ if(!p) return true;
+ const t=(a.title+a.desc).toLowerCase();
+ return p.some(x=>t.includes(x));
+}
 
-    function step(v, vol) {
-        return v * (1 + (Math.random() - 0.5) * vol);
-    }
+async function atualizarSecao(id,feeds,filtro){
+ const box=document.querySelector(`#${id} .list`);
+ box.innerHTML="";
+ const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
+ dados.filter(n=>pertenceTema(n,filtro)).slice(0,5).forEach(n=>{
+  const d=document.createElement("div");
+  d.className="news-item";
+  const u=getUrgencia(n);
+  if(u) d.classList.add(u);
+  d.innerHTML=`
+   <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
+   <div class="news-desc">${stripHTML(n.desc)}</div>`;
+  box.appendChild(d);
+ });
+}
 
-    /* ───── HISTÓRICO INICIAL ───── */
-    let t = nowBrasilia() - MINUTES * 60;
+async function atualizarTudo(){
+ await atualizarSecao("breaking",feedsBreaking);
+ for(const t in temas){
+   await atualizarSecao(t,feedsMercado,temas[t]);
+ }
+}
 
-    for (let i = 0; i < MINUTES; i++) {
-        risk = step(risk, 0.002);
-        safety = step(safety, 0.0015);
-
-        riskData.push({ time: t, value: risk });
-        safetyData.push({ time: t, value: safety });
-        t += 60;
-    }
-
-    riskSeries.setData(riskData);
-    safetySeries.setData(safetyData);
-    chart.timeScale().scrollToRealTime();
-
-    /* ───── ATUALIZA A CADA 1 MINUTO ───── */
-    setInterval(() => {
-        const time = nowBrasilia();
-
-        risk = step(risk, 0.003);
-        safety = step(safety, 0.0018);
-
-        const rPoint = { time, value: risk };
-        const sPoint = { time, value: safety };
-
-        riskData.push(rPoint);
-        safetyData.push(sPoint);
-
-        if (riskData.length > MINUTES) {
-            riskData.shift();
-            safetyData.shift();
-        }
-
-        riskSeries.update(rPoint);
-        safetySeries.update(sPoint);
-
-        chart.timeScale().scrollToRealTime();
-    }, 60000);
-
-    /* ───── AJUSTE AO MINIMIZAR / RESTAURAR ───── */
-
-    function resizeChart() {
-        if (container.clientWidth > 0 && container.clientHeight > 0) {
-            chart.resize(container.clientWidth, container.clientHeight);
-            chart.timeScale().scrollToRealTime();
-        }
-    }
-
-    // ResizeObserver (principal)
-    const resizeObserver = new ResizeObserver(() => {
-        requestAnimationFrame(resizeChart);
-    });
-    resizeObserver.observe(container);
-
-    // Quando a aba perde e recupera foco
-    document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) {
-            setTimeout(resizeChart, 50);
-        }
-    });
-
-    // Quando a janela é restaurada
-    window.addEventListener("focus", () => {
-        setTimeout(resizeChart, 50);
-    });
-
-    // Fallback clássico
-    window.addEventListener("resize", resizeChart);
-
-});
+atualizarTudo();
+setInterval(atualizarTudo,60000);
 </script>
-
 </body>
 </html>
