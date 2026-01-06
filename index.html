@@ -131,7 +131,20 @@ body{
 </div>
 
 <script>
-/* ================= URGÊNCIA ================= */
+async function traduzirSemprePT(texto){
+  try{
+    if(!texto) return "";
+    const r = await fetch(
+      "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=pt&dt=t&q=" +
+      encodeURIComponent(texto)
+    );
+    const j = await r.json();
+    return j[0].map(p => p[0]).join("");
+  }catch{
+    return texto;
+  }
+}
+
 const palavrasUrgentes=[
  {p:'guerra',c:'urgente-vermelho'},
  {p:'crise',c:'urgente-laranja'},
@@ -146,7 +159,6 @@ function getUrgencia(n){
  return '';
 }
 
-/* ================= TEMAS ================= */
 const temas={
  mercado:null,
  minerio:["minério","iron ore","vale","aço"],
@@ -155,47 +167,24 @@ const temas={
  juros:["juros","interest","fomc","yield"],
  bancos:["banco","bank","itaú","jpmorgan"],
  bolsasUSA:["dow","nasdaq","s&p","wall street"],
- bolsasEuropa:["dax","ftse","cac","ibex","stoxx","europa","londres","frankfurt","paris","madrid"],
- bolsasAsia:["nikkei","hang seng","shanghai","kospi","asia","china","japão","hong kong"]
+ bolsasEuropa:["dax","ftse","cac","ibex","stoxx","europa"],
+ bolsasAsia:["nikkei","hang seng","shanghai","asia","china","japão"]
 };
 
-/* ================= FEEDS POR TEMA ================= */
 const feedsPorTema={
- mercado:[
-  "https://valor.globo.com/rss/mercados/",
-  "https://www.infomoney.com.br/feed/"
- ],
- minerio:[
-  "https://www.mining.com/feed/"
- ],
- petroleo:[
-  "https://oilprice.com/rss/main"
- ],
- dxy:[
-  "https://www.cnbc.com/id/10000664/device/rss/rss.html"
- ],
- juros:[
-  "https://www.cnbc.com/id/15839135/device/rss/rss.html"
- ],
- bancos:[
-  "https://valor.globo.com/rss/financas/"
- ],
- bolsasUSA:[
-  "https://www.cnbc.com/id/100003114/device/rss/rss.html"
- ],
- bolsasEuropa:[
-  "https://www.cnbc.com/id/19794221/device/rss/rss.html"
- ],
- bolsasAsia:[
-  "https://www.cnbc.com/id/19832390/device/rss/rss.html"
- ]
+ mercado:["https://valor.globo.com/rss/mercados/","https://www.infomoney.com.br/feed/"],
+ minerio:["https://www.mining.com/feed/"],
+ petroleo:["https://oilprice.com/rss/main"],
+ dxy:["https://www.cnbc.com/id/10000664/device/rss/rss.html"],
+ juros:["https://www.cnbc.com/id/15839135/device/rss/rss.html"],
+ bancos:["https://valor.globo.com/rss/financas/"],
+ bolsasUSA:["https://www.cnbc.com/id/100003114/device/rss/rss.html"],
+ bolsasEuropa:["https://www.cnbc.com/id/19794221/device/rss/rss.html"],
+ bolsasAsia:["https://www.cnbc.com/id/19832390/device/rss/rss.html"]
 };
 
-const feedsBreaking=[
- "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
-];
+const feedsBreaking=["https://g1.globo.com/rss/g1/ultimas-noticias.rss"];
 
-/* ================= FUNÇÕES ================= */
 function stripHTML(h){
  const d=document.createElement("div");
  d.innerHTML=h;
@@ -218,9 +207,7 @@ async function buscarRSS(url){
 function pertenceTema(n,palavras){
  if(!palavras) return true;
  const t=(n.title+n.desc).toLowerCase();
- let hits=0;
- for(const p of palavras) if(t.includes(p)) hits++;
- return hits>=1;
+ return palavras.some(p=>t.includes(p));
 }
 
 async function atualizarSecao(id,feeds,filtro){
@@ -228,20 +215,21 @@ async function atualizarSecao(id,feeds,filtro){
  box.innerHTML="";
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
 
- dados
-  .filter(n=>pertenceTema(n,filtro))
-  .slice(0,5)
-  .forEach(n=>{
-    const d=document.createElement("div");
-    d.className="news-item";
-    const u=getUrgencia(n);
-    if(u) d.classList.add(u);
-    d.innerHTML=`
-      <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
-      <div class="news-desc">${stripHTML(n.desc)}</div>
-    `;
-    box.appendChild(d);
-  });
+ for(const n of dados.filter(n=>pertenceTema(n,filtro)).slice(0,5)){
+   const d=document.createElement("div");
+   d.className="news-item";
+   const u=getUrgencia(n);
+   if(u) d.classList.add(u);
+
+   const tituloPT = await traduzirSemprePT(n.title);
+   const descPT   = await traduzirSemprePT(stripHTML(n.desc));
+
+   d.innerHTML=`
+     <div class="news-title"><a href="${n.link}" target="_blank">${tituloPT}</a></div>
+     <div class="news-desc">${descPT}</div>
+   `;
+   box.appendChild(d);
+ }
 }
 
 async function atualizarTudo(){
