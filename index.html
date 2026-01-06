@@ -20,12 +20,7 @@
   --yellow:#fff176;
 }
 
-html,body{
-  height:100%;
-  margin:0;
-  overflow:hidden;
-}
-
+html,body{height:100%;margin:0;overflow:hidden}
 body{
   background:var(--bg);
   color:var(--text);
@@ -51,8 +46,8 @@ body{
 
 .main{
   display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  grid-auto-rows:minmax(0, 1fr);
+  grid-template-columns:repeat(3,1fr);
+  grid-auto-rows:minmax(0,1fr);
   gap:12px;
   height:100%;
   overflow-y:auto;
@@ -76,10 +71,7 @@ body{
   border-bottom:1px solid var(--line);
 }
 
-.list{
-  overflow-y:auto;
-  scrollbar-width:thin;
-}
+.list{overflow-y:auto}
 
 .news-item{
   background:var(--card);
@@ -93,15 +85,13 @@ body{
 .news-item::before{
   content:"";
   position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
+  left:0;top:0;bottom:0;
   width:3px;
 }
 
-.urgente-vermelho::before{background:var(--red);}
-.urgente-laranja::before{background:var(--orange);}
-.urgente-amarelo::before{background:var(--yellow);}
+.urgente-vermelho::before{background:var(--red)}
+.urgente-laranja::before{background:var(--orange)}
+.urgente-amarelo::before{background:var(--yellow)}
 
 .news-title a{
   color:var(--blue);
@@ -115,15 +105,6 @@ body{
   color:var(--muted);
   margin-top:4px;
   line-height:1.3;
-}
-
-@media (min-width:2560px){
-  body{font-size:15px;padding:20px}
-  .dashboard{max-width:2800px;margin:0 auto}
-  .main{grid-template-columns:repeat(4,1fr)}
-  .section h2{font-size:16px}
-  .news-title a{font-size:14px}
-  .news-desc{font-size:13px}
 }
 </style>
 </head>
@@ -150,6 +131,7 @@ body{
 </div>
 
 <script>
+/* ================= URGÊNCIA ================= */
 const palavrasUrgentes=[
  {p:'guerra',c:'urgente-vermelho'},
  {p:'crise',c:'urgente-laranja'},
@@ -158,12 +140,13 @@ const palavrasUrgentes=[
  {p:'alta forte',c:'urgente-amarelo'}
 ];
 
-function getUrgencia(a){
- const t=(a.title+a.desc).toLowerCase();
+function getUrgencia(n){
+ const t=(n.title+n.desc).toLowerCase();
  for(const p of palavrasUrgentes) if(t.includes(p.p)) return p.c;
  return '';
 }
 
+/* ================= TEMAS ================= */
 const temas={
  mercado:null,
  minerio:["minério","iron ore","vale","aço"],
@@ -176,15 +159,43 @@ const temas={
  bolsasAsia:["nikkei","hang seng","shanghai","kospi","asia","china","japão","hong kong"]
 };
 
-const feedsMercado=[
- "https://valor.globo.com/rss/mercados/",
- "https://www.infomoney.com.br/feed/"
-];
+/* ================= FEEDS POR TEMA ================= */
+const feedsPorTema={
+ mercado:[
+  "https://valor.globo.com/rss/mercados/",
+  "https://www.infomoney.com.br/feed/"
+ ],
+ minerio:[
+  "https://www.mining.com/feed/"
+ ],
+ petroleo:[
+  "https://oilprice.com/rss/main"
+ ],
+ dxy:[
+  "https://www.cnbc.com/id/10000664/device/rss/rss.html"
+ ],
+ juros:[
+  "https://www.cnbc.com/id/15839135/device/rss/rss.html"
+ ],
+ bancos:[
+  "https://valor.globo.com/rss/financas/"
+ ],
+ bolsasUSA:[
+  "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+ ],
+ bolsasEuropa:[
+  "https://www.cnbc.com/id/19794221/device/rss/rss.html"
+ ],
+ bolsasAsia:[
+  "https://www.cnbc.com/id/19832390/device/rss/rss.html"
+ ]
+};
 
 const feedsBreaking=[
  "https://g1.globo.com/rss/g1/ultimas-noticias.rss"
 ];
 
+/* ================= FUNÇÕES ================= */
 function stripHTML(h){
  const d=document.createElement("div");
  d.innerHTML=h;
@@ -204,32 +215,39 @@ async function buscarRSS(url){
  }catch{return []}
 }
 
-function pertenceTema(a,p){
- if(!p) return true;
- const t=(a.title+a.desc).toLowerCase();
- return p.some(x=>t.includes(x));
+function pertenceTema(n,palavras){
+ if(!palavras) return true;
+ const t=(n.title+n.desc).toLowerCase();
+ let hits=0;
+ for(const p of palavras) if(t.includes(p)) hits++;
+ return hits>=1;
 }
 
 async function atualizarSecao(id,feeds,filtro){
  const box=document.querySelector(`#${id} .list`);
  box.innerHTML="";
  const dados=(await Promise.all(feeds.map(f=>buscarRSS(f)))).flat();
- dados.filter(n=>pertenceTema(n,filtro)).slice(0,5).forEach(n=>{
-  const d=document.createElement("div");
-  d.className="news-item";
-  const u=getUrgencia(n);
-  if(u) d.classList.add(u);
-  d.innerHTML=`
-   <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
-   <div class="news-desc">${stripHTML(n.desc)}</div>`;
-  box.appendChild(d);
- });
+
+ dados
+  .filter(n=>pertenceTema(n,filtro))
+  .slice(0,5)
+  .forEach(n=>{
+    const d=document.createElement("div");
+    d.className="news-item";
+    const u=getUrgencia(n);
+    if(u) d.classList.add(u);
+    d.innerHTML=`
+      <div class="news-title"><a href="${n.link}" target="_blank">${n.title}</a></div>
+      <div class="news-desc">${stripHTML(n.desc)}</div>
+    `;
+    box.appendChild(d);
+  });
 }
 
 async function atualizarTudo(){
  await atualizarSecao("breaking",feedsBreaking);
  for(const t in temas){
-   await atualizarSecao(t,feedsMercado,temas[t]);
+   await atualizarSecao(t,feedsPorTema[t],temas[t]);
  }
 }
 
