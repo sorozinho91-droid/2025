@@ -1,233 +1,130 @@
-mport React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Download, Copy, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-
-export default function ExportGPS({ marketData }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const generateHTML = () => {
-    if (!marketData || marketData.length === 0) {
-      return '<html><body><h1>Nenhum dado disponível</h1></body></html>';
-    }
-    
-    const latestData = marketData[0] || { risk_score: 0, safety_score: 0 };
-    const chartData = marketData
-      .slice(0, 20)
-      .reverse()
-      .map(d => ({
-        time: new Date(d.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        risk: (d.risk_score || 0).toFixed(1),
-        safety: (d.safety_score || 0).toFixed(1),
-      }));
-
-    const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado - ${new Date().toLocaleDateString('pt-BR')}</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Regras de Compra e Venda Visuais</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #0056b3;
+            margin-bottom: 25px;
+            font-size: 24px;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
             color: white;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { text-align: center; font-size: 2.5rem; margin-bottom: 30px; }
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 24px;
-        }
-        .card h2 { font-size: 1.25rem; margin-bottom: 16px; }
-        .score { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.875rem;
             font-weight: 600;
-            margin-left: 8px;
         }
-        .badge.up { background: #10b981; }
-        .badge.down { background: #ef4444; }
-        .badge.neutral { background: #6b7280; }
-        .chart-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            opacity: 0.7;
-            font-size: 0.875rem;
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        /* Estilos específicos para Compra/Venda */
+        .compra {
+            color: #155724;
+            background-color: #d4edda;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-block;
+        }
+        .venda {
+            color: #721c24;
+            background-color: #f8d7da;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>📊 GPS de Mercado</h1>
-        
-        <div class="cards">
-            <div class="card">
-                <h2>📈 Ativos de Risco
-                    <span class="badge ${latestData.risk_score > 0 ? 'up' : latestData.risk_score < 0 ? 'down' : 'neutral'}">
-                        ${latestData.risk_score > 0 ? 'Alta' : latestData.risk_score < 0 ? 'Queda' : 'Neutro'}
-                    </span>
-                </h2>
-                <div class="score">${(latestData.risk_score || 0).toFixed(1)}</div>
-                <p style="opacity: 0.8; font-size: 0.875rem;">Se subir: Ibov sobe, Dólar cai</p>
-            </div>
-            
-            <div class="card">
-                <h2>🛡️ Ativos de Segurança
-                    <span class="badge ${latestData.safety_score > 0 ? 'up' : latestData.safety_score < 0 ? 'down' : 'neutral'}">
-                        ${latestData.safety_score > 0 ? 'Alta' : latestData.safety_score < 0 ? 'Queda' : 'Neutro'}
-                    </span>
-                </h2>
-                <div class="score">${(latestData.safety_score || 0).toFixed(1)}</div>
-                <p style="opacity: 0.8; font-size: 0.875rem;">Se subir: Ibov cai, Dólar sobe</p>
-            </div>
-        </div>
-        
-        <div class="chart-container">
-            <h2 style="margin-bottom: 20px;">Evolução Comparativa</h2>
-            <canvas id="marketChart"></canvas>
-        </div>
-        
-        <div class="footer">
-            Atualizado em: ${new Date().toLocaleString('pt-BR')}<br>
-            GPS de Mercado - Análise de Ativos de Risco vs Segurança
-        </div>
+        <h1>Regras práticas de compra e venda</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sinal macro</th>
+                    <th>Ação no Mini Índice</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Futuros EUA + alta</td>
+                    <td><span class="compra">Compra</span></td>
+                </tr>
+                <tr>
+                    <td>Futuros EUA - baixa</td>
+                    <td><span class="venda">Venda</span></td>
+                </tr>
+                <tr>
+                    <td>Dólar caindo</td>
+                    <td><span class="compra">Compra</span></td>
+                </tr>
+                <tr>
+                    <td>Dólar subindo</td>
+                    <td><span class="venda">Venda</span></td>
+                </tr>
+                <tr>
+                    <td>Inflação alta / Selic sobe</td>
+                    <td><span class="venda">Venda</span></td>
+                </tr>
+                <tr>
+                    <td>Inflação controlada / Selic mantém</td>
+                    <td><span class="compra">Compra</span></td>
+                </tr>
+                <tr>
+                    <td>Commodities subindo</td>
+                    <td><span class="compra">Compra</span></td>
+                </tr>
+                <tr>
+                    <td>Commodities caindo</td>
+                    <td><span class="venda">Venda</span></td>
+                </tr>
+                <tr>
+                    <td>Fluxo estrangeiro positivo</td>
+                    <td><span class="compra">Compra</span></td>
+                </tr>
+                <tr>
+                    <td>Fluxo estrangeiro negativo</td>
+                    <td><span class="venda">Venda</span></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <script>
-        const ctx = document.getElementById('marketChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ${JSON.stringify(chartData.map(d => d.time))},
-                datasets: [
-                    {
-                        label: 'Ativos de Risco',
-                        data: ${JSON.stringify(chartData.map(d => d.risk))},
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true
-                    },
-                    {
-                        label: 'Ativos de Segurança',
-                        data: ${JSON.stringify(chartData.map(d => d.safety))},
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        labels: { color: 'white', font: { size: 14 } }
-                    }
-                },
-                scales: {
-                    y: {
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: 'white' }
-                    },
-                    x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: 'white' }
-                    }
-                }
-            }
-        });
-    </script>
+
 </body>
-</html>`;
-
-    return html;
-  };
-
-  const copyHTML = () => {
-    const html = generateHTML();
-    navigator.clipboard.writeText(html);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const downloadHTML = () => {
-    const html = generateHTML();
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gps-mercado-${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-          <Download className="w-4 h-4 mr-2" />
-          Exportar HTML
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle>Código HTML para publicar</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Copie o código abaixo e salve como arquivo .html para publicar em seu site.
-          </p>
-          <Textarea 
-            value={generateHTML()} 
-            readOnly 
-            className="font-mono text-xs h-96"
-          />
-          <div className="flex gap-3">
-            <Button onClick={copyHTML} variant="outline" className="flex-1">
-              {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-              {copied ? 'Copiado!' : 'Copiar Código'}
-            </Button>
-            <Button onClick={downloadHTML} className="flex-1">
-              <Download className="w-4 h-4 mr-2" />
-              Baixar Arquivo
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+</html>
