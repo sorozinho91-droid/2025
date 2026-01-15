@@ -3,69 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Indicadores IBOVESPA</title>
+    <title>Painel de Indicadores com Dados Reais</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Importa uma fonte simples do Google Fonts -->
-    <link href="fonts.googleapis.com" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard-container">
         <header>
-            <h1>PAINEL DE INDICADORES - IMPACTO NO IBOVESPA</h1>
+            <h1>PAINEL DE INDICADORES - COTAÇÃO DO DÓLAR HOJE</h1>
         </header>
 
-        <main class="indicator-grid">
-            <!-- Coluna Negativa -->
-            <section class="indicator-section negative">
-                <h2>Indicadores de Impacto Negativo (Ibovespa↓)</h2>
-                <ul>
-                    <li>Selic ↑</li>
-                    <li>Inflação ↑</li>
-                    <li>Juros EUA ↑</li>
-                    <li>Dólar ↑</li>
-                    <li>Eleições</li>
-                    <li>Choques Globais</li>
-                    <li>Saída de Dólares ↑</li>
-                    <li>Setor Financeiro (30%)</li>
-                    <li>Consumo/Varejo (15%)</li>
-                </ul>
-                <div class="consolidated-indicator">
-                    <h3>Indicador Consolidado</h3>
-                    <p>Forte predominância de fatores negativos</p>
-                </div>
-            </section>
-
-            <!-- Coluna Positiva -->
+        <main>
             <section class="indicator-section positive">
-                <h2>Indicadores de Impacto Positivo (Ibovespa ↑)</h2>
-                <ul>
-                    <li>Política Fiscal Responsável</li>
-                    <li>Estabilidade Política</li>
-                    <li>Preços das Commodities ↑</li>
-                    <li>Crescimento da China ↑</li>
-                    <li>Lucros de Grandes Empresas ↑</li>
-                    <li>Entrada de Dólares ↑</li>
-                    <li>Setor de Commodities (1)</li>
-                </ul>
-                 <div class="consolidated-indicator">
-                    <h3>Indicador Consolidado</h3>
-                    <p>Fatores positivos ligados a commodities e disciplina fiscal</p>
-                </div>
-            </section>
-
-            <!-- Coluna Neutra -->
-            <section class="indicator-section neutral">
-                <h2>Indicadores Neutros (Ibovespa ←)</h2>
-                <ul>
-                    <li>Conflitos Internacionais</li>
-                    <li>Setor Industrial/Outros (20%)</li>
-                </ul>
-                 <div class="consolidated-indicator">
-                    <h3>Indicador Consolidado</h3>
-                    <p>Impacto moderado, depende do contexto.</p>
-                </div>
+                <h2>Cotação USD/BRL</h2>
+                <!-- Local onde o valor será inserido pelo JavaScript -->
+                <p>Valor de Compra: <strong id="usd-buy-price">Buscando...</strong></p>
+                <p>Percentual de Mudança: <strong id="usd-change">Buscando...</strong></p>
             </section>
         </main>
     </div>
+
+    <!-- Inclui o arquivo JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
