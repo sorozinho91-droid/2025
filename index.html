@@ -4,7 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Indicadores com Dados Reais</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- CSS Embutido -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            text-align: left;
+            color: #000;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .indicator-section {
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+
+        .indicator-section h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .indicator-section h2::before {
+            content: '';
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #2ecc71; /* Verde padrão, será ajustado via JS */
+        }
+
+        #usd-buy-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        #usd-change {
+            font-size: 1rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -15,14 +84,49 @@
         <main>
             <section class="indicator-section positive">
                 <h2>Cotação USD/BRL</h2>
-                <!-- Local onde o valor será inserido pelo JavaScript -->
                 <p>Valor de Compra: <strong id="usd-buy-price">Buscando...</strong></p>
                 <p>Percentual de Mudança: <strong id="usd-change">Buscando...</strong></p>
             </section>
         </main>
     </div>
 
-    <!-- Inclui o arquivo JavaScript -->
-    <script src="script.js"></script>
+    <!-- JavaScript Embutido -->
+    <script>
+        const API_URL = 'brapi.dev';
+
+        async function fetchCurrencyData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const usdToBrl = data.currencies.find(item => item.currency === 'USD');
+
+                if (usdToBrl) {
+                    const buyPrice = usdToBrl.buy.toFixed(4);
+                    const change = usdToBrl.variation.toFixed(2);
+
+                    document.getElementById('usd-buy-price').textContent = `R$ ${buyPrice}`;
+                    document.getElementById('usd-change').textContent = `${change}%`;
+                    
+                    const changeElement = document.getElementById('usd-change');
+                    if (change > 0) {
+                        changeElement.style.color = 'green';
+                    } else if (change < 0) {
+                        changeElement.style.color = 'red';
+                    } else {
+                        changeElement.style.color = 'gray';
+                    }
+
+                } else {
+                    document.getElementById('usd-buy-price').textContent = 'Erro ao carregar';
+                }
+
+            } catch (error) {
+                document.getElementById('usd-buy-price').textContent = 'Erro de conexão';
+            }
+        }
+
+        fetchCurrencyData();
+        setInterval(fetchCurrencyData, 60000); // Atualiza a cada minuto
+    </script>
 </body>
 </html>
