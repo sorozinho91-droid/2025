@@ -3,130 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Indicadores com Dados Reais</title>
-    <!-- CSS Embutido -->
+    <title>Painel de Diagnóstico Financeiro Real</title>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .dashboard-container {
-            max-width: 600px;
-            width: 100%;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        header h1 {
-            text-align: left;
-            color: #000;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            font-size: 1.2rem;
-        }
-
-        .indicator-section {
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #fafafa;
-        }
-
-        .indicator-section h2 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            padding-left: 30px;
-            position: relative;
-        }
-        
-        .indicator-section h2::before {
-            content: '';
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: #2ecc71; /* Verde padrão, será ajustado via JS */
-        }
-
-        #usd-buy-price {
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-        }
-
-        #usd-change {
-            font-size: 1rem;
-            font-weight: bold;
-            display: block;
-            margin-top: 5px;
-        }
+        body { font-family: 'Roboto', sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .dashboard-container { max-width: 800px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        header h1 { text-align: left; color: #000; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 1.2rem; }
+        .indicator-grid { display: flex; gap: 20px; }
+        .indicator-section { flex: 1; padding: 15px; border-radius: 5px; background-color: #fafafa; }
+        .indicator-section h2 { font-size: 1.1rem; font-weight: 700; }
+        .value { font-size: 1.5rem; font-weight: bold; margin-top: 5px; }
+        .change { font-size: 0.9rem; margin-top: 5px; }
+        .positive { color: green; }
+        .negative { color: red; }
+        .neutral { color: gray; }
+        #diagnostico-consolidado { margin-top: 20px; padding: 15px; border-radius: 5px; font-weight: bold; }
+        /* Responsividade básica */
+        @media (max-width: 600px) { .indicator-grid { flex-direction: column; } }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <header>
-            <h1>PAINEL DE INDICADORES - COTAÇÃO DO DÓLAR HOJE</h1>
+            <h1>PAINEL DE INDICADORES - DIAGNÓSTICO DO MOMENTO</h1>
         </header>
 
-        <main>
-            <section class="indicator-section positive">
-                <h2>Cotação USD/BRL</h2>
-                <p>Valor de Compra: <strong id="usd-buy-price">Buscando...</strong></p>
-                <p>Percentual de Mudança: <strong id="usd-change">Buscando...</strong></p>
+        <main class="indicator-grid">
+            <!-- Indicador Ibovespa -->
+            <section class="indicator-section">
+                <h2>Ibovespa (^BVSP)</h2>
+                <div class="value" id="ibov-value">Buscando...</div>
+                <div class="change" id="ibov-change"></div>
+            </section>
+            <!-- Indicador Dólar -->
+            <section class="indicator-section">
+                <h2>Dólar (USD/BRL)</h2>
+                <div class="value" id="usd-value">Buscando...</div>
+                <div class="change" id="usd-change"></div>
             </section>
         </main>
+
+        <!-- Diagnóstico Consolidado -->
+        <div id="diagnostico-consolidado">Aguardando dados para diagnóstico...</div>
     </div>
 
-    <!-- JavaScript Embutido -->
     <script>
-        const API_URL = 'brapi.dev';
+        // Use a API pública brapi para dados financeiros (fonte confiável)
+        const API_IBOV = 'https://brapi.dev/api/quote/^BVSP';
+        const API_USD = 'brapi.dev';
 
-        async function fetchCurrencyData() {
+        async function fetchData() {
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const usdToBrl = data.currencies.find(item => item.currency === 'USD');
+                // Fetch Ibovespa
+                const resIbov = await fetch(API_IBOV);
+                const dataIbov = await resIbov.json();
+                const ibov = dataIbov.results[0];
 
-                if (usdToBrl) {
-                    const buyPrice = usdToBrl.buy.toFixed(4);
-                    const change = usdToBrl.variation.toFixed(2);
+                // Fetch Dólar
+                const resUsd = await fetch(API_USD);
+                const dataUsd = await resUsd.json();
+                const usd = dataUsd.currencies.find(item => item.currency === 'USD');
 
-                    document.getElementById('usd-buy-price').textContent = `R$ ${buyPrice}`;
-                    document.getElementById('usd-change').textContent = `${change}%`;
-                    
-                    const changeElement = document.getElementById('usd-change');
-                    if (change > 0) {
-                        changeElement.style.color = 'green';
-                    } else if (change < 0) {
-                        changeElement.style.color = 'red';
-                    } else {
-                        changeElement.style.color = 'gray';
-                    }
+                // Atualizar HTML
+                updateIndicator('ibov', ibov.regularMarketPrice.toFixed(0), ibov.changePercent.toFixed(2));
+                updateIndicator('usd', usd.buy.toFixed(4), usd.variation.toFixed(2));
 
-                } else {
-                    document.getElementById('usd-buy-price').textContent = 'Erro ao carregar';
-                }
+                // Gerar Diagnóstico
+                generateDiagnostic(ibov.changePercent, usd.variation);
 
             } catch (error) {
-                document.getElementById('usd-buy-price').textContent = 'Erro de conexão';
+                console.error('Erro ao buscar dados:', error);
+                document.getElementById('diagnostico-consolidado').textContent = 'Erro ao carregar dados financeiros. Tente novamente mais tarde.';
+                document.getElementById('diagnostico-consolidado').className = 'negative';
             }
         }
 
-        fetchCurrencyData();
-        setInterval(fetchCurrencyData, 60000); // Atualiza a cada minuto
+        function updateIndicator(id, value, change) {
+            document.getElementById(id + '-value').textContent = (id === 'usd' ? 'R$ ' : '') + value;
+            document.getElementById(id + '-change').textContent = change + '%';
+            
+            const changeElement = document.getElementById(id + '-change');
+            if (change > 0) { changeElement.className = 'change positive'; }
+            else if (change < 0) { changeElement.className = 'change negative'; }
+            else { changeElement.className = 'change neutral'; }
+        }
+
+        function generateDiagnostic(ibovChange, usdChange) {
+            const diagnosticElement = document.getElementById('diagnostico-consolidado');
+            let message = '';
+            let className = '';
+
+            // Lógica de diagnóstico:
+            if (ibovChange > 0.5 && usdChange < -0.5) {
+                message = 'Momento **Positivo**: Ibovespa em forte alta e Dólar em queda. Fatores positivos prevalecem.';
+                className = 'positive';
+            } else if (ibovChange < -0.5 && usdChange > 0.5) {
+                message = 'Momento **Negativo**: Ibovespa em forte queda e Dólar em alta. Fatores externos e internos pressionam.';
+                className = 'negative';
+            } else {
+                message = 'Momento **Neutro/Misto**: Indicadores mostram movimentos moderados ou conflitantes. Depende do contexto global e local.';
+                className = 'neutral';
+            }
+            
+            diagnosticElement.innerHTML = message;
+            diagnosticElement.className = className;
+        }
+
+        // Chama a função ao carregar a página e a cada minuto
+        fetchData();
+        setInterval(fetchData, 60000); 
     </script>
 </body>
 </html>
