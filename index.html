@@ -3,128 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regras de Compra e Venda Visuais</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-        }
-        h1 {
-            color: #0056b3;
-            margin-bottom: 25px;
-            font-size: 24px;
-            border-bottom: 2px solid #0056b3;
-            padding-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        /* Estilos específicos para Compra/Venda */
-        .compra {
-            color: #155724;
-            background-color: #d4edda;
-            font-weight: bold;
-            border-radius: 4px;
-            padding: 4px 8px;
-            display: inline-block;
-        }
-        .venda {
-            color: #721c24;
-            background-color: #f8d7da;
-            font-weight: bold;
-            border-radius: 4px;
-            padding: 4px 8px;
-            display: inline-block;
-        }
-    </style>
+    <title>Painel de Indicadores IBOVESPA</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Importa uma fonte simples do Google Fonts -->
+    <link href="fonts.googleapis.com" rel="stylesheet">
 </head>
 <body>
+    <div class="dashboard-container">
+        <header>
+            <h1>PAINEL DE INDICADORES - IMPACTO NO IBOVESPA</h1>
+        </header>
 
-    <div class="container">
-        <h1>Regras práticas de compra e venda</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Sinal macro</th>
-                    <th>Ação no Mini Índice</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Futuros EUA + alta</td>
-                    <td><span class="compra">Compra</span></td>
-                </tr>
-                <tr>
-                    <td>Futuros EUA - baixa</td>
-                    <td><span class="venda">Venda</span></td>
-                </tr>
-                <tr>
-                    <td>Dólar caindo</td>
-                    <td><span class="compra">Compra</span></td>
-                </tr>
-                <tr>
-                    <td>Dólar subindo</td>
-                    <td><span class="venda">Venda</span></td>
-                </tr>
-                <tr>
-                    <td>Inflação alta / Selic sobe</td>
-                    <td><span class="venda">Venda</span></td>
-                </tr>
-                <tr>
-                    <td>Inflação controlada / Selic mantém</td>
-                    <td><span class="compra">Compra</span></td>
-                </tr>
-                <tr>
-                    <td>Commodities subindo</td>
-                    <td><span class="compra">Compra</span></td>
-                </tr>
-                <tr>
-                    <td>Commodities caindo</td>
-                    <td><span class="venda">Venda</span></td>
-                </tr>
-                <tr>
-                    <td>Fluxo estrangeiro positivo</td>
-                    <td><span class="compra">Compra</span></td>
-                </tr>
-                <tr>
-                    <td>Fluxo estrangeiro negativo</td>
-                    <td><span class="venda">Venda</span></td>
-                </tr>
-            </tbody>
-        </table>
+        <main class="indicator-grid">
+            <!-- Coluna Negativa -->
+            <section class="indicator-section negative">
+                <h2>Indicadores de Impacto Negativo (Ibovespa↓)</h2>
+                <ul>
+                    <li>Selic ↑</li>
+                    <li>Inflação ↑</li>
+                    <li>Juros EUA ↑</li>
+                    <li>Dólar ↑</li>
+                    <li>Eleições</li>
+                    <li>Choques Globais</li>
+                    <li>Saída de Dólares ↑</li>
+                    <li>Setor Financeiro (30%)</li>
+                    <li>Consumo/Varejo (15%)</li>
+                </ul>
+                <div class="consolidated-indicator">
+                    <h3>Indicador Consolidado</h3>
+                    <p>Forte predominância de fatores negativos</p>
+                </div>
+            </section>
+
+            <!-- Coluna Positiva -->
+            <section class="indicator-section positive">
+                <h2>Indicadores de Impacto Positivo (Ibovespa ↑)</h2>
+                <ul>
+                    <li>Política Fiscal Responsável</li>
+                    <li>Estabilidade Política</li>
+                    <li>Preços das Commodities ↑</li>
+                    <li>Crescimento da China ↑</li>
+                    <li>Lucros de Grandes Empresas ↑</li>
+                    <li>Entrada de Dólares ↑</li>
+                    <li>Setor de Commodities (1)</li>
+                </ul>
+                 <div class="consolidated-indicator">
+                    <h3>Indicador Consolidado</h3>
+                    <p>Fatores positivos ligados a commodities e disciplina fiscal</p>
+                </div>
+            </section>
+
+            <!-- Coluna Neutra -->
+            <section class="indicator-section neutral">
+                <h2>Indicadores Neutros (Ibovespa ←)</h2>
+                <ul>
+                    <li>Conflitos Internacionais</li>
+                    <li>Setor Industrial/Outros (20%)</li>
+                </ul>
+                 <div class="consolidated-indicator">
+                    <h3>Indicador Consolidado</h3>
+                    <p>Impacto moderado, depende do contexto.</p>
+                </div>
+            </section>
+        </main>
     </div>
-
 </body>
 </html>
