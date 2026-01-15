@@ -1,132 +1,90 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Diagnóstico Financeiro Real - Completo</title>
-    <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        .dashboard-container { max-width: 800px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        header h1 { text-align: left; color: #000; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 1.2rem; }
-        .indicator-grid { display: flex; gap: 20px; flex-wrap: wrap; }
-        .indicator-section { flex: 1; min-width: 200px; padding: 15px; border-radius: 5px; background-color: #fafafa; }
-        .indicator-section h2 { font-size: 1.1rem; font-weight: 700; }
-        .value { font-size: 1.5rem; font-weight: bold; margin-top: 5px; }
-        .change { font-size: 0.9rem; margin-top: 5px; }
-        .positive { color: green; }
-        .negative { color: red; }
-        .neutral { color: gray; }
-        #diagnostico-consolidado { margin-top: 20px; padding: 15px; border-radius: 5px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <header>
-            <h1>PAINEL DE INDICADORES - DIAGNÓSTICO DO MOMENTO</h1>
-        </header>
-
-        <main class="indicator-grid">
-            <!-- Indicador Ibovespa -->
-            <section class="indicator-section">
-                <h2>Ibovespa (^BVSP)</h2>
-                <div class="value" id="ibov-value">Buscando...</div>
-                <div class="change" id="ibov-change"></div>
-            </section>
-            <!-- Indicador Dólar -->
-            <section class="indicator-section">
-                <h2>Dólar (USD/BRL)</h2>
-                <div class="value" id="usd-value">Buscando...</div>
-                <div class="change" id="usd-change"></div>
-            </section>
-            <!-- Indicador IPCA (Inflação) -->
-            <section class="indicator-section">
-                <h2>IPCA (Acum. 12m)</h2>
-                <div class="value" id="ipca-value">Buscando...</div>
-                <div class="change" id="ipca-date"></div>
-            </section>
-        </main>
-
-        <!-- Diagnóstico Consolidado -->
-        <div id="diagnostico-consolidado">Aguardando dados para diagnóstico...</div>
-    </div>
-
-    <script>
-        // APIs utilizadas:
-        const API_IBOV = 'brapi.dev^BVSP';
-        const API_USD = 'brapi.dev';
-        // API BCB para IPCA acumulado em 12 meses (código 433)
-        const API_IPCA = 'api.bcb.gov.br';
+';
+        const API_IPCA_HIST = 'api.bcb.gov.br';
+        const API_SELIC_HIST = 'api.bcb.gov.br';
+        
+        // !!! IMPORTANTE: Insira sua chave de API de commodities aqui. Ex: da Financial Modeling Prep
+        const COMMODITIES_API_KEY = 'SUA_CHAVE_DE_API_AQUI'; 
+        // Exemplo de URL da FMP: const API_BRENT = `financialmodelingprep.com{COMMODITIES_API_KEY}`;
 
         async function fetchData() {
             try {
-                // Fetch Ibovespa e Dólar (brapi)
-                const [resIbov, resUsd] = await Promise.all([fetch(API_IBOV), fetch(API_USD)]);
+                // Fetch de dados financeiros e governamentais
+                const [resIbov, resUsd, resIpca, resSelic] = await Promise.all([
+                    fetch(API_IBOV), fetch(API_USD), fetch(API_IPCA_HIST), fetch(API_SELIC_HIST)
+                ]);
                 const dataIbov = await resIbov.json();
                 const dataUsd = await resUsd.json();
-
-                // Fetch IPCA (BCB)
-                const resIpca = await fetch(API_IPCA);
                 const dataIpca = await resIpca.json();
+                const dataSelic = await resSelic.json();
+
+                // Processamento de dados e atualização do HTML... (código das respostas anteriores)
 
                 const ibov = dataIbov.results;
                 const usd = dataUsd.currencies.find(item => item.currency === 'USD');
-                const ipca = dataIpca[0]; // Último dado disponível
+                const ultimoIpca = parseFloat(dataIpca[dataIpca.length - 1].valor);
+                const ultimaSelic = parseFloat(dataSelic[dataSelic.length - 1].valor);
 
-                // Atualizar HTML dos indicadores
                 updateIndicator('ibov', ibov.regularMarketPrice.toFixed(0), ibov.changePercent.toFixed(2), ibov.changePercent > 0);
                 updateIndicator('usd', usd.buy.toFixed(4), usd.variation.toFixed(2), usd.variation < 0);
-                updateIndicatorIPCA(ipca.valor, ipca.data);
+                renderChart('ipcaChart', 'IPCA (12 meses)', dataIpca);
+                renderChart('selicChart', 'Selic (Meta a.a.)', dataSelic);
+                generateDiagnostic(ibov.changePercent, usd.variation, ultimoIpca, ultimaSelic);
 
-                // Gerar Diagnóstico
-                generateDiagnostic(ibov.changePercent, usd.variation, parseFloat(ipca.valor));
+                // --- Implementação das Commodities ---
+                if (COMMODITIES_API_KEY !== 'SUA_CHAVE_DE_API_AQUI') {
+                     // Exemplo de fetch (use a URL específica do seu provedor de API)
+                     // const resBrent = await fetch(`SUA_URL_API_BRENT_AQUI`);
+                     // const dataBrent = await resBrent.json();
+                     // const brent = dataBrent[0]; // Ajuste o índice conforme a estrutura da sua API
+                     // updateIndicator('brent', brent.price.toFixed(2), brent.changesPercentage.toFixed(2), brent.changesPercentage > 0);
+                     // Repita para Minério de Ferro
+                } else {
+                    document.getElementById('brent-value').textContent = 'Chave Necessária';
+                    document.getElementById('iron-value').textContent = 'Chave Necessária';
+                }
+
 
             } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-                document.getElementById('diagnostico-consolidado').innerHTML = 'Erro ao carregar dados financeiros.';
+                console.error('Erro geral:', error);
             }
         }
 
-        function updateIndicator(id, value, change, isPositive) {
+        function updateIndicator(id, value, change, isPositive) { /* ... (mesma função de antes) ... */
             document.getElementById(id + '-value').textContent = (id === 'usd' ? 'R$ ' : '') + value;
             document.getElementById(id + '-change').textContent = change + '%';
-            const changeElement = document.getElementById(id + '-change');
-            changeElement.className = isPositive ? 'change positive' : 'change negative';
+            document.getElementById(id + '-change').className = isPositive ? 'change positive' : 'change negative';
         }
-
-        function updateIndicatorIPCA(value, date) {
-            document.getElementById('ipca-value').textContent = value + '%';
-            document.getElementById('ipca-date').textContent = 'Ref: ' + date;
-            // Inflação alta (>5%) é geralmente vista como negativa
-            document.getElementById('ipca-value').className = parseFloat(value) > 5.0 ? 'value negative' : 'value positive';
+        function renderChart(canvasId, labelText, historicalData) { /* ... (mesma função de antes) ... */
+             const ctx = document.getElementById(canvasId).getContext('2d');
+            const dates = historicalData.map(item => item.data);
+            const values = historicalData.map(item => parseFloat(item.valor));
+            new Chart(ctx, {type: 'line', data: {labels: dates, datasets: [{label: labelText, data: values, borderColor: canvasId === 'ipcaChart' ? '#e74c3c' : '#3498db', borderWidth: 2, fill: false}]}, options: {responsive: true, scales: { y: { beginAtZero: false } }} });
         }
-
-        function generateDiagnostic(ibovChange, usdChange, ipcaValue) {
+        function generateDiagnostic(ibovChange, usdChange, ipcaValue, selicValue) { /* ... (mesma função de antes) ... */
             const diagnosticElement = document.getElementById('diagnostico-consolidado');
             let message = '';
             let className = '';
+            const isIbovPositive = ibovChange > 0;
+            const isUsdPositive = usdChange < 0; 
+            const isIpcaOk = ipcaValue <= 5.0; 
+            const isSelicOk = selicValue <= 13.0;
 
-            // Lógica de diagnóstico:
-            const isIbovPositive = ibovChange > 0.5;
-            const isUsdPositive = usdChange < -0.5; // Dólar caindo é positivo
-            const isIpcaHigh = ipcaValue > 5.0; // IPCA acima de 5% a.a. é sinal de alerta
-
-            if (isIbovPositive && isUsdPositive && !isIpcaHigh) {
-                message = 'Momento **Altamente Positivo**: Ibovespa em alta, Dólar em queda e Inflação controlada. Disciplina fiscal e fatores externos positivos prevalecem.';
+            if (isIbovPositive && isUsdPositive && isIpcaOk && isSelicOk) {
+                message = 'Momento **Altamente Positivo**: Todos os indicadores principais apontam para um cenário favorável de crescimento e controle fiscal.';
                 className = 'positive';
-            } else if (!isIbovPositive && !isUsdPositive && isIpcaHigh) {
-                message = 'Momento **Negativo**: Ibovespa em queda, Dólar em alta e Inflação alta. Pressões internas (Selic/Inflação) e externas (Juros EUA, Choques Globais) dominantes.';
+            } else if (!isIbovPositive && !isUsdPositive && !isIpcaOk && !isSelicOk) {
+                message = 'Momento **Altamente Negativo**: Todos os indicadores principais apontam para um cenário de estresse, com inflação/juros altos, dólar subindo e bolsa caindo.';
                 className = 'negative';
             } else {
-                message = 'Momento **Misto/Neutro**: Indicadores mostram movimentos conflitantes ou moderados. O mercado aguarda por definições políticas ou externas para tomar um rumo claro.';
+                message = 'Momento **Misto/Neutro**: Indicadores mostram movimentos conflitantes. O mercado aguarda por definições políticas ou externas.';
                 className = 'neutral';
             }
-            
             diagnosticElement.innerHTML = message;
             diagnosticElement.className = className;
         }
 
         fetchData();
-        setInterval(fetchData, 60000); // Atualiza a cada minuto
+        setInterval(fetchData, 60000); 
 
         /* Isenção de Responsabilidade Financeira: Este painel utiliza dados públicos e serve apenas para fins ilustrativos e educacionais. Ele não constitui aconselhamento financeiro ou recomendação de investimento. Consulte um profissional certificado antes de tomar decisões financeiras. */
     </script>
