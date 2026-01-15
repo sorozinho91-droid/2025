@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Copy, Check } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ExportGPS({ marketData }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const generateHTML = () => {
+    if (!marketData || marketData.length === 0) {
+      return '<html><body><h1>Nenhum dado disponível</h1></body></html>';
+    }
+    
     const latestData = marketData[0] || { risk_score: 0, safety_score: 0 };
     const chartData = marketData
       .slice(0, 20)
       .reverse()
       .map(d => ({
         time: new Date(d.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        risk: d.risk_score.toFixed(1),
-        safety: d.safety_score.toFixed(1),
+        risk: (d.risk_score || 0).toFixed(1),
+        safety: (d.safety_score || 0).toFixed(1),
       }));
 
     const html = `<!DOCTYPE html>
@@ -86,7 +95,7 @@ export default function ExportGPS({ marketData }) {
                         ${latestData.risk_score > 0 ? 'Alta' : latestData.risk_score < 0 ? 'Queda' : 'Neutro'}
                     </span>
                 </h2>
-                <div class="score">${latestData.risk_score.toFixed(1)}</div>
+                <div class="score">${(latestData.risk_score || 0).toFixed(1)}</div>
                 <p style="opacity: 0.8; font-size: 0.875rem;">Se subir: Ibov sobe, Dólar cai</p>
             </div>
             
@@ -96,7 +105,7 @@ export default function ExportGPS({ marketData }) {
                         ${latestData.safety_score > 0 ? 'Alta' : latestData.safety_score < 0 ? 'Queda' : 'Neutro'}
                     </span>
                 </h2>
-                <div class="score">${latestData.safety_score.toFixed(1)}</div>
+                <div class="score">${(latestData.safety_score || 0).toFixed(1)}</div>
                 <p style="opacity: 0.8; font-size: 0.875rem;">Se subir: Ibov cai, Dólar sobe</p>
             </div>
         </div>
@@ -166,26 +175,59 @@ export default function ExportGPS({ marketData }) {
     return html;
   };
 
+  const copyHTML = () => {
+    const html = generateHTML();
+    navigator.clipboard.writeText(html);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const downloadHTML = () => {
     const html = generateHTML();
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `gps-mercado-${new Date().toISOString().split('T')[0]}.html`;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, 100);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gps-mercado-${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <Button onClick={downloadHTML} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-      <Download className="w-4 h-4 mr-2" />
-      Baixar HTML
-    </Button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+          <Download className="w-4 h-4 mr-2" />
+          Exportar HTML
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle>Código HTML para publicar</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Copie o código abaixo e salve como arquivo .html para publicar em seu site.
+          </p>
+          <Textarea 
+            value={generateHTML()} 
+            readOnly 
+            className="font-mono text-xs h-96"
+          />
+          <div className="flex gap-3">
+            <Button onClick={copyHTML} variant="outline" className="flex-1">
+              {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+              {copied ? 'Copiado!' : 'Copiar Código'}
+            </Button>
+            <Button onClick={downloadHTML} className="flex-1">
+              <Download className="w-4 h-4 mr-2" />
+              Baixar Arquivo
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
