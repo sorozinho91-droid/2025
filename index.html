@@ -1,123 +1,262 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Diagnóstico Financeiro Real - Commodities</title>
-    <!-- Inclui a biblioteca Chart.js via CDN -->
-    <script src="cdn.jsdelivr.net"></script>
-    <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        .dashboard-container { max-width: 1200px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        header h1 { text-align: left; color: #000; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 1.2rem; }
-        .indicator-grid { display: flex; gap: 20px; flex-wrap: wrap; }
-        .indicator-section { flex: 1; min-width: 200px; padding: 15px; border-radius: 5px; background-color: #fafafa; }
-        .chart-container { flex: 2; min-width: 400px; padding: 15px; background-color: #fafafa; border-radius: 5px; }
-        .value { font-size: 1.5rem; font-weight: bold; margin-top: 5px; }
-        .change { font-size: 0.9rem; margin-top: 5px; }
-        .positive { color: green; }
-        .negative { color: red; }
-        .neutral { color: gray; }
-        #diagnostico-consolidado { margin-top: 20px; padding: 15px; border-radius: 5px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <header>
-            <h1>PAINEL DE INDICADORES - DIAGNÓSTICO DO MOMENTO</h1>
-        </header>
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import ExportGPS from '@/components/ExportGPS';
+import MiniIndiceSentiment from '@/components/MiniIndiceSentiment';
 
-        <main class="indicator-grid">
-            <section class="indicator-section"><h2>Ibovespa (^BVSP)</h2><div class="value" id="ibov-value">Buscando...</div><div class="change" id="ibov-change"></div></section>
-            <section class="indicator-section"><h2>Dólar (USD/BRL)</h2><div class="value" id="usd-value">Buscando...</div><div class="change" id="usd-change"></div></section>
-            <section class="indicator-section"><h2>Petróleo Brent</h2><div class="value" id="brent-value">Chave API?</div><div class="change" id="brent-change"></div></section>
-            <section class="indicator-section"><h2>Minério de Ferro</h2><div class="value" id="iron-value">Chave API?</div><div class="change" id="iron-change"></div></section>
-            <section class="chart-container"><h2>IPCA (Acumulado 12m)</h2><canvas id="ipcaChart"></canvas></section>
-            <section class="chart-container"><h2>Selic (Meta a.a.)</h2><canvas id="selicChart"></canvas></section>
-        </main>
-        <div id="diagnostico-consolidado">Aguardando dados para diagnóstico...</div>
-    </div>
+const riskAssets = [
+  { symbol: 'GCJ25', name: 'Ouro Futuros' },
+  { symbol: 'HGH5', name: 'Cobre Futuros' },
+  { symbol: 'CL', name: 'Petróleo WTI Futuros' },
+  { symbol: '.OSEAX', name: 'Oslo All Share' },
+  { symbol: 'ZS', name: 'Soja Chicago Futuros' },
+  { symbol: '1YMH25', name: 'Dow Jones Futuros' },
+  { symbol: '.GDOW', name: 'The Global Dow USD' },
+  { symbol: 'VALE.K', name: 'Vale SA ADR' },
+  { symbol: 'PBR', name: 'Petroleo Brasileiro Petrobras SA ADR' },
+  { symbol: 'EWZ', name: 'iShares MSCI Brazil ETF' },
+  { symbol: 'XLF', name: 'Financial Select Sector SPDR Fund' },
+  { symbol: 'XLP', name: 'Consumer Staples Select Sector SPDR Fund' },
+  { symbol: 'XLE', name: 'Energy Select Sector SPDR Fund' },
+  { symbol: 'XME', name: 'SPDR S&P Metals and Mining ETF' },
+  { symbol: 'EEM', name: 'iShares MSCI Emerging Markets ETF' },
+  { symbol: 'SOXX.O', name: 'iShares Semiconductor ETF' },
+  { symbol: '.BSESN', name: 'BSE Sensex 30' },
+  { symbol: 'CHINA', name: 'Bolsas China' }
+];
 
-    <script>
-        const API_IBOV = 'brapi.dev^BVSP';
-        const API_USD = 'brapi.dev';
-        const API_IPCA_HIST = 'api.bcb.gov.br';
-        const API_SELIC_HIST = 'api.bcb.gov.br';
+const safetyAssets = [
+  { symbol: 'DX', name: 'Índice Dólar Futuros' },
+  { symbol: 'VX', name: 'S&P 500 VIX Futuros' },
+  { symbol: 'USD/MXN', name: 'Dólar Americano Peso Mexicano' },
+  { symbol: 'USD/NOK', name: 'Dólar Americano Coroa Norueguesa' },
+  { symbol: 'USD/NZD', name: 'Dólar Americano Dólar Neozelandês' },
+  { symbol: 'USD/AUD', name: 'Dólar Americano Dólar Australiano' },
+  { symbol: 'USD/KRW', name: 'Dólar Americano Won Sul-Coreano' },
+  { symbol: 'USD/CNY', name: 'Dólar Americano Yuan Chinês' },
+  { symbol: 'EUR/BRL', name: 'Euro Real Brasileiro' }
+];
+
+export default function Dashboard() {
+  const queryClient = useQueryClient();
+  const [updating, setUpdating] = useState(false);
+
+  const { data: marketData = [], isLoading } = useQuery({
+    queryKey: ['marketData'],
+    queryFn: () => base44.entities.MarketData.list('-timestamp', 50),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data) => base44.entities.MarketData.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketData'] });
+      setUpdating(false);
+    },
+  });
+
+  const updateMarketData = async () => {
+    setUpdating(true);
+    
+    try {
+      // Buscar dados reais de mercado
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analise os seguintes ativos de mercado AGORA e retorne a variação percentual nas últimas 24h:
         
-        // !!! IMPORTANTE: Insira sua chave de API de commodities aqui. Ex: da Financial Modeling Prep
-        const COMMODITIES_API_KEY = 'SUA_CHAVE_DE_API_AQUI'; 
+ATIVOS DE RISCO: ${riskAssets.map(a => a.symbol).join(', ')}
+ATIVOS DE SEGURANÇA: ${safetyAssets.map(a => a.symbol).join(', ')}
 
-        async function fetchData() {
-            try {
-                const [resIbov, resUsd, resIpca, resSelic] = await Promise.all([
-                    fetch(API_IBOV), fetch(API_USD), fetch(API_IPCA_HIST), fetch(API_SELIC_HIST)
-                ]);
-                const dataIbov = await resIbov.json();
-                const dataUsd = await resUsd.json();
-                const dataIpca = await resIpca.json();
-                const dataSelic = await resSelic.json();
+Para cada grupo, calcule um score médio de -100 a +100 baseado nas variações:
+- Score positivo = ativos em alta
+- Score negativo = ativos em queda
 
-                const ibov = dataIbov.results;
-                const usd = dataUsd.currencies.find(item => item.currency === 'USD');
-                const ultimoIpca = parseFloat(dataIpca[dataIpca.length - 1].valor);
-                const ultimaSelic = parseFloat(dataSelic[dataSelic.length - 1].valor);
-
-                updateIndicator('ibov', ibov.regularMarketPrice.toFixed(0), ibov.changePercent.toFixed(2), ibov.changePercent > 0);
-                updateIndicator('usd', usd.buy.toFixed(4), usd.variation.toFixed(2), usd.variation < 0);
-                renderChart('ipcaChart', 'IPCA (12 meses)', dataIpca);
-                renderChart('selicChart', 'Selic (Meta a.a.)', dataSelic);
-                generateDiagnostic(ibov.changePercent, usd.variation, ultimoIpca, ultimaSelic);
-
-                if (COMMODITIES_API_KEY !== 'SUA_CHAVE_DE_API_AQUI') {
-                     // Adicione aqui a lógica de fetch e update para commodities (Petróleo, Minério de Ferro)
-                } else {
-                    document.getElementById('brent-value').textContent = 'Chave Necessária';
-                    document.getElementById('iron-value').textContent = 'Chave Necessária';
-                }
-
-            } catch (error) {
-                console.error('Erro geral:', error);
+Retorne dados atualizados e reais do mercado.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            risk_score: { type: "number" },
+            safety_score: { type: "number" },
+            risk_details: {
+              type: "object",
+              properties: {
+                summary: { type: "string" },
+                top_movers: { type: "array", items: { type: "string" } }
+              }
+            },
+            safety_details: {
+              type: "object",
+              properties: {
+                summary: { type: "string" },
+                top_movers: { type: "array", items: { type: "string" } }
+              }
             }
+          }
         }
+      });
 
-        function updateIndicator(id, value, change, isPositive) { 
-            document.getElementById(id + '-value').textContent = (id === 'usd' ? 'R$ ' : '') + value;
-            document.getElementById(id + '-change').textContent = change + '%';
-            document.getElementById(id + '-change').className = isPositive ? 'change positive' : 'change negative';
-        }
-        function renderChart(canvasId, labelText, historicalData) { 
-             const ctx = document.getElementById(canvasId).getContext('2d');
-            const dates = historicalData.map(item => item.data);
-            const values = historicalData.map(item => parseFloat(item.valor));
-            new Chart(ctx, {type: 'line', data: {labels: dates, datasets: [{label: labelText, data: values, borderColor: canvasId === 'ipcaChart' ? '#e74c3c' : '#3498db', borderWidth: 2, fill: false}]}, options: {responsive: true, scales: { y: { beginAtZero: false } }} });
-        }
-        function generateDiagnostic(ibovChange, usdChange, ipcaValue, selicValue) { 
-            const diagnosticElement = document.getElementById('diagnostico-consolidado');
-            let message = '';
-            let className = '';
-            const isIbovPositive = ibovChange > 0;
-            const isUsdPositive = usdChange < 0; 
-            const isIpcaOk = ipcaValue <= 5.0; 
-            const isSelicOk = selicValue <= 13.0;
+      await createMutation.mutateAsync({
+        timestamp: new Date().toISOString(),
+        risk_score: result.risk_score || 0,
+        safety_score: result.safety_score || 0,
+        risk_details: result.risk_details || {},
+        safety_details: result.safety_details || {}
+      });
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+      alert('Erro ao buscar dados de mercado. Tente novamente.');
+      setUpdating(false);
+    }
+  };
 
-            if (isIbovPositive && isUsdPositive && isIpcaOk && isSelicOk) {
-                message = 'Momento **Altamente Positivo**: Todos os indicadores principais apontam para um cenário favorável de crescimento e controle fiscal.';
-                className = 'positive';
-            } else if (!isIbovPositive && !isUsdPositive && !isIpcaOk && !isSelicOk) {
-                message = 'Momento **Altamente Negativo**: Todos os indicadores principais apontam para um cenário de estresse, com inflação/juros altos, dólar subindo e bolsa caindo.';
-                className = 'negative';
-            } else {
-                message = 'Momento **Misto/Neutro**: Indicadores mostram movimentos conflitantes. O mercado aguarda por definições políticas ou externas.';
-                className = 'neutral';
-            }
-            diagnosticElement.innerHTML = message;
-            diagnosticElement.className = className;
-        }
+  const chartData = marketData
+    .slice(0, 20)
+    .reverse()
+    .map(d => ({
+      time: new Date(d.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      'Ativos de Risco': d.risk_score,
+      'Ativos de Segurança': d.safety_score,
+    }));
 
-        fetchData();
-        setInterval(fetchData, 60000); 
+  const latestData = marketData[0];
+  const riskTrend = latestData?.risk_score > 0 ? 'up' : latestData?.risk_score < 0 ? 'down' : 'neutral';
+  const safetyTrend = latestData?.safety_score > 0 ? 'up' : latestData?.safety_score < 0 ? 'down' : 'neutral';
 
-        /* Isenção de Responsabilidade Financeira: Este painel utiliza dados públicos e serve apenas para fins ilustrativos e educacionais. Ele não constitui aconselhamento financeiro ou recomendação de investimento. Consulte um profissional certificado antes de tomar decisões financeiras. */
-    </script>
-</body>
-</html>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-white">GPS de Mercado</h1>
+          <div className="flex gap-3">
+            <ExportGPS marketData={marketData} />
+            <Button 
+              onClick={updateMarketData} 
+              disabled={updating}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+              Atualizar Dados
+            </Button>
+          </div>
+        </div>
+
+        <MiniIndiceSentiment />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-green-400" />
+                Ativos de Risco
+                {riskTrend === 'up' && <Badge className="bg-green-500">Alta</Badge>}
+                {riskTrend === 'down' && <Badge className="bg-red-500">Queda</Badge>}
+                {riskTrend === 'neutral' && <Badge className="bg-gray-500">Neutro</Badge>}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white mb-2">
+                {latestData?.risk_score?.toFixed(1) || '0.0'}
+              </div>
+              <p className="text-sm text-gray-300">
+                Se subir: Ibov sobe, Dólar cai
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <TrendingDown className="w-5 h-5 text-blue-400" />
+                Ativos de Segurança
+                {safetyTrend === 'up' && <Badge className="bg-green-500">Alta</Badge>}
+                {safetyTrend === 'down' && <Badge className="bg-red-500">Queda</Badge>}
+                {safetyTrend === 'neutral' && <Badge className="bg-gray-500">Neutro</Badge>}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white mb-2">
+                {latestData?.safety_score?.toFixed(1) || '0.0'}
+              </div>
+              <p className="text-sm text-gray-300">
+                Se subir: Ibov cai, Dólar sobe
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <CardHeader>
+            <CardTitle className="text-white">Evolução Comparativa</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="time" stroke="#fff" />
+                <YAxis stroke="#fff" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
+                  labelStyle={{ color: '#fff' }}
+                />
+                <Legend />
+                <ReferenceLine y={0} stroke="#fff" strokeDasharray="3 3" />
+                <Line 
+                  type="monotone" 
+                  dataKey="Ativos de Risco" 
+                  stroke="#10b981" 
+                  strokeWidth={3}
+                  dot={{ fill: '#10b981', r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="Ativos de Segurança" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3}
+                  dot={{ fill: '#3b82f6', r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="bg-red-500/20 backdrop-blur-lg border-red-300/30">
+            <CardHeader>
+              <CardTitle className="text-white">Ativos de Risco</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {riskAssets.map(asset => (
+                  <div key={asset.symbol} className="flex justify-between items-center text-sm">
+                    <span className="text-white font-medium">{asset.symbol}</span>
+                    <span className="text-gray-300">{asset.name}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-blue-500/20 backdrop-blur-lg border-blue-300/30">
+            <CardHeader>
+              <CardTitle className="text-white">Ativos de Segurança</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {safetyAssets.map(asset => (
+                  <div key={asset.symbol} className="flex justify-between items-center text-sm">
+                    <span className="text-white font-medium">{asset.symbol}</span>
+                    <span className="text-gray-300">{asset.name}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
