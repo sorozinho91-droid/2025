@@ -3,58 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado - 2026</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>GPS de Mercado - Full 2026</title>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        /* Mantendo seu estilo original com pequenas melhorias de legibilidade */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%);
             color: white; padding: 20px; min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 {
-            font-size: 3rem; background: linear-gradient(to right, #60a5fa, #34d399);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .card {
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 24px;
-            transition: transform 0.3s ease;
-        }
-        .card:hover { transform: translateY(-5px); }
-        .card-value { font-size: 2.8rem; font-weight: bold; margin: 10px 0; }
-        .badge { padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: bold; }
-        .bg-up { background: #10b981; } .bg-down { background: #ef4444; } .bg-neu { background: #6b7280; }
-        .chart-container { background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; margin-bottom: 40px; }
-        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .asset-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        .pct { font-weight: bold; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 20px; }
+        .card-value { font-size: 2.5rem; font-weight: bold; margin: 5px 0; }
+        .badge { padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: bold; float: right; }
+        .bg-green { background: #10b981; } .bg-red { background: #ef4444; } .bg-gray { background: #6b7280; }
+        .chart-container { background: rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; margin-bottom: 30px; height: 350px; }
+        .assets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .asset-list { height: 300px; overflow-y: auto; padding-right: 10px; }
+        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.85rem; }
+        .asset-symbol { font-weight: bold; color: #60a5fa; }
+        .asset-pct { font-weight: bold; }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 GPS de Mercado</h1>
-            <p id="timer">Sincronizando dados globais...</p>
+            <h1>📊 GPS de Mercado Profissional</h1>
+            <p id="timestamp">Atualizando dados globais...</p>
         </div>
 
         <div class="cards">
-            <!-- Card Risco -->
-            <div class="card" id="card-risk">
-                <div>📈 Ativos de Risco <span id="badge-risk" class="badge bg-neu">Neutro</span></div>
+            <div class="card">
+                <div>📈 Fluxo de Risco <span id="status-risk" class="badge bg-gray">Neutro</span></div>
                 <div class="card-value" id="val-risk">0.00%</div>
-                <div style="color: #60a5fa">Correlação: IBOV ▲ | DÓLAR ▼</div>
+                <div style="font-size: 0.8rem; opacity: 0.7;">Commodities e Bolsas Globais</div>
             </div>
-
-            <!-- Card Segurança -->
-            <div class="card" id="card-safety">
-                <div>📉 Ativos de Segurança <span id="badge-safety" class="badge bg-neu">Neutro</span></div>
+            <div class="card">
+                <div>📉 Fluxo de Segurança <span id="status-safety" class="badge bg-gray">Neutro</span></div>
                 <div class="card-value" id="val-safety">0.00%</div>
-                <div style="color: #fbbf24">Correlação: IBOV ▼ | DÓLAR ▲</div>
+                <div style="font-size: 0.8rem; opacity: 0.7;">Dólar, VIX e Bonds</div>
             </div>
         </div>
 
@@ -64,81 +55,75 @@
 
         <div class="assets-grid">
             <div class="card">
-                <h3 style="color: #34d399; margin-bottom:15px;">Monitor de Risco (Risk-On)</h3>
-                <div id="list-risk"></div>
+                <h3 style="margin-bottom:15px; color:#34d399">🔴 Ativos de Risco (Risk-On)</h3>
+                <div id="list-risk" class="asset-list"></div>
             </div>
             <div class="card">
-                <h3 style="color: #f87171; margin-bottom:15px;">Porto Seguro (Risk-Off)</h3>
-                <div id="list-safety"></div>
+                <h3 style="margin-bottom:15px; color:#f87171">🔵 Ativos de Segurança (Risk-Off)</h3>
+                <div id="list-safety" class="asset-list"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Configuração dos Ativos
+        // Lista INTEGRAL baseada no seu código e ativos de correlação
         const riskAssets = [
             { s: 'GCJ25', n: 'Ouro Futuros' }, { s: 'HGH5', n: 'Cobre Futuros' },
-            { s: 'CL', n: 'Petróleo WTI' }, { s: 'VALE.K', n: 'Vale ADR' },
-            { s: 'PBR', n: 'Petrobras ADR' }, { s: 'EWZ', n: 'MSCI Brazil ETF' }
+            { s: 'CL', n: 'Petróleo WTI' }, { s: '.OSEAX', n: 'Oslo All Share' },
+            { s: 'ZS', n: 'Soja Chicago' }, { s: '1YMH25', n: 'Dow Jones Futuros' },
+            { s: '.GDOW', n: 'The Global Dow' }, { s: 'VALE.K', n: 'Vale SA ADR' },
+            { s: 'PBR', n: 'Petrobras ADR' }, { s: 'EWZ', n: 'iShares MSCI Brazil' }
         ];
 
         const safetyAssets = [
-            { s: 'DX', n: 'Índice Dólar (DXY)' }, { s: 'US10Y', n: 'Treasury 10 anos' },
-            { s: 'JPY=', n: 'Iene Japonês' }, { s: 'VIX', n: 'Índice do Medo' }
+            { s: 'DX', n: 'DXY - Índice Dólar' }, { s: 'US10Y', n: 'Treasury 10Y' },
+            { s: 'VIX', n: 'Índice de Volatilidade' }, { s: 'JPY=', n: 'Iene Japonês' }
         ];
 
-        // Inicialização do Gráfico
         const ctx = document.getElementById('marketChart').getContext('2d');
         const marketChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: Array(20).fill(''),
                 datasets: [
-                    { label: 'Risco', data: [], borderColor: '#34d399', tension: 0.4, fill: false },
-                    { label: 'Segurança', data: [], borderColor: '#f87171', tension: 0.4, fill: false }
+                    { label: 'Risco', data: [], borderColor: '#34d399', backgroundColor: '#34d39933', fill: true, tension: 0.3 },
+                    { label: 'Segurança', data: [], borderColor: '#ef4444', backgroundColor: '#ef444433', fill: true, tension: 0.3 }
                 ]
             },
-            options: { responsive: true, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { ticks: { color: 'white' } } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } }, x: { display: false } } }
         });
 
-        // Função para simular ou buscar dados (Simulação para demonstração)
-        function updateMarket() {
-            let avgRisk = 0;
-            let avgSafety = 0;
-
-            // Renderizar Lista Risco
+        function calculateGPS() {
+            let totalRisk = 0;
             let htmlRisk = '';
+            
             riskAssets.forEach(a => {
-                let change = (Math.random() * 4 - 1.8).toFixed(2); // Simulação -1.8% a +2.2%
-                avgRisk += parseFloat(change);
-                htmlRisk += `<div class="asset-item"><span>${a.s} <small>${a.n}</small></span><span class="pct ${change >= 0 ? 'bg-up' : 'bg-down'}">${change}%</span></div>`;
+                let change = (Math.random() * 3 - 1.2).toFixed(2); // Simulação realista
+                totalRisk += parseFloat(change);
+                htmlRisk += `<div class="asset-item"><span class="asset-symbol">${a.s} <small style="color:#94a3b8">${a.n}</small></span><span class="asset-pct" style="color:${change >= 0 ? '#10b981' : '#ef4444'}">${change}%</span></div>`;
             });
             document.getElementById('list-risk').innerHTML = htmlRisk;
 
-            // Renderizar Lista Segurança
+            let totalSafety = 0;
             let htmlSafety = '';
             safetyAssets.forEach(a => {
-                let change = (Math.random() * 2 - 1).toFixed(2);
-                avgSafety += parseFloat(change);
-                htmlSafety += `<div class="asset-item"><span>${a.s} <small>${a.n}</small></span><span class="pct ${change >= 0 ? 'bg-up' : 'bg-down'}">${change}%</span></div>`;
+                let change = (Math.random() * 2 - 0.8).toFixed(2);
+                totalSafety += parseFloat(change);
+                htmlSafety += `<div class="asset-item"><span class="asset-symbol">${a.s} <small style="color:#94a3b8">${a.n}</small></span><span class="asset-pct" style="color:${change >= 0 ? '#10b981' : '#ef4444'}">${change}%</span></div>`;
             });
             document.getElementById('list-safety').innerHTML = htmlSafety;
 
-            // Médias Finais
-            avgRisk = (avgRisk / riskAssets.length).toFixed(2);
-            avgSafety = (avgSafety / safetyAssets.length).toFixed(2);
+            const avgRisk = (totalRisk / riskAssets.length).toFixed(2);
+            const avgSafety = (totalSafety / safetyAssets.length).toFixed(2);
 
-            // Atualizar UI
             document.getElementById('val-risk').innerText = avgRisk + '%';
             document.getElementById('val-safety').innerText = avgSafety + '%';
-            
-            // Lógica do GPS (Sinais)
-            const bRisk = document.getElementById('badge-risk');
-            if(avgRisk > 0.5) { bRisk.innerText = 'FORTE'; bRisk.className = 'badge bg-up'; }
-            else if(avgRisk < -0.5) { bRisk.innerText = 'FRACO'; bRisk.className = 'badge bg-down'; }
-            else { bRisk.innerText = 'NEUTRO'; bRisk.className = 'badge bg-neu'; }
 
-            // Atualizar Gráfico
+            // Lógica de Badges
+            updateBadge('status-risk', avgRisk);
+            updateBadge('status-safety', avgSafety);
+
+            // Gráfico
             marketChart.data.datasets[0].data.push(avgRisk);
             marketChart.data.datasets[1].data.push(avgSafety);
             if(marketChart.data.datasets[0].data.length > 20) {
@@ -147,12 +132,18 @@
             }
             marketChart.update();
 
-            document.getElementById('timer').innerText = `Última leitura: ${new Date().toLocaleTimeString('pt-BR')} • Ciclo de 2026`;
+            document.getElementById('timestamp').innerText = `Leitura de Mercado: 18/01/2026 - ${new Date().toLocaleTimeString('pt-BR')}`;
         }
 
-        // Rodar a cada 3 segundos
-        setInterval(updateMarket, 3000);
-        updateMarket();
+        function updateBadge(id, val) {
+            const el = document.getElementById(id);
+            if (val > 0.4) { el.innerText = 'FORTE'; el.className = 'badge bg-green'; }
+            else if (val < -0.4) { el.innerText = 'FRACO'; el.className = 'badge bg-red'; }
+            else { el.innerText = 'NEUTRO'; el.className = 'badge bg-gray'; }
+        }
+
+        setInterval(calculateGPS, 4000);
+        calculateGPS();
     </script>
 </body>
 </html>
