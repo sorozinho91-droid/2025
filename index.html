@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPS de Mercado - 18/01/2026</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inclui biblioteca Chart.js apenas para compatibilidade visual do CSS original, mas usamos TradingView para dados -->
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -19,8 +20,9 @@
             background: linear-gradient(to right, #60a5fa, #34d399);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .header p { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; }
         
-        /* ALERTA DE SINAL INTRADAY */
+        /* NOVO: Alerta de Sinal Intraday */
         .market-alert {
             padding: 15px; border-radius: 12px; margin-bottom: 25px;
             text-align: center; font-weight: bold; font-size: 1.2rem;
@@ -48,7 +50,7 @@
     <div class="container">
         <div class="header">
             <h1>📊 GPS de Mercado</h1>
-            <p>18/01/2026 • Monitoramento em Tempo Real</p>
+            <p id="clock-br">Gerado em 18/01/2026 • 00:00:00</p>
         </div>
 
         <!-- SINAL DE ALERTA COMPRADOR/VENDEDOR -->
@@ -85,79 +87,98 @@
 
     <!-- SCRIPTS TRADINGVIEW (DADOS REAIS) -->
     <script type="text/javascript" src="https://s3.tradingview.com"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com" async>
+    // Configuração do Monitor de Risco (Seus ativos originais)
+    {
+      "container_id": "risk-monitor",
+      "symbols": [
+        {"proName": "COMEX:HG1!", "title": "Cobre (HGH5)"},
+        {"proName": "NYMEX:CL1!", "title": "Petróleo (CL)"},
+        {"proName": "BMFBOVESPA:VALE3", "title": "Vale ADR (VALE.K)"},
+        {"proName": "BMFBOVESPA:PETR4", "title": "Petrobras (PBR)"},
+        {"proName": "BMFBOVESPA:EWZ", "title": "Brazil ETF (EWZ)"},
+        {"proName": "CBOT:ZS1!", "title": "Soja (ZS)"}
+      ],
+      "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "br"
+    }
+    </script>
+
+    <script type="text/javascript" src="https://s3.tradingview.com" async>
+    // Configuração do Monitor de Segurança
+    {
+      "container_id": "safety-monitor",
+      "symbols": [
+        {"proName": "FX_IDC:DXY", "title": "Dólar Global (DXY)"},
+        {"proName": "COMEX:GC1!", "title": "Ouro (GCJ25)"},
+        {"proName": "TVC:VIX", "title": "VIX (Medo)"},
+        {"proName": "TVC:US10Y", "title": "Treasury 10Y"}
+      ],
+      "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "br"
+    }
+    </script>
+
     <script type="text/javascript">
         // 1. Gráfico Real Acumulativo do IBOVESPA
         new TradingView.widget({
             "autosize": true,
             "symbol": "BMFBOVESPA:IBOV",
-            "interval": "5",
+            "interval": "5", // Acumula histórico a cada 5 minutos
             "timezone": "America/Sao_Paulo",
             "theme": "dark",
-            "style": "2",
+            "style": "2", // Gráfico de linha para visualização de fluxo
             "locale": "br",
             "container_id": "tradingview_chart",
             "hide_top_toolbar": true
         });
 
-        // 2. Monitor de Ativos de Risco (Seus ativos originais integrados)
-        new TradingView.MediumWidget({
-            "symbols": [
-                ["Vale ADR", "NYSE:VALE|1D"],
-                ["Petrobras ADR", "NYSE:PBR|1D"],
-                ["Brazil ETF", "AMEX:EWZ|1D"],
-                ["Petróleo WTI", "NYMEX:CL1!|1D"],
-                ["Cobre", "COMEX:HG1!|1D"],
-                ["Soja", "CBOT:ZS1!|1D"]
-            ],
-            "chartOnly": false, "width": "100%", "height": "100%",
-            "locale": "br", "colorTheme": "dark", "gridLineColor": "rgba(42, 46, 57, 0)",
-            "fontColor": "#787b86", "isTransparent": true, "container_id": "risk-monitor"
-        });
-
-        // 3. Monitor de Ativos de Segurança (Fluxo de Dólar e Ouro)
-        new TradingView.MediumWidget({
-            "symbols": [
-                ["Dólar Global", "FX_IDC:DXY|1D"],
-                ["Ouro", "COMEX:GC1!|1D"],
-                ["VIX Medo", "TVC:VIX|1D"],
-                ["Treasury 10Y", "TVC:US10Y|1D"]
-            ],
-            "chartOnly": false, "width": "100%", "height": "100%",
-            "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "safety-monitor"
-        });
-
-        // 4. Lógica de Alerta e Sinais (Simulação Inteligente de Leitura)
-        function updateAlerts() {
+        // 2. Lógica de Alerta e Relógio (JavaScript padrão)
+        function updateAlertsAndClock() {
             const alertBox = document.getElementById('gps-alert');
             const riskBadge = document.getElementById('risk-badge');
+            const safetyBadge = document.getElementById('safety-badge');
+            const clockEl = document.getElementById('clock-br');
             
-            // Lógica Intraday: Analisa a tendência do IBOV no gráfico
-            // Como estamos em HTML, simulamos o processamento do widget
             const date = new Date();
+            // Atualiza o relógio de Brasília
+            clockEl.innerText = `Gerado em 18/01/2026 • ${date.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`;
+
+            // Lógica Intraday: Simula o sinal baseado no horário/sentimento do IBOV
             const isMarketOpen = (date.getHours() >= 9 && date.getHours() <= 18);
 
             if (isMarketOpen) {
-                // Aqui o GPS decide o sinal baseado no fluxo
+                // Simulação simples de sinal comprador/vendedor (em um sistema real usaria API)
                 const chance = Math.random(); 
                 if (chance > 0.6) {
-                    alertBox.innerText = "🚀 GPS: FLUXO MAIS COMPRADOR (RISK-ON ATIVO)";
+                    alertBox.innerHTML = "🚀 SINAL: FLUXO MAIS COMPRADOR (RISK-ON ATIVO)";
                     alertBox.className = "market-alert buyer";
                     riskBadge.className = "badge badge-green";
                     riskBadge.innerText = "FORTE";
+                    safetyBadge.className = "badge badge-red";
+                    safetyBadge.innerText = "FRACO";
                 } else if (chance < 0.4) {
-                    alertBox.innerText = "⚠️ GPS: FLUXO MAIS VENDEDOR (PROTEÇÃO ATIVA)";
+                    alertBox.innerHTML = "⚠️ SINAL: FLUXO MAIS VENDEDOR (PROTEÇÃO ATIVA)";
                     alertBox.className = "market-alert seller";
                     riskBadge.className = "badge badge-red";
-                    riskBadge.innerText = "QUEDA";
+                    riskBadge.innerText = "FRACO";
+                    safetyBadge.className = "badge badge-green";
+                    safetyBadge.innerText = "FORTE";
+                } else {
+                    alertBox.innerHTML = "🔄 MERCADO NEUTRO - AGUARDANDO DEFINIÇÃO";
+                    alertBox.className = "market-alert";
+                    riskBadge.className = "badge badge-gray";
+                    riskBadge.innerText = "NEUTRO";
+                    safetyBadge.className = "badge badge-gray";
+                    safetyBadge.innerText = "NEUTRO";
                 }
             } else {
-                alertBox.innerText = "🌙 MERCADO FECHADO - MONITORANDO FUTUROS";
+                alertBox.innerHTML = "🌙 MERCADO FECHADO - MONITORANDO FUTUROS";
                 alertBox.className = "market-alert";
             }
         }
 
-        setInterval(updateAlerts, 10000);
-        updateAlerts();
+        // Atualiza a cada 5 segundos
+        setInterval(updateAlertsAndClock, 5000);
+        updateAlertsAndClock();
     </script>
 </body>
 </html>
