@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado - 18/01/2026</title>
+    <title>GPS de Mercado - 18/01/2026 - Alerta</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * {
@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%);
             color: white;
             padding: 20px;
@@ -105,25 +105,10 @@
             max-height: 400px;
             overflow-y: auto;
         }
-        .assets-card.risk {
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            background: rgba(239, 68, 68, 0.1);
-        }
-        .assets-card.safety {
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            background: rgba(59, 130, 246, 0.1);
-        }
-        .assets-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        .asset-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .assets-card.risk { border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+        .assets-card.safety { border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.1); }
+        .assets-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; }
+        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
         .asset-symbol { font-weight: 600; }
         .asset-name { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; }
         .asset-change { font-weight: bold; }
@@ -133,6 +118,22 @@
             .header h1 { font-size: 2rem; }
             .cards { grid-template-columns: 1fr; }
         }
+        /* ESTILO DO NOVO ALERTA */
+        #main-alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .alert-buyer { background-color: #10b981; }
+        .alert-seller { background-color: #ef4444; }
+        .alert-neutral { background-color: #6b7280; }
     </style>
 </head>
 <body>
@@ -140,6 +141,11 @@
         <div class="header">
             <h1>📊 GPS de Mercado</h1>
             <p>Leitura de Mercado: 18/01/2026 • Atualização Intraday</p>
+        </div>
+        
+        <!-- NOVO ALERTA GLOBAL AQUI -->
+        <div id="main-alert" class="alert-neutral">
+            <span id="alert-icon">🔄</span> <span id="alert-text">CALIBRANDO O SENTIMENTO GLOBAL...</span>
         </div>
 
         <div class="cards">
@@ -168,7 +174,6 @@
         </div>
 
         <div class="assets-grid">
-            <!-- LISTA DE RISCO ORIGINAL MANTIDA -->
             <div class="assets-card risk">
                 <div class="assets-title">🔴 Ativos de Risco</div>
                 <div id="list-risk">
@@ -185,7 +190,6 @@
                 </div>
             </div>
 
-            <!-- LISTA DE SEGURANÇA MANTIDA -->
             <div class="assets-card safety">
                 <div class="assets-title">🔵 Ativos de Segurança</div>
                 <div id="list-safety">
@@ -199,21 +203,19 @@
     </div>
 
     <script>
-        // Configuração do Gráfico
-        const MAX_POINTS = 50; // Quantidade de pontos visíveis antes de começar a rolar
+        const MAX_POINTS = 50; 
         const ctx = document.getElementById('marketChart').getContext('2d');
         const marketChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: [], // Horários acumulados
+                labels: [], 
                 datasets: [
                     { label: 'Fluxo Risco', data: [], borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.4 },
                     { label: 'Fluxo Segurança', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 scales: {
                     x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { display: false } },
                     y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
@@ -229,13 +231,13 @@
             let riskTotal = 0;
             const riskItems = document.querySelectorAll('.risk .asset-item');
             riskItems.forEach(item => {
-                let change = (Math.random() * 4 - 1.8).toFixed(2); // Simulação de variação
+                let change = (Math.random() * 4 - 1.8).toFixed(2);
                 riskTotal += parseFloat(change);
                 let span = item.querySelector('.asset-change');
                 span.innerText = (change >= 0 ? '+' : '') + change + '%';
                 span.style.color = change >= 0 ? '#34d399' : '#ef4444';
             });
-            let riskAvg = (riskTotal / riskItems.length).toFixed(2);
+            let riskAvg = (riskTotal / riskItems.length);
 
             // 2. Atualizar Ativos de Segurança Individualmente e calcular média
             let safetyTotal = 0;
@@ -247,33 +249,58 @@
                 span.innerText = (change >= 0 ? '+' : '') + change + '%';
                 span.style.color = change >= 0 ? '#34d399' : '#ef4444';
             });
-            let safetyAvg = (safetyTotal / safetyItems.length).toFixed(2);
+            let safetyAvg = (safetyTotal / safetyItems.length);
 
-            // 3. Atualizar Cards de Cabeçalho
-            document.getElementById('val-risk').innerText = riskAvg + '%';
-            document.getElementById('val-safety').innerText = safetyAvg + '%';
+            // 3. Atualizar Cards de Cabeçalho (com formatação visual)
+            document.getElementById('val-risk').innerText = riskAvg.toFixed(2) + '%';
+            document.getElementById('val-safety').innerText = safetyAvg.toFixed(2) + '%';
 
-            // 4. Atualizar Badges baseados na média
+            // 4. Lógica do NOVO ALERTA (Comprador vs Vendedor)
+            const alertBox = document.getElementById('main-alert');
+            const alertText = document.getElementById('alert-text');
+            const alertIcon = document.getElementById('alert-icon');
+            
+            // Define um limiar de diferença para considerar o mercado direcional
+            const threshold = 0.5; // 0.5% de diferença média
+            const difference = riskAvg - safetyAvg;
+
+            if (difference > threshold) {
+                alertBox.className = 'alert-buyer';
+                alertText.innerText = 'MERCADO MAIS COMPRADOR (RISK-ON ATIVADO) 🚀';
+                alertIcon.innerText = '🟢';
+            } else if (difference < -threshold) {
+                alertBox.className = 'alert-seller';
+                alertText.innerText = 'MERCADO MAIS VENDEDOR (RISK-OFF ATIVADO) 🛡️';
+                alertIcon.innerText = '🔴';
+            } else {
+                alertBox.className = 'alert-neutral';
+                alertText.innerText = 'MERCADO NEUTRO/CONSOLIDANDO 🔄';
+                alertIcon.innerText = '🟡';
+            }
+
+            // 5. Atualizar Badges nos cards menores (mantido do código anterior)
             const bRisk = document.getElementById('badge-risk');
             bRisk.innerText = riskAvg > 0.5 ? 'COMPRA' : (riskAvg < -0.5 ? 'VENDA' : 'NEUTRO');
             bRisk.className = `badge ${riskAvg > 0.5 ? 'badge-green' : (riskAvg < -0.5 ? 'badge-red' : 'badge-gray')}`;
-
-            // 5. ACUMULAR NO GRÁFICO (Lógica Intraday)
+            const bs = document.getElementById('badge-safety');
+            bs.innerText = safetyAvg > 0.3 ? 'ALTO' : (safetyAvg < -0.3 ? 'BAIXO' : 'ESTÁVEL');
+            bs.className = `badge ${safetyAvg > 0.3 ? 'badge-red' : (safetyAvg < -0.3 ? 'badge-green' : 'badge-gray')}`;
+            
+            // 6. ACUMULAR NO GRÁFICO
             marketChart.data.labels.push(now);
+            // Empurramos os valores numéricos completos para o gráfico
             marketChart.data.datasets[0].data.push(riskAvg);
             marketChart.data.datasets[1].data.push(safetyAvg);
 
-            // Se exceder o limite, remove o ponto mais antigo para manter a performance
             if (marketChart.data.labels.length > MAX_POINTS) {
                 marketChart.data.labels.shift();
                 marketChart.data.datasets[0].data.shift();
                 marketChart.data.datasets[1].data.shift();
             }
 
-            marketChart.update('none'); // Atualiza sem animação para ser instantâneo
+            marketChart.update('none'); 
         }
 
-        // Inicia o ciclo de atualização a cada 3 segundos
         setInterval(updateData, 3000);
         updateData();
     </script>
