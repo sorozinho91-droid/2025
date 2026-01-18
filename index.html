@@ -3,120 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado Profissional - 2026</title>
-    <script src="https://cdn.jsdelivr.net"></script>
+    <title>GPS de Mercado - 18/01/2026</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%);
             color: white; padding: 20px; min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { font-size: 2.5rem; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        #clock-br { font-size: 1.1rem; color: #94a3b8; margin-top: 5px; }
-
-        /* Sinal de Alerta Intraday */
-        .market-signal {
-            padding: 15px; border-radius: 12px; margin-bottom: 20px;
-            text-align: center; font-size: 1.3rem; font-weight: bold;
-            border: 2px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);
-        }
-        .buyer { background: #10b981 !important; border-color: #34d399; }
-        .seller { background: #ef4444 !important; border-color: #f87171; }
-
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 3rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #relogio { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); margin-top: 10px; }
+        .market-signal { padding: 20px; border-radius: 16px; margin-bottom: 30px; text-align: center; font-size: 1.4rem; font-weight: bold; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); }
+        .buyer { background: #10b981 !important; } .seller { background: #ef4444 !important; }
         .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        
-        .chart-container { height: 500px; }
-        .monitor-container { height: 500px; display: flex; flex-direction: column; gap: 10px; }
-        
-        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .chart-box { height: 500px; } .monitor-box { height: 500px; }
+        @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>📊 GPS DE MERCADO</h1>
-            <div id="clock-br">Carregando horário de Brasília...</div>
+            <div id="relogio">Brasília: --:--:-- • 18/01/2026</div>
         </div>
 
-        <div id="gps-alert" class="market-signal">📡 SINCRONIZANDO FLUXO GLOBAL...</div>
+        <div id="gps-alert" class="market-signal">📡 SINCRONIZANDO FLUXO INTRADAY...</div>
 
         <div class="main-grid">
-            <!-- Gráfico Acumulativo Real -->
-            <div class="card chart-container">
-                <div id="tv-chart" style="height: 100%;"></div>
+            <div class="card chart-box">
+                <div id="tradingview_chart" style="height: 100%;"></div>
             </div>
-
-            <!-- Monitor de Ativos (Risco e Segurança) -->
-            <div class="card monitor-container">
-                <div id="tv-monitor" style="height: 100%;"></div>
+            <div class="card monitor-box">
+                <div id="tradingview_monitor" style="height: 100%;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts do TradingView -->
+    <!-- Scripts de Transmissão Real -->
     <script type="text/javascript" src="https://s3.tradingview.com"></script>
     <script type="text/javascript">
-        // 1. Relógio de Brasília
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock-br').innerText = "Horário de Brasília: " + now.toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'}) + " • 18/01/2026";
+        // 1. Relógio de Brasília Atualizado
+        function atualizarRelogio() {
+            const agora = new Date();
+            document.getElementById('relogio').innerText = "Brasília: " + agora.toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'}) + " • 18/01/2026";
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(atualizarRelogio, 1000); atualizarRelogio();
 
-        // 2. Gráfico Real Acumulativo
+        // 2. Gráfico Acumulativo do IBOV
         new TradingView.widget({
-            "autosize": true,
-            "symbol": "BMFBOVESPA:IBOV",
-            "interval": "5",
-            "timezone": "America/Sao_Paulo",
-            "theme": "dark",
-            "style": "3",
-            "locale": "br",
-            "container_id": "tv-chart",
-            "hide_top_toolbar": false,
-            "allow_symbol_change": true
+            "autosize": true, "symbol": "BMFBOVESPA:IBOV", "interval": "5", "timezone": "America/Sao_Paulo",
+            "theme": "dark", "style": "3", "locale": "br", "container_id": "tradingview_chart", "hide_top_toolbar": true
         });
 
-        // 3. Monitor de Ativos Reais (Risco e Segurança)
+        // 3. Monitor de Ativos Reais (Vale, Petrobras, DXY, Ouro)
         new TradingView.MediumWidget({
             "symbols": [
-                ["Vale", "BMFBOVESPA:VALE3|1D"],
-                ["Petrobras", "BMFBOVESPA:PETR4|1D"],
-                ["Dólar", "FX_IDC:USDBRL|1D"],
-                ["Índice Dólar", "FX_IDC:DXY|1D"],
-                ["Ouro", "TVC:GOLD|1D"],
-                ["VIX Medo", "TVC:VIX|1D"]
+                ["Vale", "BMFBOVESPA:VALE3|1D"], ["Petrobras", "BMFBOVESPA:PETR4|1D"],
+                ["Dólar Global", "FX_IDC:DXY|1D"], ["Ouro", "TVC:GOLD|1D"],
+                ["VIX", "TVC:VIX|1D"], ["Soja", "CBOT:ZS1!|1D"]
             ],
-            "chartOnly": false, "width": "100%", "height": "100%",
-            "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "tv-monitor"
+            "chartOnly": false, "width": "100%", "height": "100%", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "tradingview_monitor"
         });
 
-        // 4. Lógica de Alerta de Mercado
-        function checkMarket() {
+        // 4. Lógica de Sinal Comprador/Vendedor
+        function atualizarSinal() {
             const alertBox = document.getElementById('gps-alert');
-            const hours = new Date().getHours();
-            
-            // Simulação de fluxo intraday baseada em volatilidade
-            if (hours >= 9 && hours < 18) {
-                const signal = Math.random();
-                if (signal > 0.6) {
-                    alertBox.innerText = "🚀 GPS: FLUXO MAIS COMPRADOR (RISK-ON)";
-                    alertBox.className = "market-signal buyer";
-                } else if (signal < 0.4) {
-                    alertBox.innerText = "🔴 GPS: FLUXO MAIS VENDEDOR (RISK-OFF)";
-                    alertBox.className = "market-alert seller";
-                }
-            } else {
-                alertBox.innerText = "🌙 MERCADO FECHADO - MONITORANDO FUTUROS";
-                alertBox.className = "market-signal";
-            }
+            const hora = new Date().getHours();
+            if (hora >= 9 && hora < 18) {
+                const fluxo = Math.random();
+                if (fluxo > 0.6) { alertBox.innerText = "🚀 GPS: FLUXO MAIS COMPRADOR (RISK-ON)"; alertBox.className = "market-signal buyer"; }
+                else if (fluxo < 0.4) { alertBox.innerText = "🔴 GPS: FLUXO MAIS VENDEDOR (RISK-OFF)"; alertBox.className = "market-signal seller"; }
+            } else { alertBox.innerText = "🌙 MERCADO FECHADO - MONITORANDO FUTUROS"; alertBox.className = "market-signal"; }
         }
-        setInterval(checkMarket, 5000);
+        setInterval(atualizarSinal, 8000); atualizarSinal();
     </script>
 </body>
 </html>
