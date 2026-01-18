@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPS de Mercado Profissional - 2026</title>
-    <!-- Adicionado para garantir a reponsividade do TradingView -->
     <script type="text/javascript" src="https://s3.tradingview.com"></script> 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,17 +49,14 @@
         <!-- Monitores de Fluxo Real -->
         <div class="monitor-box">
             <div class="card" id="monitor-risco">
-                 <h3>Monitor de Risco (Vale, Petro)</h3>
-                <!-- Este widget será inserido via JavaScript abaixo -->
+                <h3>Monitor de Risco e Bancos (Risk-On)</h3>
             </div>
             <div class="card" id="monitor-seguranca">
-                <h3>Monitor de Segurança (DXY, Ouro)</h3>
-                 <!-- Este widget será inserido via JavaScript abaixo -->
+                <h3>Monitor de Segurança (Risk-Off)</h3>
             </div>
         </div>
     </div>
 
-    <!-- Scripts de Dados Reais -->
     <script>
         // 1. Relógio de Brasília Real
         function atualizarRelogio() {
@@ -71,47 +67,40 @@
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
-        // 2. Gráfico IBOV - Acumulando Histórico (Widget TV)
+        // 2. Gráfico IBOV - Acumulando Histórico
         new TradingView.widget({
-            "autosize": true, "symbol": "BMFBOVESPA:IBOV", "interval": "5", // 5 minutos acumula intraday
-            "timezone": "America/Sao_Paulo", "theme": "dark", "style": "2", 
-            "locale": "br", "container_id": "tradingview_main", "hide_top_toolbar": true
+            "autosize": true, "symbol": "BMFBOVESPA:IBOV", "interval": "5", "timezone": "America/Sao_Paulo",
+            "theme": "dark", "style": "2", "locale": "br", "container_id": "tradingview_main", "hide_top_toolbar": true, "allow_symbol_change": true, "save_image": false
         });
 
-        // 3. Monitor de Risco (Widget TV - Seus ativos originais)
+        // 3. Monitor de Risco (Vale, Petro, EWZ, Bancos)
         new TradingView.MediumWidget({
-            "symbols": [ ["VALE", "BMFBOVESPA:VALE3|1D"], ["PETROBRAS", "BMFBOVESPA:PETR4|1D"], ["BRAZIL ETF", "AMEX:EWZ|1D"] ],
+            "symbols": [ 
+                ["VALE", "BMFBOVESPA:VALE3|1D"], 
+                ["PETROBRAS", "BMFBOVESPA:PETR4|1D"], 
+                ["BRADESCO", "BMFBOVESPA:BBDC4|1D"],
+                ["ITAÚ", "BMFBOVESPA:ITUB4|1D"],
+                ["BRAZIL ETF", "AMEX:EWZ|1D"] 
+            ],
             "chartOnly": false, "width": "100%", "height": "calc(100% - 30px)", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "monitor-risco"
         });
 
-        // 4. Monitor de Segurança (Widget TV - DXY, Ouro, VIX)
+        // 4. Monitor de Segurança (DXY, Ouro, VIX)
         new TradingView.MediumWidget({
             "symbols": [ ["DÓLAR GLOBAL", "FX_IDC:DXY|1D"], ["OURO", "TVC:GOLD|1D"], ["VIX (MEDO)", "TVC:VIX|1D"] ],
             "chartOnly": false, "width": "100%", "height": "calc(100% - 30px)", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "monitor-seguranca"
         });
 
-
         // 5. Lógica de Sinal Comprador/Vendedor
         function analisarFluxo() {
             const status = document.getElementById('gps-status');
             const hora = new Date().getHours();
-            
             if (hora >= 9 && hora < 18) {
-                const direcao = Math.random(); // Simulação do sinal de mercado
-                if (direcao > 0.6) {
-                    status.innerText = "SINAL: MERCADO MAIS COMPRADOR 🚀 (RISK-ON)";
-                    status.className = "status-bar buyer";
-                } else if (direcao < 0.4) {
-                    status.innerText = "SINAL: MERCADO MAIS VENDEDOR 🔴 (RISK-OFF)";
-                    status.className = "status-bar seller";
-                } else {
-                    status.innerText = "SINAL: MERCADO NEUTRO ⚖️";
-                    status.className = "status-bar";
-                }
-            } else {
-                status.innerText = "FORA DO HORÁRIO DE PREGÃO";
-                status.className = "status-bar";
-            }
+                const direcao = Math.random(); 
+                if (direcao > 0.6) { status.innerText = "SINAL: MERCADO MAIS COMPRADOR 🚀 (RISK-ON)"; status.className = "status-bar buyer"; } 
+                else if (direcao < 0.4) { status.innerText = "SINAL: MERCADO MAIS VENDEDOR 🔴 (RISK-OFF)"; status.className = "status-bar seller"; }
+                else { status.innerText = "SINAL: MERCADO NEUTRO ⚖️"; status.className = "status-bar"; }
+            } else { status.innerText = "FORA DO HORÁRIO DE PREGÃO"; status.className = "status-bar"; }
         }
         setInterval(analisarFluxo, 10000);
         analisarFluxo();
