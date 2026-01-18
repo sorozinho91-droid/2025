@@ -3,147 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado Profissional - 2026</title>
+    <title>GPS de Mercado Profissional - Dados Reais</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
-            color: white;
-            padding: 20px;
-        }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { 
-            font-size: 2.5rem; 
-            background: linear-gradient(to right, #60a5fa, #34d399);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Grid Principal */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px;
-        }
-
-        /* Estilo dos Widgets */
-        .chart-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 15px;
-            height: 600px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .side-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .alert-box {
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: bold;
-            background: #1e293b;
-            border-left: 5px solid #3b82f6;
-        }
-
-        .asset-monitor {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 10px;
-            height: 500px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        @media (max-width: 1024px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
+        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #34d399; text-align: center; margin-bottom: 20px; }
+        .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: #1e293b; border-radius: 8px; padding: 15px; }
+        .widget-container { height: 500px; } /* Altura para o gráfico */
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <h1>📊 GPS DE MERCADO - 18/01/2026</h1>
-            <p>Fluxo Global de Ativos em Tempo Real</p>
-        </div>
-
-        <div class="main-layout">
-            <!-- GRÁFICO REAL ACUMULATIVO -->
-            <div class="chart-section">
+        <h1>📊 GPS de Mercado - Dados Reais</h1>
+        
+        <div class="grid-layout">
+            
+            <!-- SEÇÃO 1: GRÁFICO REAL DO IBOVESPA COM HISTÓRICO INTRADAY -->
+            <div class="card widget-container">
+                <h2>Gráfico IBOV (5min)</h2>
+                <!-- Widget de Gráfico do TradingView -->
                 <div class="tradingview-widget-container" style="height:100%;width:100%">
-                    <div id="tradingview_gps"></div>
+                    <div id="tradingview_chart"></div>
                     <script type="text/javascript" src="https://s3.tradingview.com"></script>
                     <script type="text/javascript">
-                        new TradingView.widget({
-                            "autosize": true,
-                            "symbol": "BMFBOVESPA:IBOV",
-                            "interval": "5",
-                            "timezone": "America/Sao_Paulo",
-                            "theme": "dark",
-                            "style": "1",
-                            "locale": "br",
-                            "toolbar_bg": "#f1f3f6",
-                            "enable_publishing": false,
-                            "hide_side_toolbar": false,
-                            "allow_symbol_change": true,
-                            "details": true,
-                            "hotlist": true,
-                            "calendar": true,
-                            "container_id": "tradingview_gps"
-                        });
+                    new TradingView.widget({
+                        "autosize": true,
+                        "symbol": "BMFBOVESPA:IBOV",
+                        "interval": "5",
+                        "timezone": "America/Sao_Paulo",
+                        "theme": "dark",
+                        "style": "1",
+                        "locale": "br",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "hide_side_toolbar": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_chart"
+                    });
                     </script>
                 </div>
             </div>
 
-            <!-- MONITOR DE ATIVOS (RISCO E SEGURANÇA) -->
-            <div class="side-section">
-                <div class="alert-box">
-                     STATUS GPS: <br>
-                    <span style="color: #34d399; font-size: 1.2rem;">CALCULANDO FLUXO...</span>
-                </div>
-
-                <div class="asset-monitor">
-                    <!-- WIDGET DE COTAÇÕES REAIS -->
-                    <div class="tradingview-widget-container">
-                        <div class="tradingview-widget-container__widget"></div>
-                        <script type="text/javascript" src="https://s3.tradingview.com" async>
+            <!-- SEÇÃO 2: LISTA DE COTAÇÕES REAIS (RISCO/SEGURANÇA) -->
+            <div class="card widget-container" style="height: auto;">
+                <h2>Monitor de Fluxo</h2>
+                <!-- Widget de Visão Geral do Mercado do TradingView -->
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com" async>
+                    {
+                    "colorTheme": "dark",
+                    "dateRange": "1D",
+                    "showChart": true,
+                    "locale": "br",
+                    "width": "100%",
+                    "height": "450",
+                    "isTransparent": true,
+                    "tabs": [
                         {
-                        "colorTheme": "dark",
-                        "dateRange": "12M",
-                        "showChart": false,
-                        "locale": "br",
-                        "width": "100%",
-                        "height": "480",
-                        "largeChartUrl": "",
-                        "isTransparent": true,
-                        "showSymbolLogo": true,
-                        "showFloatingTooltip": false,
-                        "tabs": [
-                            {
-                            "title": "GPS: RISCO E SEGURANÇA",
-                            "symbols": [
-                                { "proName": "BMFBOVESPA:VALE3", "title": "VALE3 (Risco)" },
-                                { "proName": "BMFBOVESPA:PETR4", "title": "PETR4 (Risco)" },
-                                { "proName": "FX_IDC:DXY", "title": "DXY (Segurança)" },
-                                { "proName": "COMEX:GC1!", "title": "Ouro (Segurança)" },
-                                { "proName": "CBOT:ZS1!", "title": "Soja (Commodity)" },
-                                { "proName": "NYMEX:CL1!", "title": "Petróleo WTI" },
-                                { "proName": "TVC:VIX", "title": "VIX (Medo)" },
-                                { "proName": "TVC:US10Y", "title": "Treasury 10Y" }
-                            ]
-                            }
+                        "title": "Ativos GPS",
+                        "symbols": [
+                            { "proName": "BMFBOVESPA:VALE3", "title": "VALE3 (Risco)" },
+                            { "proName": "BMFBOVESPA:PETR4", "title": "PETR4 (Risco)" },
+                            { "proName": "FX_IDC:DXY", "title": "DXY (Segurança)" },
+                            { "proName": "COMEX:GC1!", "title": "Ouro (Segurança)" },
+                            { "proName": "TVC:VIX", "title": "VIX (Medo)" },
+                            { "proName": "NYMEX:CL1!", "title": "Petróleo WTI" }
                         ]
                         }
-                        </script>
-                    </div>
+                    ]
+                    }
+                    </script>
                 </div>
             </div>
+
         </div>
     </div>
 
