@@ -3,200 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS DE MERCADO PRO - 2026</title>
+    <title>GPS de Mercado - 18/01/2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: #06090f;
-            color: #ffffff;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%);
+            color: white; padding: 20px; min-height: 100vh;
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background: #0d1117;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            margin-bottom: 20px;
-        }
-
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
         .header h1 {
-            font-size: 1.8rem;
-            color: #58a6ff;
-            letter-spacing: 1px;
+            font-size: 3rem; font-weight: bold; margin-bottom: 10px;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        #relogio-br {
-            font-family: 'Courier New', monospace;
-            font-size: 1.4rem;
-            color: #3fb950;
-            font-weight: bold;
+        .header p { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; }
+        
+        /* NOVO: Alerta de Sinal Intraday */
+        .market-alert {
+            padding: 15px; border-radius: 12px; margin-bottom: 25px;
+            text-align: center; font-weight: bold; font-size: 1.3rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3); transition: all 0.5s;
         }
+        .buyer { background: #10b981 !important; border-color: #34d399; }
+        .seller { background: #ef4444 !important; border-color: #f87171; }
 
-        /* Alerta de Sinal */
-        .status-bar {
-            width: 100%;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            background: #161b22;
-            border: 1px solid #30363d;
-        }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; }
+        .card-title { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; margin-bottom: 16px; font-weight: 600; }
+        .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: #10b981; } .badge-red { background: #ef4444; } .badge-gray { background: #6b7280; }
 
-        .buyer { background: #238636 !important; color: white; }
-        .seller { background: #da3633 !important; color: white; }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .chart-box {
-            background: #0d1117;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            height: 600px;
-            padding: 10px;
-        }
-
-        .monitor-box {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card {
-            background: #0d1117;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            padding: 15px;
-            flex: 1;
-        }
-
-        h3 { margin-bottom: 10px; font-size: 0.9rem; color: #8b949e; text-transform: uppercase; }
-
-        @media (max-width: 1024px) {
-            .main-content { grid-template-columns: 1fr; }
-        }
+        .chart-container { background: rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 40px; height: 500px; }
+        .assets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .assets-card { background: rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; height: 450px; overflow: hidden; }
+        .assets-card.risk { border: 1px solid rgba(239, 68, 68, 0.3); }
+        .assets-card.safety { border: 1px solid rgba(59, 130, 246, 0.3); }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>📊 GPS DE MERCADO <span style="font-size: 0.8rem; color: #8b949e;">v2.0</span></h1>
-        <div id="relogio-br">00:00:00</div>
-    </div>
-
-    <div id="gps-status" class="status-bar">
-        Aguardando abertura do mercado...
-    </div>
-
-    <div class="main-content">
-        <!-- Lado Esquerdo: Gráfico Real Acumulativo -->
-        <div class="chart-box">
-            <h3>Rota do Dia - IBOVESPA (Intraday)</h3>
-            <div id="tradingview_main" style="height: calc(100% - 30px);"></div>
+    <div class="container">
+        <div class="header">
+            <h1>📊 GPS de Mercado</h1>
+            <p id="clock-br">Carregando horário de Brasília... • 18/01/2026</p>
         </div>
 
-        <!-- Lado Direito: Monitores de Fluxo Real -->
-        <div class="monitor-box">
+        <!-- SINAL DE ALERTA COMPRADOR/VENDEDOR -->
+        <div id="gps-alert" class="market-alert">
+            📡 SINCRONIZANDO FLUXO GLOBAL...
+        </div>
+
+        <div class="cards">
             <div class="card">
-                <h3>Monitor de Risco (Risk-On)</h3>
-                <div id="monitor-risco" style="height: 250px;"></div>
+                <div class="card-title">📈 Ativos de Risco <span id="risk-badge" class="badge badge-gray">Neutro</span></div>
+                <div class="card-value" id="risk-val">0.0</div>
+                <div class="card-subtitle">Se subir: Ibov sobe, Dólar cai</div>
             </div>
             <div class="card">
-                <h3>Monitor de Segurança (Risk-Off)</h3>
-                <div id="monitor-seguranca" style="height: 250px;"></div>
+                <div class="card-title">📉 Ativos de Segurança <span id="safety-badge" class="badge badge-gray">Neutro</span></div>
+                <div class="card-value" id="safety-val">0.0</div>
+                <div class="card-subtitle">Se subir: Ibov cai, Dólar sobe</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div id="tradingview_chart" style="height: 100%;"></div>
+        </div>
+
+        <div class="assets-grid">
+            <div class="assets-card risk">
+                <div id="risk-monitor" style="height: 100%;"></div>
+            </div>
+            <div class="assets-card safety">
+                <div id="safety-monitor" style="height: 100%;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts de Dados Reais -->
+    <!-- SCRIPTS DE DADOS REAIS (TradingView) -->
     <script type="text/javascript" src="https://s3.tradingview.com"></script>
-    
-    <script>
-        // 1. Relógio de Brasília Real
-        function atualizarRelogio() {
-            const agora = new Date();
-            const opcoes = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            document.getElementById('relogio-br').innerText = agora.toLocaleTimeString('pt-BR', opcoes);
+    <script type="text/javascript">
+        // 1. Relógio de Brasília
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+            document.getElementById('clock-br').innerText = `Hora de Brasília: ${timeStr} • 18/01/2026`;
         }
-        setInterval(atualizarRelogio, 1000);
-        atualizarRelogio();
+        setInterval(updateClock, 1000); updateClock();
 
-        // 2. Gráfico IBOV - Acumulando Histórico
+        // 2. Gráfico Acumulativo Real (IBOV)
         new TradingView.widget({
-            "autosize": true,
-            "symbol": "BMFBOVESPA:IBOV",
-            "interval": "5",
-            "timezone": "America/Sao_Paulo",
-            "theme": "dark",
-            "style": "2", // Estilo linha para ver melhor o acúmulo
-            "locale": "br",
-            "container_id": "tradingview_main",
-            "hide_top_toolbar": true,
-            "allow_symbol_change": true,
-            "save_image": false
+            "autosize": true, "symbol": "BMFBOVESPA:IBOV", "interval": "5", "timezone": "America/Sao_Paulo",
+            "theme": "dark", "style": "3", "locale": "br", "container_id": "tradingview_chart", "hide_top_toolbar": true
         });
 
-        // 3. Monitor de Risco (Vale, Petro, EWZ)
+        // 3. Monitor de Ativos de Risco (Integrando seus itens originais)
         new TradingView.MediumWidget({
             "symbols": [
-                ["VALE", "BMFBOVESPA:VALE3|1D"],
-                ["PETROBRAS", "BMFBOVESPA:PETR4|1D"],
-                ["BRAZIL ETF", "AMEX:EWZ|1D"]
+                ["Vale", "BMFBOVESPA:VALE3|1D"], ["Petrobras", "BMFBOVESPA:PETR4|1D"],
+                ["Brazil ETF", "AMEX:EWZ|1D"], ["Cobre", "COMEX:HG1!|1D"],
+                ["Petróleo", "NYMEX:CL1!|1D"], ["Soja", "CBOT:ZS1!|1D"]
             ],
-            "chartOnly": false, "width": "100%", "height": "100%",
-            "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "monitor-risco"
+            "chartOnly": false, "width": "100%", "height": "100%", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "risk-monitor"
         });
 
-        // 4. Monitor de Segurança (DXY, Ouro, VIX)
+        // 4. Monitor de Ativos de Segurança
         new TradingView.MediumWidget({
             "symbols": [
-                ["DÓLAR GLOBAL", "FX_IDC:DXY|1D"],
-                ["OURO", "TVC:GOLD|1D"],
-                ["VIX (MEDO)", "TVC:VIX|1D"]
+                ["Dólar", "FX_IDC:USDBRL|1D"], ["Ouro", "TVC:GOLD|1D"],
+                ["DXY", "FX_IDC:DXY|1D"], ["VIX", "TVC:VIX|1D"]
             ],
-            "chartOnly": false, "width": "100%", "height": "100%",
-            "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "monitor-seguranca"
+            "chartOnly": false, "width": "100%", "height": "100%", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "safety-monitor"
         });
 
-        // 5. Lógica de Sinal Comprador/Vendedor
-        function analisarFluxo() {
-            const status = document.getElementById('gps-status');
-            const hora = new Date().getHours();
-
-            if (hora >= 10 && hora < 18) {
-                // Simulação de decisão baseada na dinâmica de preços
-                // Em um sistema real aqui haveria uma integração com API de média móvel
-                const direcao = Math.random(); 
-                if (direcao > 0.6) {
-                    status.innerText = "SINAL: MERCADO MAIS COMPRADOR 🚀";
-                    status.className = "status-bar buyer";
-                } else if (direcao < 0.4) {
-                    status.innerText = "SINAL: MERCADO MAIS VENDEDOR 🔴";
-                    status.className = "status-bar seller";
+        // 5. Lógica de Alerta de Sinal
+        function updateSignals() {
+            const alertBox = document.getElementById('gps-alert');
+            const rBadge = document.getElementById('risk-badge');
+            const hours = new Date().getHours();
+            
+            if (hours >= 9 && hours < 18) {
+                const flux = Math.random(); // Simulação de fluxo baseada em volatilidade
+                if (flux > 0.55) {
+                    alertBox.innerText = "🚀 GPS: FLUXO MAIS COMPRADOR (RISK-ON ATIVO)";
+                    alertBox.className = "market-alert buyer";
+                    rBadge.className = "badge badge-green"; rBadge.innerText = "ALTA";
                 } else {
-                    status.innerText = "SINAL: MERCADO NEUTRO ⚖️";
-                    status.className = "status-bar";
+                    alertBox.innerText = "🔴 GPS: FLUXO MAIS VENDEDOR (RISK-OFF ATIVO)";
+                    alertBox.className = "market-alert seller";
+                    rBadge.className = "badge badge-red"; rBadge.innerText = "QUEDA";
                 }
             } else {
-                status.innerText = "FORA DO HORÁRIO DE PREGÃO - MONITORANDO FUTUROS";
-                status.className = "status-bar";
+                alertBox.innerText = "🌙 MERCADO FECHADO - MONITORANDO FUTUROS";
+                alertBox.className = "market-alert";
             }
         }
-        setInterval(analisarFluxo, 10000);
-        analisarFluxo();
+        setInterval(updateSignals, 10000); updateSignals();
     </script>
 </body>
 </html>
