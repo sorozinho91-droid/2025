@@ -3,306 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado - 18/01/2026 - Alerta</title>
-    <script src="https://cdn.jsdelivr.net"></script>
+    <title>GPS de Mercado Profissional - 2026</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
             color: white;
             padding: 20px;
-            min-height: 100vh;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .header h1 {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { 
+            font-size: 2.5rem; 
             background: linear-gradient(to right, #60a5fa, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .header p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-        }
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 24px;
-        }
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
-            margin-bottom: 16px;
-            font-weight: 600;
-        }
-        .card-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        .card-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-green { background: #10b981; color: white; }
-        .badge-red { background: #ef4444; color: white; }
-        .badge-gray { background: #6b7280; color: white; }
 
-        .chart-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 40px;
-        }
-        .chart-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .assets-grid {
+        /* Grid Principal */
+        .main-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr 350px;
             gap: 20px;
         }
-        .assets-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+
+        /* Estilo dos Widgets */
+        .chart-section {
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .assets-card.risk { border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
-        .assets-card.safety { border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.1); }
-        .assets-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; }
-        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        .asset-symbol { font-weight: 600; }
-        .asset-name { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; }
-        .asset-change { font-weight: bold; }
-        
-        canvas { max-height: 300px; width: 100% !important; }
-        @media (max-width: 768px) {
-            .header h1 { font-size: 2rem; }
-            .cards { grid-template-columns: 1fr; }
-        }
-        /* ESTILO DO NOVO ALERTA */
-        #main-alert {
             padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            height: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .alert-buyer { background-color: #10b981; }
-        .alert-seller { background-color: #ef4444; }
-        .alert-neutral { background-color: #6b7280; }
+
+        .side-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .alert-box {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            background: #1e293b;
+            border-left: 5px solid #3b82f6;
+        }
+
+        .asset-monitor {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px;
+            height: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
         <div class="header">
-            <h1>📊 GPS de Mercado</h1>
-            <p>Leitura de Mercado: 18/01/2026 • Atualização Intraday</p>
-        </div>
-        
-        <!-- NOVO ALERTA GLOBAL AQUI -->
-        <div id="main-alert" class="alert-neutral">
-            <span id="alert-icon">🔄</span> <span id="alert-text">CALIBRANDO O SENTIMENTO GLOBAL...</span>
+            <h1>📊 GPS DE MERCADO - 18/01/2026</h1>
+            <p>Fluxo Global de Ativos em Tempo Real</p>
         </div>
 
-        <div class="cards">
-            <div class="card">
-                <div class="card-title">
-                    📈 Ativos de Risco
-                    <span id="badge-risk" class="badge badge-gray">Neutro</span>
-                </div>
-                <div class="card-value" id="val-risk">0.00%</div>
-                <div class="card-subtitle">Se subir: Ibov sobe, Dólar cai</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">
-                    📉 Ativos de Segurança
-                    <span id="badge-safety" class="badge badge-gray">Neutro</span>
-                </div>
-                <div class="card-value" id="val-safety">0.00%</div>
-                <div class="card-subtitle">Se subir: Ibov cai, Dólar sobe</div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <div class="chart-title">Fluxo Histórico (2026 Intraday)</div>
-            <canvas id="marketChart"></canvas>
-        </div>
-
-        <div class="assets-grid">
-            <div class="assets-card risk">
-                <div class="assets-title">🔴 Ativos de Risco</div>
-                <div id="list-risk">
-                    <div class="asset-item"><span class="asset-symbol">GCJ25</span><span class="asset-name">Ouro Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">HGH5</span><span class="asset-name">Cobre Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">CL</span><span class="asset-name">Petróleo WTI Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">.OSEAX</span><span class="asset-name">Oslo All Share</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">ZS</span><span class="asset-name">Soja Chicago Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">1YMH25</span><span class="asset-name">Dow Jones Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">.GDOW</span><span class="asset-name">The Global Dow USD</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">VALE.K</span><span class="asset-symbol">VALE.K</span><span class="asset-name">Vale SA ADR</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">PBR</span><span class="asset-name">Petrobras ADR</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">EWZ</span><span class="asset-name">iShares MSCI Brazil ETF</span><span class="asset-change">0%</span></div>
+        <div class="main-layout">
+            <!-- GRÁFICO REAL ACUMULATIVO -->
+            <div class="chart-section">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div id="tradingview_gps"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com"></script>
+                    <script type="text/javascript">
+                        new TradingView.widget({
+                            "autosize": true,
+                            "symbol": "BMFBOVESPA:IBOV",
+                            "interval": "5",
+                            "timezone": "America/Sao_Paulo",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "br",
+                            "toolbar_bg": "#f1f3f6",
+                            "enable_publishing": false,
+                            "hide_side_toolbar": false,
+                            "allow_symbol_change": true,
+                            "details": true,
+                            "hotlist": true,
+                            "calendar": true,
+                            "container_id": "tradingview_gps"
+                        });
+                    </script>
                 </div>
             </div>
 
-            <div class="assets-card safety">
-                <div class="assets-title">🔵 Ativos de Segurança</div>
-                <div id="list-safety">
-                    <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">US10Y</span><span class="asset-name">Treasury 10 anos</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">VIX</span><span class="asset-name">Índice do Medo</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item"><span class="asset-symbol">JPY=</span><span class="asset-name">Iene Japonês</span><span class="asset-change">0%</span></div>
+            <!-- MONITOR DE ATIVOS (RISCO E SEGURANÇA) -->
+            <div class="side-section">
+                <div class="alert-box">
+                     STATUS GPS: <br>
+                    <span style="color: #34d399; font-size: 1.2rem;">CALCULANDO FLUXO...</span>
+                </div>
+
+                <div class="asset-monitor">
+                    <!-- WIDGET DE COTAÇÕES REAIS -->
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com" async>
+                        {
+                        "colorTheme": "dark",
+                        "dateRange": "12M",
+                        "showChart": false,
+                        "locale": "br",
+                        "width": "100%",
+                        "height": "480",
+                        "largeChartUrl": "",
+                        "isTransparent": true,
+                        "showSymbolLogo": true,
+                        "showFloatingTooltip": false,
+                        "tabs": [
+                            {
+                            "title": "GPS: RISCO E SEGURANÇA",
+                            "symbols": [
+                                { "proName": "BMFBOVESPA:VALE3", "title": "VALE3 (Risco)" },
+                                { "proName": "BMFBOVESPA:PETR4", "title": "PETR4 (Risco)" },
+                                { "proName": "FX_IDC:DXY", "title": "DXY (Segurança)" },
+                                { "proName": "COMEX:GC1!", "title": "Ouro (Segurança)" },
+                                { "proName": "CBOT:ZS1!", "title": "Soja (Commodity)" },
+                                { "proName": "NYMEX:CL1!", "title": "Petróleo WTI" },
+                                { "proName": "TVC:VIX", "title": "VIX (Medo)" },
+                                { "proName": "TVC:US10Y", "title": "Treasury 10Y" }
+                            ]
+                            }
+                        ]
+                        }
+                        </script>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const MAX_POINTS = 50; 
-        const ctx = document.getElementById('marketChart').getContext('2d');
-        const marketChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [], 
-                datasets: [
-                    { label: 'Fluxo Risco', data: [], borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.4 },
-                    { label: 'Fluxo Segurança', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { display: false } },
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-                },
-                plugins: { legend: { labels: { color: 'white' } } }
-            }
-        });
-
-        function updateData() {
-            const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-            // 1. Atualizar Ativos de Risco Individualmente e calcular média
-            let riskTotal = 0;
-            const riskItems = document.querySelectorAll('.risk .asset-item');
-            riskItems.forEach(item => {
-                let change = (Math.random() * 4 - 1.8).toFixed(2);
-                riskTotal += parseFloat(change);
-                let span = item.querySelector('.asset-change');
-                span.innerText = (change >= 0 ? '+' : '') + change + '%';
-                span.style.color = change >= 0 ? '#34d399' : '#ef4444';
-            });
-            let riskAvg = (riskTotal / riskItems.length);
-
-            // 2. Atualizar Ativos de Segurança Individualmente e calcular média
-            let safetyTotal = 0;
-            const safetyItems = document.querySelectorAll('.safety .asset-item');
-            safetyItems.forEach(item => {
-                let change = (Math.random() * 2 - 0.8).toFixed(2);
-                safetyTotal += parseFloat(change);
-                let span = item.querySelector('.asset-change');
-                span.innerText = (change >= 0 ? '+' : '') + change + '%';
-                span.style.color = change >= 0 ? '#34d399' : '#ef4444';
-            });
-            let safetyAvg = (safetyTotal / safetyItems.length);
-
-            // 3. Atualizar Cards de Cabeçalho (com formatação visual)
-            document.getElementById('val-risk').innerText = riskAvg.toFixed(2) + '%';
-            document.getElementById('val-safety').innerText = safetyAvg.toFixed(2) + '%';
-
-            // 4. Lógica do NOVO ALERTA (Comprador vs Vendedor)
-            const alertBox = document.getElementById('main-alert');
-            const alertText = document.getElementById('alert-text');
-            const alertIcon = document.getElementById('alert-icon');
-            
-            // Define um limiar de diferença para considerar o mercado direcional
-            const threshold = 0.5; // 0.5% de diferença média
-            const difference = riskAvg - safetyAvg;
-
-            if (difference > threshold) {
-                alertBox.className = 'alert-buyer';
-                alertText.innerText = 'MERCADO MAIS COMPRADOR (RISK-ON ATIVADO) 🚀';
-                alertIcon.innerText = '🟢';
-            } else if (difference < -threshold) {
-                alertBox.className = 'alert-seller';
-                alertText.innerText = 'MERCADO MAIS VENDEDOR (RISK-OFF ATIVADO) 🛡️';
-                alertIcon.innerText = '🔴';
-            } else {
-                alertBox.className = 'alert-neutral';
-                alertText.innerText = 'MERCADO NEUTRO/CONSOLIDANDO 🔄';
-                alertIcon.innerText = '🟡';
-            }
-
-            // 5. Atualizar Badges nos cards menores (mantido do código anterior)
-            const bRisk = document.getElementById('badge-risk');
-            bRisk.innerText = riskAvg > 0.5 ? 'COMPRA' : (riskAvg < -0.5 ? 'VENDA' : 'NEUTRO');
-            bRisk.className = `badge ${riskAvg > 0.5 ? 'badge-green' : (riskAvg < -0.5 ? 'badge-red' : 'badge-gray')}`;
-            const bs = document.getElementById('badge-safety');
-            bs.innerText = safetyAvg > 0.3 ? 'ALTO' : (safetyAvg < -0.3 ? 'BAIXO' : 'ESTÁVEL');
-            bs.className = `badge ${safetyAvg > 0.3 ? 'badge-red' : (safetyAvg < -0.3 ? 'badge-green' : 'badge-gray')}`;
-            
-            // 6. ACUMULAR NO GRÁFICO
-            marketChart.data.labels.push(now);
-            // Empurramos os valores numéricos completos para o gráfico
-            marketChart.data.datasets[0].data.push(riskAvg);
-            marketChart.data.datasets[1].data.push(safetyAvg);
-
-            if (marketChart.data.labels.length > MAX_POINTS) {
-                marketChart.data.labels.shift();
-                marketChart.data.datasets[0].data.shift();
-                marketChart.data.datasets[1].data.shift();
-            }
-
-            marketChart.update('none'); 
-        }
-
-        setInterval(updateData, 3000);
-        updateData();
-    </script>
 </body>
 </html>
