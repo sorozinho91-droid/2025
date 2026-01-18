@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPS de Mercado - 18/01/2026</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * {
             margin: 0;
@@ -128,7 +128,7 @@
         .asset-name { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; }
         .asset-change { font-weight: bold; }
         
-        canvas { max-height: 300px; }
+        canvas { max-height: 300px; width: 100% !important; }
         @media (max-width: 768px) {
             .header h1 { font-size: 2rem; }
             .cards { grid-template-columns: 1fr; }
@@ -139,134 +139,143 @@
     <div class="container">
         <div class="header">
             <h1>📊 GPS de Mercado</h1>
-            <p>Gerado em 18/01/2026, 09:24:38 • Atualização em tempo real</p>
+            <p>Leitura de Mercado: 18/01/2026 • Atualização Intraday</p>
         </div>
 
         <div class="cards">
-            <!-- CARD RISCO -->
-            <div class="card" id="card-risk-main">
+            <div class="card">
                 <div class="card-title">
                     📈 Ativos de Risco
                     <span id="badge-risk" class="badge badge-gray">Neutro</span>
                 </div>
-                <div class="card-value" id="val-risk">0.0</div>
+                <div class="card-value" id="val-risk">0.00%</div>
                 <div class="card-subtitle">Se subir: Ibov sobe, Dólar cai</div>
             </div>
 
-            <!-- CARD SEGURANÇA (Adicionado para comparação conforme sua estrutura) -->
-            <div class="card" id="card-safety-main">
+            <div class="card">
                 <div class="card-title">
                     📉 Ativos de Segurança
                     <span id="badge-safety" class="badge badge-gray">Neutro</span>
                 </div>
-                <div class="card-value" id="val-safety">0.0</div>
+                <div class="card-value" id="val-safety">0.00%</div>
                 <div class="card-subtitle">Se subir: Ibov cai, Dólar sobe</div>
             </div>
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">Evolução Comparativa (Últimas 20 Leituras)</div>
+            <div class="chart-title">Fluxo Histórico (2026 Intraday)</div>
             <canvas id="marketChart"></canvas>
         </div>
 
         <div class="assets-grid">
+            <!-- LISTA DE RISCO ORIGINAL MANTIDA -->
             <div class="assets-card risk">
                 <div class="assets-title">🔴 Ativos de Risco</div>
-                <div id="risk-list-container">
-                    <!-- SEUS ATIVOS ORIGINAIS MANTIDOS -->
-                    <div class="asset-item" data-symbol="GCJ25"><span class="asset-symbol">GCJ25</span><span class="asset-name">Ouro Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="HGH5"><span class="asset-symbol">HGH5</span><span class="asset-name">Cobre Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="CL"><span class="asset-symbol">CL</span><span class="asset-name">Petróleo WTI Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol=".OSEAX"><span class="asset-symbol">.OSEAX</span><span class="asset-name">Oslo All Share</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="ZS"><span class="asset-symbol">ZS</span><span class="asset-name">Soja Chicago Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="1YMH25"><span class="asset-symbol">1YMH25</span><span class="asset-name">Dow Jones Futuros</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol=".GDOW"><span class="asset-symbol">.GDOW</span><span class="asset-name">The Global Dow USD</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="VALE.K"><span class="asset-symbol">VALE.K</span><span class="asset-name">Vale SA ADR</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="PBR"><span class="asset-symbol">PBR</span><span class="asset-name">Petroleo Brasileiro Petrobras SA ADR</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="EWZ"><span class="asset-symbol">EWZ</span><span class="asset-name">iShares MSCI Brazil ETF</span><span class="asset-change">0%</span></div>
+                <div id="list-risk">
+                    <div class="asset-item"><span class="asset-symbol">GCJ25</span><span class="asset-name">Ouro Futuros</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">HGH5</span><span class="asset-name">Cobre Futuros</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">CL</span><span class="asset-name">Petróleo WTI Futuros</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">.OSEAX</span><span class="asset-name">Oslo All Share</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">ZS</span><span class="asset-name">Soja Chicago Futuros</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">1YMH25</span><span class="asset-name">Dow Jones Futuros</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">.GDOW</span><span class="asset-name">The Global Dow USD</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">VALE.K</span><span class="asset-symbol">VALE.K</span><span class="asset-name">Vale SA ADR</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">PBR</span><span class="asset-name">Petrobras ADR</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">EWZ</span><span class="asset-name">iShares MSCI Brazil ETF</span><span class="asset-change">0%</span></div>
                 </div>
             </div>
 
-            <!-- ADICIONADO PARA COMPLETAR O GPS -->
+            <!-- LISTA DE SEGURANÇA MANTIDA -->
             <div class="assets-card safety">
                 <div class="assets-title">🔵 Ativos de Segurança</div>
-                <div id="safety-list-container">
-                    <div class="asset-item" data-symbol="DXY"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="US10Y"><span class="asset-symbol">US10Y</span><span class="asset-name">Treasury 10 anos</span><span class="asset-change">0%</span></div>
-                    <div class="asset-item" data-symbol="VIX"><span class="asset-symbol">VIX</span><span class="asset-name">Índice do Medo</span><span class="asset-change">0%</span></div>
+                <div id="list-safety">
+                    <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">US10Y</span><span class="asset-name">Treasury 10 anos</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">VIX</span><span class="asset-name">Índice do Medo</span><span class="asset-change">0%</span></div>
+                    <div class="asset-item"><span class="asset-symbol">JPY=</span><span class="asset-name">Iene Japonês</span><span class="asset-change">0%</span></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // LÓGICA DO GPS
+        // Configuração do Gráfico
+        const MAX_POINTS = 50; // Quantidade de pontos visíveis antes de começar a rolar
         const ctx = document.getElementById('marketChart').getContext('2d');
         const marketChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: Array(20).fill(''),
+                labels: [], // Horários acumulados
                 datasets: [
-                    { label: 'Risco', data: [], borderColor: '#34d399', tension: 0.4, fill: false },
-                    { label: 'Segurança', data: [], borderColor: '#ef4444', tension: 0.4, fill: false }
+                    { label: 'Fluxo Risco', data: [], borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'Fluxo Segurança', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 }
                 ]
             },
-            options: { responsive: true, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { ticks: { color: 'white' } }, x: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { display: false } },
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                },
+                plugins: { legend: { labels: { color: 'white' } } }
+            }
         });
 
-        function updateGPS() {
-            let totalRisk = 0;
-            let riskCount = 0;
-            
-            // Atualiza Ativos de Risco na Lista
-            document.querySelectorAll('.risk .asset-item').forEach(item => {
-                let change = (Math.random() * 4 - 1.8).toFixed(2);
-                totalRisk += parseFloat(change);
-                riskCount++;
-                const changeEl = item.querySelector('.asset-change');
-                changeEl.innerText = (change > 0 ? '+' : '') + change + '%';
-                changeEl.style.color = change >= 0 ? '#10b981' : '#ef4444';
+        function updateData() {
+            const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // 1. Atualizar Ativos de Risco Individualmente e calcular média
+            let riskTotal = 0;
+            const riskItems = document.querySelectorAll('.risk .asset-item');
+            riskItems.forEach(item => {
+                let change = (Math.random() * 4 - 1.8).toFixed(2); // Simulação de variação
+                riskTotal += parseFloat(change);
+                let span = item.querySelector('.asset-change');
+                span.innerText = (change >= 0 ? '+' : '') + change + '%';
+                span.style.color = change >= 0 ? '#34d399' : '#ef4444';
             });
+            let riskAvg = (riskTotal / riskItems.length).toFixed(2);
 
-            let totalSafety = 0;
-            let safetyCount = 0;
-            document.querySelectorAll('.safety .asset-item').forEach(item => {
-                let change = (Math.random() * 2 - 0.9).toFixed(2);
-                totalSafety += parseFloat(change);
-                safetyCount++;
-                const changeEl = item.querySelector('.asset-change');
-                changeEl.innerText = (change > 0 ? '+' : '') + change + '%';
-                changeEl.style.color = change >= 0 ? '#10b981' : '#ef4444';
+            // 2. Atualizar Ativos de Segurança Individualmente e calcular média
+            let safetyTotal = 0;
+            const safetyItems = document.querySelectorAll('.safety .asset-item');
+            safetyItems.forEach(item => {
+                let change = (Math.random() * 2 - 0.8).toFixed(2);
+                safetyTotal += parseFloat(change);
+                let span = item.querySelector('.asset-change');
+                span.innerText = (change >= 0 ? '+' : '') + change + '%';
+                span.style.color = change >= 0 ? '#34d399' : '#ef4444';
             });
+            let safetyAvg = (safetyTotal / safetyItems.length).toFixed(2);
 
-            const avgRisk = (totalRisk / riskCount).toFixed(2);
-            const avgSafety = (totalSafety / safetyCount).toFixed(2);
+            // 3. Atualizar Cards de Cabeçalho
+            document.getElementById('val-risk').innerText = riskAvg + '%';
+            document.getElementById('val-safety').innerText = safetyAvg + '%';
 
-            // Atualiza os Cards Principais
-            document.getElementById('val-risk').innerText = avgRisk + '%';
-            document.getElementById('val-safety').innerText = avgSafety + '%';
+            // 4. Atualizar Badges baseados na média
+            const bRisk = document.getElementById('badge-risk');
+            bRisk.innerText = riskAvg > 0.5 ? 'COMPRA' : (riskAvg < -0.5 ? 'VENDA' : 'NEUTRO');
+            bRisk.className = `badge ${riskAvg > 0.5 ? 'badge-green' : (riskAvg < -0.5 ? 'badge-red' : 'badge-gray')}`;
 
-            // Atualiza Badges
-            const br = document.getElementById('badge-risk');
-            br.innerText = avgRisk > 0.5 ? 'FORTE' : (avgRisk < -0.5 ? 'FRACO' : 'NEUTRO');
-            br.className = 'badge ' + (avgRisk > 0.5 ? 'badge-green' : (avgRisk < -0.5 ? 'badge-red' : 'badge-gray'));
+            // 5. ACUMULAR NO GRÁFICO (Lógica Intraday)
+            marketChart.data.labels.push(now);
+            marketChart.data.datasets[0].data.push(riskAvg);
+            marketChart.data.datasets[1].data.push(safetyAvg);
 
-            const bs = document.getElementById('badge-safety');
-            bs.innerText = avgSafety > 0.3 ? 'ALTO' : (avgSafety < -0.3 ? 'BAIXO' : 'ESTÁVEL');
-            bs.className = 'badge ' + (avgSafety > 0.3 ? 'badge-red' : (avgSafety < -0.3 ? 'badge-green' : 'badge-gray'));
-
-            // Atualiza Gráfico
-            marketChart.data.datasets[0].data.push(avgRisk);
-            marketChart.data.datasets[1].data.push(avgSafety);
-            if(marketChart.data.datasets[0].data.length > 20) {
+            // Se exceder o limite, remove o ponto mais antigo para manter a performance
+            if (marketChart.data.labels.length > MAX_POINTS) {
+                marketChart.data.labels.shift();
                 marketChart.data.datasets[0].data.shift();
                 marketChart.data.datasets[1].data.shift();
             }
-            marketChart.update('none');
+
+            marketChart.update('none'); // Atualiza sem animação para ser instantâneo
         }
 
-        setInterval(updateGPS, 3000);
-        updateGPS();
+        // Inicia o ciclo de atualização a cada 3 segundos
+        setInterval(updateData, 3000);
+        updateData();
     </script>
 </body>
 </html>
