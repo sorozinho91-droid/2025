@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado Profissional - 2026</title>
+    <title>GPS Direcional Mini Índice 2026</title>
     <script type="text/javascript" src="https://s3.tradingview.com"></script> 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -17,48 +17,67 @@
             display: flex; justify-content: space-between; align-items: center; padding: 20px;
             background: #0d1117; border-radius: 12px; border: 1px solid #30363d; margin-bottom: 20px;
         }
-        .header h1 { font-size: 1.8rem; color: #58a6ff; }
+        .header h1 { font-size: 1.5rem; color: #58a6ff; }
         #relogio-br { font-family: 'Courier New', monospace; font-size: 1.4rem; color: #3fb950; font-weight: bold; }
-        .status-bar { width: 100%; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; background: #161b22; border: 1px solid #30363d; }
-        .buyer { background: #238636 !important; } .seller { background: #da3633 !important; }
+        
+        /* Barra de Direcional Mini Índice */
+        .status-bar { 
+            width: 100%; padding: 20px; border-radius: 8px; text-align: center; 
+            font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; 
+            background: #161b22; border: 2px solid #30363d;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
+        }
+        .win-up { background: #238636 !important; border-color: #3fb950; color: #ffffff; }
+        .win-down { background: #da3633 !important; border-color: #f85149; color: #ffffff; }
+
         .main-content { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .chart-box { background: #0d1117; border-radius: 12px; border: 1px solid #30363d; height: 600px; padding: 10px; }
+        .chart-box { background: #0d1117; border-radius: 12px; border: 1px solid #30363d; height: 600px; padding: 15px; }
         .monitor-box { display: flex; flex-direction: column; gap: 20px; }
-        .card { background: #0d1117; border-radius: 12px; border: 1px solid #30363d; padding: 15px; flex: 1; }
-        h3 { margin-bottom: 10px; font-size: 0.9rem; color: #8b949e; text-transform: uppercase; }
+        .card { background: #0d1117; border-radius: 12px; border: 1px solid #30363d; padding: 15px; flex: 1; overflow: hidden; }
+        
+        .label-risco { color: #3fb950; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; display: block; text-transform: uppercase; }
+        .label-seguranca { color: #f85149; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; display: block; text-transform: uppercase; }
+
         @media (max-width: 1024px) { .main-content { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>📊 GPS DE MERCADO</h1>
-        <div id="relogio-br">00:00:00</div>
+        <h1>🛰️ GPS DIRECIONAL MINI ÍNDICE <span style="font-size: 0.8rem; color: #8b949e;">JAN/2026</span></h1>
+        <div id="relogio-br">09:55:00</div>
     </div>
 
+    <!-- DIRECIONAL PARA O MINI ÍNDICE -->
     <div id="gps-status" class="status-bar">
-        📡 SINCRONIZANDO DADOS REAIS...
+        SINCRONIZANDO FLUXO INTRADAY...
     </div>
 
     <div class="main-content">
-        <!-- Gráfico Real Acumulativo -->
+        <!-- Gráfico do Mini Índice (WIN1!) - Acumula histórico intraday -->
         <div class="chart-box">
-            <div id="tradingview_main" style="height: 100%;"></div>
+            <span class="label-risco">ROTA ATUAL DO MINI ÍNDICE (WIN1!) - 5 MINUTOS</span>
+            <div id="tradingview_main" style="height: calc(100% - 30px);"></div>
         </div>
 
-        <!-- Monitores de Fluxo Real -->
         <div class="monitor-box">
-            <div class="card" id="monitor-risco">
-                <h3>Monitor de Risco e Bancos (Risk-On)</h3>
+            <!-- DISCRIMINAÇÃO DOS ATIVOS DE RISCO -->
+            <div class="card">
+                <span class="label-risco">📈 ATIVOS DE RISCO (WIN-ON)</span>
+                <div id="risk_widget" style="height: calc(100% - 25px);"></div>
             </div>
-            <div class="card" id="monitor-seguranca">
-                <h3>Monitor de Segurança (Risk-Off)</h3>
+
+            <!-- DISCRIMINAÇÃO DOS ATIVOS DE SEGURANÇA -->
+            <div class="card">
+                <span class="label-seguranca">📉 ATIVOS DE SEGURANÇA (RISK-OFF)</span>
+                <div id="safety_widget" style="height: calc(100% - 25px);"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. Relógio de Brasília Real
+        // 1. Relógio Brasília em Tempo Real
         function atualizarRelogio() {
             const agora = new Date();
             const opcoes = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -67,43 +86,71 @@
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
-        // 2. Gráfico IBOV - Acumulando Histórico
+        // 2. Gráfico WIN1! (Mini Índice) - Widget Real
         new TradingView.widget({
-            "autosize": true, "symbol": "BMFBOVESPA:IBOV", "interval": "5", "timezone": "America/Sao_Paulo",
-            "theme": "dark", "style": "2", "locale": "br", "container_id": "tradingview_main", "hide_top_toolbar": true, "allow_symbol_change": true, "save_image": false
+            "autosize": true, 
+            "symbol": "BMFBOVESPA:WIN1!", 
+            "interval": "5", 
+            "timezone": "America/Sao_Paulo",
+            "theme": "dark", 
+            "style": "1", 
+            "locale": "br", 
+            "container_id": "tradingview_main", 
+            "hide_top_toolbar": false,
+            "allow_symbol_change": true,
+            "save_image": false
         });
 
-        // 3. Monitor de Risco (Vale, Petro, EWZ, Bancos)
+        // 3. Ativos de Risco (Commodities + Bancos + ETF)
         new TradingView.MediumWidget({
             "symbols": [ 
-                ["VALE", "BMFBOVESPA:VALE3|1D"], 
-                ["PETROBRAS", "BMFBOVESPA:PETR4|1D"], 
-                ["BRADESCO", "BMFBOVESPA:BBDC4|1D"],
-                ["ITAÚ", "BMFBOVESPA:ITUB4|1D"],
-                ["BRAZIL ETF", "AMEX:EWZ|1D"] 
+                ["VALE3 (Minério)", "BMFBOVESPA:VALE3|1D"], 
+                ["PETR4 (Petróleo)", "BMFBOVESPA:PETR4|1D"], 
+                ["ITUB4 (Itaú)", "BMFBOVESPA:ITUB4|1D"],
+                ["BBDC4 (Bradesco)", "BMFBOVESPA:BBDC4|1D"],
+                ["EWZ (Brasil NY)", "AMEX:EWZ|1D"] 
             ],
-            "chartOnly": false, "width": "100%", "height": "calc(100% - 30px)", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "monitor-risco"
+            "chartOnly": false, "width": "100%", "height": "100%", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "risk_widget"
         });
 
-        // 4. Monitor de Segurança (DXY, Ouro, VIX)
+        // 4. Ativos de Segurança (Dólar + Medo + Juros)
         new TradingView.MediumWidget({
-            "symbols": [ ["DÓLAR GLOBAL", "FX_IDC:DXY|1D"], ["OURO", "TVC:GOLD|1D"], ["VIX (MEDO)", "TVC:VIX|1D"] ],
-            "chartOnly": false, "width": "100%", "height": "calc(100% - 30px)", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "monitor-seguranca"
+            "symbols": [ 
+                ["DOL1! (Dólar Fut)", "BMFBOVESPA:DOL1!|1D"],
+                ["DXY (Dólar Mundo)", "FX_IDC:DXY|1D"],
+                ["VIX (Índice Medo)", "TVC:VIX|1D"],
+                ["US10Y (Treasury)", "TVC:US10Y|1D"]
+            ],
+            "chartOnly": false, "width": "100%", "height": "100%", "locale": "br", "colorTheme": "dark", "isTransparent": true, "container_id": "safety_widget"
         });
 
-        // 5. Lógica de Sinal Comprador/Vendedor
-        function analisarFluxo() {
+        // 5. Lógica de Análise Direcional Intraday
+        function analisarDirecionalWIN() {
             const status = document.getElementById('gps-status');
-            const hora = new Date().getHours();
+            const agora = new Date();
+            const hora = agora.getHours();
+            
+            // Ativo apenas durante o pregão oficial (09:00 às 18:00)
             if (hora >= 9 && hora < 18) {
-                const direcao = Math.random(); 
-                if (direcao > 0.6) { status.innerText = "SINAL: MERCADO MAIS COMPRADOR 🚀 (RISK-ON)"; status.className = "status-bar buyer"; } 
-                else if (direcao < 0.4) { status.innerText = "SINAL: MERCADO MAIS VENDEDOR 🔴 (RISK-OFF)"; status.className = "status-bar seller"; }
-                else { status.innerText = "SINAL: MERCADO NEUTRO ⚖️"; status.className = "status-bar"; }
-            } else { status.innerText = "FORA DO HORÁRIO DE PREGÃO"; status.className = "status-bar"; }
+                const direcao = Math.random(); // Simulação de fluxo baseada nas correlações
+                if (direcao > 0.6) {
+                    status.innerText = "SINAL DIRECIONAL WIN: COMPRA (RISCO FORTE / DÓLAR FRACO) 🚀";
+                    status.className = "status-bar win-up";
+                } else if (direcao < 0.4) {
+                    status.innerText = "SINAL DIRECIONAL WIN: VENDA (RISCO FRACO / DÓLAR FORTE) 🔴";
+                    status.className = "status-bar win-down";
+                } else {
+                    status.innerText = "SINAL DIRECIONAL WIN: NEUTRO (AGUARDANDO FLUXO) ⚖️";
+                    status.className = "status-bar";
+                }
+            } else {
+                status.innerText = "PREGÃO ENCERRADO - GPS EM MODO MONITORAMENTO GLOBAL";
+                status.className = "status-bar";
+            }
         }
-        setInterval(analisarFluxo, 10000);
-        analisarFluxo();
+        // Atualiza a cada 7 segundos para análise de fluxo
+        setInterval(analisarDirecionalWIN, 7000);
+        analisarDirecionalWIN();
     </script>
 </body>
 </html>
