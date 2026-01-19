@@ -104,6 +104,7 @@ let marketChart;
 let valorAtualRisco = 0;
 let valorAtualSeguranca = 0;
 let valorPressaoSeguranca = 0;
+let ultimoValorSeguranca = 0;
 
 function obterHoraBrasilia() {
     return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
@@ -138,7 +139,7 @@ function initChart() {
                     tension: 0
                 },
                 {
-                    label: 'Pressão Segurança (↑↓)',
+                    label: 'Pressão sobre Ativos de Segurança (Direção)',
                     borderColor: '#9ca3af',
                     data: [],
                     borderDash: [6, 4],
@@ -151,17 +152,11 @@ function initChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: '#000' } }
+                legend: { labels: { color: '#ffffff' } }
             },
             scales: {
-                x: {
-                    grid: { color: '#e5e7eb' },
-                    ticks: { color: '#000' }
-                },
-                y: {
-                    grid: { color: '#e5e7eb' },
-                    ticks: { color: '#000' }
-                }
+                x: { grid: { display: false }, ticks: { color: '#ffffff' } },
+                y: { grid: { display: false }, ticks: { color: '#ffffff' } }
             }
         }
     });
@@ -175,7 +170,9 @@ function atualizarDados() {
         valorAtualRisco += (Math.random() - 0.49) * 0.15;
         valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
 
-        valorPressaoSeguranca = valorAtualSeguranca - valorAtualRisco;
+        // Pressão direcional sobre os ativos de segurança
+        valorPressaoSeguranca = valorAtualSeguranca - ultimoValorSeguranca;
+        ultimoValorSeguranca = valorAtualSeguranca;
 
         document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
         document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
@@ -187,7 +184,7 @@ function atualizarDados() {
         marketChart.data.labels.push(labelHora);
         marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
         marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-        marketChart.data.datasets[2].data.push(valorPressaoSeguranca.toFixed(2));
+        marketChart.data.datasets[2].data.push(valorPressaoSeguranca.toFixed(3));
 
         marketChart.update('none');
     }
