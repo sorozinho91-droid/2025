@@ -33,6 +33,7 @@
             background: #ffecb3; color: #e65100;
         }
         .chart-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 40px; }
+        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .assets-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; height: 450px; overflow-y: auto; }
         .assets-card.risk { border: 1px solid rgba(52, 211, 153, 0.3); background: rgba(16, 185, 129, 0.05); }
         .assets-card.safety { border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
@@ -50,7 +51,7 @@
             <p>Gerado em tempo real • <span id="relogio"></span></p>
         </div>
 
-        <div id="sentimentoAlerta">Sentimento Neutro. Cautela nas operações de Mini Índice (WIN).</div>
+        <div id="sentimentoAlerta">Aguardando abertura do mercado (07:00)...</div>
 
         <div class="cards">
             <div class="card">
@@ -66,7 +67,7 @@
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">Evolução Comparativa Intraday (Risco vs Segurança)</div>
+            <div class="chart-title">Evolução Comparativa Histórica (07h - 17h)</div>
             <canvas id="marketChart"></canvas>
         </div>
 
@@ -85,7 +86,7 @@
                 <div class="asset-item"><span class="asset-symbol">EWZ</span><span class="asset-name">iShares MSCI Brazil ETF</span></div>
             </div>
             <div class="assets-card safety">
-                <div class="assets-title">🔵 Ativos de Segurança</div>
+                <div class="assets-title">🔴 Ativos de Segurança</div>
                 <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar Global</span></div>
                 <div class="asset-item"><span class="asset-symbol">DXH25</span><span class="asset-name">Dólar Futuro</span></div>
                 <div class="asset-item"><span class="asset-symbol">TLT</span><span class="asset-name">Treasury Bond 20Y+</span></div>
@@ -100,111 +101,98 @@
 
     <script>
         let marketChart;
-        
-        // --- Função para o Relógio de Brasília ---
+        let valorAtualRisco = 0;
+        let valorAtualSeguranca = 0;
+
+        // --- Relógio e Controle de Horário ---
+        function obterHoraBrasilia() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        }
+
         function atualizarRelogio() {
-            const agora = new Date();
-            // Formata a hora para o fuso horário de Brasília (BRT/GMT-3)
-            const opcoes = { 
-                hour: '2-digit', minute: '2-digit', second: '2-digit', 
-                timeZone: 'America/Sao_Paulo', hour12: false 
-            };
-            document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR', opcoes);
-        }
-        setInterval(atualizarRelogio, 1000);
-
-        // --- Funções para Dados Simulados e Atualização do Gráfico ---
-        function getSimulatedValue(currentValue, volatility) {
-            // Simula uma pequena variação aleatória
-            return currentValue + (Math.random() - 0.5) * volatility;
+            const agora = obterHoraBrasilia();
+            const formatado = agora.toLocaleTimeString('pt-BR', { hour12: false });
+            document.getElementById('relogio').textContent = formatado;
+            return agora;
         }
 
-        function atualizarDadosMercado() {
-            const data = new Date();
-            const horaAtual = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Sao_Paulo' });
-
-            // Simulação de novos valores (use sua API real aqui)
-            let valorRisco = parseFloat(document.getElementById('valorRisco').textContent) || 0.0;
-            let valorSeguranca = parseFloat(document.getElementById('valorSeguranca').textContent) || 0.0;
-
-            // Variacao volatil (simulacao)
-            valorRisco = getSimulatedValue(valorRisco, 0.1); 
-            valorSeguranca = getSimulatedValue(valorSeguranca, 0.05);
-
-            // Atualiza os cards
-            document.getElementById('valorRisco').textContent = valorRisco.toFixed(2) + '%';
-            document.getElementById('valorSeguranca').textContent = valorSeguranca.toFixed(2) + '%';
-            
-            // Logica para os badges (sentimento) e alerta para mini indice
-            const alerta = document.getElementById('sentimentoAlerta');
-            if (valorRisco > 0.5 && valorSeguranca < -0.3) {
-                document.getElementById('badgeRisco').className = 'badge badge-green';
-                document.getElementById('badgeRisco').textContent = 'Forte Alta';
-                document.getElementById('badgeSeguranca').className = 'badge badge-red';
-                document.getElementById('badgeSeguranca').textContent = 'Forte Baixa';
-                alerta.style.background = '#e8f5e9'; alerta.style.color = '#1b5e20';
-                alerta.textContent = '🟢 Risco ON (apetite por risco). Viés de ALTA para Mini Índice (WIN).';
-            } else if (valorRisco < -0.5 && valorSeguranca > 0.3) {
-                document.getElementById('badgeRisco').className = 'badge badge-red';
-                document.getElementById('badgeRisco').textContent = 'Forte Baixa';
-                document.getElementById('badgeSeguranca').className = 'badge badge-green';
-                document.getElementById('badgeSeguranca').textContent = 'Forte Alta';
-                alerta.style.background = '#ffcdd2'; alerta.style.color = '#b71c1c';
-                alerta.textContent = '🔴 Risco OFF (fuga para segurança). Viés de BAIXA para Mini Índice (WIN).';
-            } else {
-                document.getElementById('badgeRisco').className = 'badge badge-gray';
-                document.getElementById('badgeRisco').textContent = 'Neutro';
-                document.getElementById('badgeSeguranca').className = 'badge badge-gray';
-                document.getElementById('badgeSeguranca').textContent = 'Neutro';
-                alerta.style.background = '#ffecb3'; alerta.style.color = '#e65100';
-                alerta.textContent = '🟡 Sentimento Neutro. Cautela nas operações de Mini Índice (WIN).';
-            }
-
-
-            // Adiciona novos dados ao gráfico e remove os antigos para manter o intraday
-            marketChart.data.labels.push(horaAtual);
-            marketChart.data.datasets[0].data.push(valorRisco);
-            marketChart.data.datasets[1].data.push(valorSeguranca);
-
-            // Mantém apenas os ultimos 20 pontos de dados no grafico
-            const maxDataPoints = 20;
-            if (marketChart.data.labels.length > maxDataPoints) {
-                marketChart.data.labels.shift();
-                marketChart.data.datasets[0].data.shift();
-                marketChart.data.datasets[1].data.shift();
-            }
-
-            marketChart.update();
-        }
-
-        // --- Inicialização do Gráfico e Atualização Automática ---
-        window.onload = function() {
-            atualizarRelogio(); // Inicia o relogio imediatamente
-
+        // --- Inicialização do Gráfico ---
+        function initChart() {
             const ctx = document.getElementById('marketChart').getContext('2d');
             marketChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [
-                        { label: 'Risco', data: [], borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.4 },
-                        { label: 'Segurança', data: [], borderColor: '#60a5fa', backgroundColor: 'rgba(96, 165, 250, 0.1)', fill: true, tension: 0.4 }
+                        {
+                            label: 'Ativos de Risco',
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            data: [],
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Ativos de Segurança',
+                            borderColor: '#ef4444', // MUDADO PARA VERMELHO
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            data: [],
+                            fill: true,
+                            tension: 0.4
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: 'white' } } },
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } },
-                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } }
-                    }
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }
+                    },
+                    plugins: { legend: { labels: { color: '#fff' } } }
                 }
             });
+        }
 
-            // Chama a função de atualização a cada 60000ms (1 minuto)
-            // Chamamos uma vez para popular o gráfico inicialmente
-            atualizarDadosMercado();
-            setInterval(atualizarDadosMercado, 60000); 
+        // --- Lógica de Dados e Histórico ---
+        function atualizarDados() {
+            const agora = atualizarRelogio();
+            const hora = agora.getHours();
+            
+            // FILTRO DE HORÁRIO: 07:00 às 17:00
+            if (hora >= 7 && hora < 17) {
+                // Simulação de oscilação
+                valorAtualRisco += (Math.random() - 0.5) * 0.5;
+                valorAtualSeguranca += (Math.random() - 0.5) * 0.5;
+
+                // Atualiza Cards
+                document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
+                document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
+
+                // ACUMULA DADOS NO GRÁFICO (Sem remover os antigos para criar histórico)
+                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+                
+                marketChart.data.labels.push(labelHora);
+                marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
+                marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
+                
+                marketChart.update();
+                
+                document.getElementById('sentimentoAlerta').textContent = "Mercado Aberto - Coletando Dados...";
+                document.getElementById('sentimentoAlerta').style.background = "#d1fae5";
+                document.getElementById('sentimentoAlerta').style.color = "#065f46";
+            } else {
+                document.getElementById('sentimentoAlerta').textContent = "Mercado Fechado. Histórico preservado (Horário: 07h às 17h).";
+                document.getElementById('sentimentoAlerta').style.background = "#fee2e2";
+                document.getElementById('sentimentoAlerta').style.color = "#991b1b";
+            }
+        }
+
+        // Inicialização
+        window.onload = () => {
+            initChart();
+            setInterval(atualizarDados, 5000); // Atualiza a cada 5 segundos
+            atualizarDados();
         };
     </script>
 </body>
