@@ -51,7 +51,7 @@
             <p>Gerado em tempo real • <span id="relogio"></span></p>
         </div>
 
-        <div id="sentimentoAlerta">Iniciando monitoramento...</div>
+        <div id="sentimentoAlerta">Iniciando Monitoramento em Tempo Real...</div>
 
         <div class="cards">
             <div class="card">
@@ -67,28 +67,32 @@
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">Evolução Comparativa Histórica (Real-Time)</div>
+            <div class="chart-title">Evolução Comparativa Histórica (Risco vs Segurança vs Pressão)</div>
             <canvas id="marketChart"></canvas>
         </div>
 
         <div class="assets-grid">
             <div class="assets-card risk">
                 <div class="assets-title">🟢 Ativos de Risco</div>
-                <div class="asset-item"><span class="asset-symbol">GCJ26</span><span class="asset-name">Ouro Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">VALE3</span><span class="asset-name">Vale SA</span></div>
+                <div class="asset-item"><span class="asset-symbol">VALE3</span><span class="asset-name">Vale S.A.</span></div>
+                <div class="asset-item"><span class="asset-symbol">PETR4</span><span class="asset-name">Petrobras</span></div>
                 <div class="asset-item"><span class="asset-symbol">SPX</span><span class="asset-name">S&P 500</span></div>
             </div>
             <div class="assets-card safety">
                 <div class="assets-title">🔴 Ativos de Segurança</div>
-                <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar</span></div>
-                <div class="asset-item"><span class="asset-symbol">US10Y</span><span class="asset-name">Treasury 10Y</span></div>
-                <div class="asset-item"><span class="asset-symbol">VIX</span><span class="asset-name">VIX Volatilidade</span></div>
+                <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Dólar Global</span></div>
+                <div class="asset-item"><span class="asset-symbol">US10Y</span><span class="asset-name">Treasury 10 anos</span></div>
+                <div class="asset-item"><span class="asset-symbol">VIX</span><span class="asset-name">Índice de Volatilidade</span></div>
             </div>
         </div>
     </div>
 
     <script>
         let marketChart;
+
+        function obterHoraBrasilia() {
+            return new Date().toLocaleTimeString('pt-BR');
+        }
 
         function initChart() {
             const ctx = document.getElementById('marketChart').getContext('2d');
@@ -99,7 +103,7 @@
                     datasets: [
                         { label: 'Risco', borderColor: '#10b981', data: [], fill: false, tension: 0.4 },
                         { label: 'Segurança', borderColor: '#ef4444', data: [], fill: false, tension: 0.4 },
-                        { label: 'Pressão Global', borderColor: '#94a3b8', borderDash:, data: [], fill: false, tension: 0.4 }
+                        { label: 'Pressão Global', borderColor: '#94a3b8', borderDash: [5, 5], data: [], fill: false, tension: 0.4 }
                     ]
                 },
                 options: {
@@ -115,46 +119,47 @@
         }
 
         function atualizarDados() {
-            const agora = new Date();
-            const time = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('relogio').textContent = time;
+            const hora = obterHoraBrasilia();
+            document.getElementById('relogio').textContent = hora;
 
-            // Simulação de Dados
+            // Gerando números aleatórios para simular a movimentação
             const r = (Math.random() * 2 - 1).toFixed(2);
             const s = (Math.random() * 2 - 1).toFixed(2);
-            const p = (parseFloat(s) * 0.95).toFixed(2); // Pressão segue segurança
+            const p = (parseFloat(s) * 0.8 + (Math.random() * 0.2)).toFixed(2);
 
+            // Atualiza os Cards
             document.getElementById('valorRisco').textContent = r + "%";
             document.getElementById('valorSeguranca').textContent = s + "%";
 
-            // Atualiza UI
-            const br = document.getElementById('badgeRisco');
-            br.className = r >= 0 ? 'badge badge-green' : 'badge badge-red';
-            br.textContent = r >= 0 ? 'Alta' : 'Baixa';
-
-            const bs = document.getElementById('badgeSeguranca');
-            bs.className = s >= 0 ? 'badge badge-red' : 'badge badge-green';
-            bs.textContent = s >= 0 ? 'Alta' : 'Baixa';
-
-            // Gráfico: Cada dataset recebe seu dado individualmente
-            if (marketChart.data.labels.length > 20) {
-                marketChart.data.labels.shift();
-                marketChart.data.datasets[0].data.shift();
-                marketChart.data.datasets[1].data.shift();
-                marketChart.data.datasets[2].data.shift();
+            // Alerta de Sentimento
+            const alerta = document.getElementById('sentimentoAlerta');
+            if (parseFloat(r) > parseFloat(s)) {
+                alerta.textContent = "🚀 Sentimento: RISK-ON (Alta do Índice)";
+                alerta.style.background = "#d1fae5"; alerta.style.color = "#065f46";
+            } else {
+                alerta.textContent = "⚠️ Sentimento: RISK-OFF (Baixa do Índice)";
+                alerta.style.background = "#fee2e2"; alerta.style.color = "#991b1b";
             }
 
-            marketChart.data.labels.push(time);
-            marketChart.data.datasets[0].data.push(r);
-            marketChart.data.datasets[1].data.push(s);
-            marketChart.data.datasets[2].data.push(p);
-            
+            // Atualiza o Gráfico (Lógica Corrigida)
+            if (marketChart.data.labels.length > 20) {
+                marketChart.data.labels.shift();
+                marketChart.data.datasets[0].data.shift(); // Remove dado antigo do Risco
+                marketChart.data.datasets[1].data.shift(); // Remove dado antigo da Segurança
+                marketChart.data.datasets[2].data.shift(); // Remove dado antigo da Pressão
+            }
+
+            marketChart.data.labels.push(hora);
+            marketChart.data.datasets[0].data.push(r); // Adiciona novo dado no Risco
+            marketChart.data.datasets[1].data.push(s); // Adiciona novo dado na Segurança
+            marketChart.data.datasets[2].data.push(p); // Adiciona novo dado na Pressão Cinza
+
             marketChart.update();
         }
 
         window.onload = () => {
             initChart();
-            setInterval(atualizarDados, 3000);
+            setInterval(atualizarDados, 3000); // Atualiza a cada 3 segundos
             atualizarDados();
         };
     </script>
