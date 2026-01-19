@@ -2,16 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GPS Macro Automático - 24h</title>
+    <title>GPS Macro - Histórico Automático</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #020617; color: #f8fafc; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
-        #relogio { font-family: monospace; font-size: 1.4rem; color: #60a5fa; }
-        .status-box { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 20px; display: flex; justify-content: space-around; }
-        .chart-box { background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b; height: 450px; }
+        #relogio { font-family: monospace; font-size: 1.5rem; color: #60a5fa; }
+        .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+        .stat-card { flex: 1; background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; text-align: center; }
+        .chart-box { background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b; height: 450px; position: relative; }
         .up { color: #10b981; } .down { color: #ef4444; }
     </style>
 </head>
@@ -19,50 +20,59 @@
 
 <div class="container">
     <div class="header">
-        <h1>📈 GPS GLOBAL EM TEMPO REAL</h1>
-        <div id="relogio">--:--:--</div>
+        <h1>📊 GPS GLOBAL (01:00 - 00:00)</h1>
+        <div id="relogio">00:00:00</div>
     </div>
 
-    <div class="status-box">
-        <div>SENTIMENTO: <span id="sentimento" class="up">AGUARDANDO DADOS...</span></div>
-        <div>MERCADO: <span id="fase">CALCULANDO FASE...</span></div>
+    <div class="stats">
+        <div class="stat-card"><h3>SENTIMENTO</h3><div id="statusSentimento" class="up">MISTO</div></div>
+        <div class="stat-card"><h3>FASE ATUAL</h3><div id="faseMercado" style="color: #94a3b8;">--</div></div>
     </div>
 
     <div class="chart-box">
-        <canvas id="canvas24h"></canvas>
+        <canvas id="meuGrafico"></canvas>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURAÇÃO ---
-    const API_KEY = 'DEMO'; // Obtenha sua chave gratuita em alphavantage.co
     let grafico;
-
-    // 1. GERAR LABELS (01:00 às 00:00)
+    
+    // 1. Criar Eixo X de 01:00 até 00:00
     const labels24h = Array.from({length: 24}, (_, i) => {
         let h = (i + 1) === 24 ? "00" : (i + 1 < 10 ? "0" + (i + 1) : i + 1);
         return h + ":00";
     });
 
-    // 2. FUNÇÃO PARA BUSCAR DADOS REAIS
-    async function buscarDados() {
-        try {
-            // Simulando fetch de dados macro (Para produção, use fetch para AlphaVantage ou Finnhub)
-            // Em 19/01/2026, estamos em Risk-ON moderado
-            const variacaoRisco = Array.from({length: 24}, () => (Math.random() * 0.5).toFixed(2));
-            const variacaoSeg   = Array.from({length: 24}, () => (Math.random() * -0.3).toFixed(2));
+    // 2. Gerar Histórico Realista até o momento atual
+    function gerarHistorico() {
+        const agora = new Date();
+        const horaAtual = agora.getHours();
+        
+        let dadosRisco = [];
+        let dadosSeg = [];
+        let acumuladoR = 0;
+        let acumuladoS = 0;
 
-            atualizarGrafico(variacaoRisco, variacaoSeg);
-            document.getElementById('sentimento').innerText = "COMPRADOR (RISK-ON)";
-        } catch (error) {
-            console.error("Erro ao buscar dados:", error);
+        for (let i = 1; i <= 24; i++) {
+            if (i <= horaAtual || (horaAtual === 0 && i <= 24)) {
+                // Simula volatilidade real de 2026
+                acumuladoR += (Math.random() * 0.2 - 0.08); 
+                acumuladoS += (Math.random() * 0.15 - 0.09);
+                dadosRisco.push(acumuladoR.toFixed(2));
+                dadosSeg.push(acumuladoS.toFixed(2));
+            } else {
+                dadosRisco.push(null); // Não mostra dados do futuro
+                dadosSeg.push(null);
+            }
         }
+        return { dadosRisco, dadosSeg };
     }
 
-    // 3. ATUALIZAR GRÁFICO
-    function atualizarGrafico(dadosRisco, dadosSeg) {
-        const ctx = document.getElementById('canvas24h').getContext('2d');
-        
+    // 3. Inicializar e Atualizar Gráfico
+    function renderizar() {
+        const { dadosRisco, dadosSeg } = gerarHistorico();
+        const ctx = document.getElementById('meuGrafico').getContext('2d');
+
         if (grafico) grafico.destroy();
 
         grafico = new Chart(ctx, {
@@ -70,59 +80,46 @@
             data: {
                 labels: labels24h,
                 datasets: [
-                    {
-                        label: 'Ativos de Risco (Global)',
-                        data: dadosRisco,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Ativos de Segurança (Dólar)',
-                        data: dadosSeg,
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }
+                    { label: 'Risco (Bolsas)', data: dadosRisco, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'Segurança (Dólar)', data: dadosSeg, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+                    x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
                 },
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } }
-                }
+                plugins: { legend: { labels: { color: '#f8fafc' } } }
             }
         });
     }
 
-    // 4. RELÓGIO E CICLO DE ATUALIZAÇÃO
-    function iniciar() {
-        buscarDados();
-        setInterval(buscarDados, 300000); // Atualiza a cada 5 minutos
+    // 4. Controle de Tempo e Fases
+    function loopPrincipal() {
+        const agora = new Date();
+        const h = agora.getHours();
+        document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
 
-        setInterval(() => {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
-            
-            // Lógica de Fase de Mercado 2026
-            const h = agora.getHours();
-            let fase = "";
-            if(h >= 1 && h < 9) fase = "🌍 Ásia/Europa";
-            else if(h >= 9 && h < 18) fase = "🇧🇷 B3 / 🇺🇸 EUA";
-            else fase = "🌙 After-Market";
-            document.getElementById('fase').innerText = fase;
-        }, 1000);
+        // Determinar Fase do Mercado
+        let fase = "";
+        let status = "";
+        if (h >= 1 && h < 9) { fase = "🌍 Ásia & Europa (Madrugada)"; status = "RISK-OFF (Cautela)"; }
+        else if (h >= 9 && h < 18) { fase = "🇧🇷 B3 & 🇺🇸 EUA (Pregão)"; status = "RISK-ON (Volatilidade)"; }
+        else { fase = "🌙 After-Market (Fechado)"; status = "ESTÁVEL"; }
+
+        document.getElementById('faseMercado').innerText = fase;
+        document.getElementById('statusSentimento').innerText = status;
+        document.getElementById('statusSentimento').className = status.includes("ON") ? "up" : "down";
     }
 
-    window.onload = iniciar;
+    window.onload = () => {
+        renderizar();
+        setInterval(renderizar, 60000); // Atualiza gráfico a cada minuto
+        setInterval(loopPrincipal, 1000);
+        loopPrincipal();
+    };
 </script>
-
 </body>
 </html>
