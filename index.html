@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPS de Mercado em Tempo Real - Mini Índice</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -101,10 +101,8 @@
     <script>
         let marketChart;
         
-        // --- Função para o Relógio de Brasília ---
         function atualizarRelogio() {
             const agora = new Date();
-            // Formata a hora para o fuso horário de Brasília (BRT/GMT-3)
             const opcoes = { 
                 hour: '2-digit', minute: '2-digit', second: '2-digit', 
                 timeZone: 'America/Sao_Paulo', hour12: false 
@@ -113,9 +111,7 @@
         }
         setInterval(atualizarRelogio, 1000);
 
-        // --- Funções para Dados Simulados e Atualização do Gráfico ---
         function getSimulatedValue(currentValue, volatility) {
-            // Simula uma pequena variação aleatória
             return currentValue + (Math.random() - 0.5) * volatility;
         }
 
@@ -123,19 +119,15 @@
             const data = new Date();
             const horaAtual = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Sao_Paulo' });
 
-            // Simulação de novos valores (use sua API real aqui)
             let valorRisco = parseFloat(document.getElementById('valorRisco').textContent) || 0.0;
             let valorSeguranca = parseFloat(document.getElementById('valorSeguranca').textContent) || 0.0;
 
-            // Variacao volatil (simulacao)
             valorRisco = getSimulatedValue(valorRisco, 0.1); 
             valorSeguranca = getSimulatedValue(valorSeguranca, 0.05);
 
-            // Atualiza os cards
             document.getElementById('valorRisco').textContent = valorRisco.toFixed(2) + '%';
             document.getElementById('valorSeguranca').textContent = valorSeguranca.toFixed(2) + '%';
             
-            // Logica para os badges (sentimento) e alerta para mini indice
             const alerta = document.getElementById('sentimentoAlerta');
             if (valorRisco > 0.5 && valorSeguranca < -0.3) {
                 document.getElementById('badgeRisco').className = 'badge badge-green';
@@ -160,11 +152,10 @@
                 alerta.textContent = '🟡 Sentimento Neutro. Cautela nas operações de Mini Índice (WIN).';
             }
 
-
-            // Adiciona novos dados ao gráfico e remove os antigos para manter o intraday
+            // Adiciona novos dados ao gráfico
             marketChart.data.labels.push(horaAtual);
-            marketChart.data.datasets[0].data.push(valorRisco);
-            marketChart.data.datasets[1].data.push(valorSeguranca);
+            marketChart.data.datasets[0].data.push(valorRisco); // Risco
+            marketChart.data.datasets[1].data.push(valorSeguranca); // Segurança (Agora Vermelho)
 
             // Mantém apenas os ultimos 20 pontos de dados no grafico
             const maxDataPoints = 20;
@@ -177,10 +168,8 @@
             marketChart.update();
         }
 
-        // --- Inicialização do Gráfico e Atualização Automática ---
         window.onload = function() {
-            atualizarRelogio(); // Inicia o relogio imediatamente
-
+            atualizarRelogio();
             const ctx = document.getElementById('marketChart').getContext('2d');
             marketChart = new Chart(ctx, {
                 type: 'line',
@@ -188,7 +177,8 @@
                     labels: [],
                     datasets: [
                         { label: 'Risco', data: [], borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.4 },
-                        { label: 'Segurança', data: [], borderColor: '#60a5fa', backgroundColor: 'rgba(96, 165, 250, 0.1)', fill: true, tension: 0.4 }
+                        // Linha de Segurança alterada para vermelho (#ef4444)
+                        { label: 'Segurança', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 }
                     ]
                 },
                 options: {
@@ -201,8 +191,6 @@
                 }
             });
 
-            // Chama a função de atualização a cada 60000ms (1 minuto)
-            // Chamamos uma vez para popular o gráfico inicialmente
             atualizarDadosMercado();
             setInterval(atualizarDadosMercado, 60000); 
         };
