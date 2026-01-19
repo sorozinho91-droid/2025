@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado 2026 - Mini Índice (Pressão)</title>
+    <title>GPS Market Sentiment 2026 - Pressão</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,7 +68,7 @@
     let chart;
     let acumuladoRisco = 0.00;
     let acumuladoSeg = 0.00;
-    let pressaoSeg = 0.00; // Nova variável para a linha de pressão
+    let pressaoSeg = 0.00; // Nova variável para a linha de pressão/momento
 
     function initChart() {
         const ctx = document.getElementById('marketChart').getContext('2d');
@@ -128,16 +128,17 @@
             acumuladoSeg += variacaoSeg;
             
             // Lógica da linha de pressão: 
-            // Ela reage à variação atual do acumulado de segurança.
-            pressaoSeg += variacaoSeg * 5; // Amplifica a variação para mostrar o "momento"
+            // Ela reage à variação atual do acumulado de segurança, amplificada 5x.
+            pressaoSeg += variacaoSeg * 5; 
 
             document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
             document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
 
             chart.data.labels.push(timestamp);
-            chart.data.datasets.data.push(acumuladoRisco.toFixed(2));
-            chart.data.datasets.data.push(acumuladoSeg.toFixed(2));
-            chart.data.datasets.data.push(pressaoSeg.toFixed(2)); // Adiciona o dado de pressão
+            // Inserção CORRETA dos dados nos datasets por índice
+            chart.data.datasets.data.push(acumuladoRisco.toFixed(2)); // dataset 0
+            chart.data.datasets.data.push(acumuladoSeg.toFixed(2));   // dataset 1
+            chart.data.datasets.data.push(pressaoSeg.toFixed(2));     // dataset 2 (Pressão)
 
             chart.update('none'); 
         } else {
@@ -153,8 +154,8 @@
         r.forEach(a => document.getElementById('listaRisco').innerHTML += `<div class="asset-item"><span>${a}</span><span style="color:#10b981">RISK ON</span></div>`);
         s.forEach(a => document.getElementById('listaSeguranca').innerHTML += `<div class="asset-item"><span>${a}</span><span style="color:#ef4444">RISK OFF</span></div>`);
         
-        setInterval(engine, 3000); 
         engine();
+        setInterval(engine, 3000); 
     };
 </script>
 </body>
