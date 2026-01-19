@@ -33,13 +33,13 @@
         .stat-card.safety { border-color: var(--safety); }
         .val { font-size: 3rem; font-weight: 800; display: block; }
 
-        .chart-box { background: var(--card); padding: 20px; border-radius: 8px; height: 450px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .chart-box { background: var(--card); padding: 20px; border-radius: 8px; height: 450px; margin-bottom: 15px; border: 1px solid var(--border); position: relative; }
+        canvas { width: 100% !important; height: 100% !important; }
+
         .assets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 15px; }
         .asset-list { background: var(--card); padding: 20px; border-radius: 8px; height: 350px; overflow-y: auto; border: 1px solid var(--border); }
         .item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 0.85rem; }
         .tag { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
-        .t-risk { color: var(--risk); background: rgba(34, 197, 94, 0.1); }
-        .t-safety { color: var(--safety); background: rgba(239, 68, 68, 0.1); }
     </style>
 </head>
 <body>
@@ -50,12 +50,12 @@
             <h1 style="font-size: 1.4rem; color: #94a3b8; letter-spacing: 1px;">GPS SENTIMENT GLOBAL v2026</h1>
             <p>Monitoramento Intraday (01:00h - 18:00h)</p>
         </div>
-        <div id="relogio">00:00:00</div>
+        <div id="relogio">--:--:--</div>
     </div>
 
     <div class="alerts-container">
-        <div class="alert-box alert-neutral" id="alertaGlobal">SINAL GLOBAL: AGUARDANDO...</div>
-        <div class="alert-box alert-neutral" id="alertaDomestico">SINAL LOCAL: AGUARDANDO...</div>
+        <div class="alert-box alert-neutral" id="alertaGlobal">SINAL GLOBAL: PROCESSANDO...</div>
+        <div class="alert-box alert-neutral" id="alertaDomestico">SINAL LOCAL: PROCESSANDO...</div>
     </div>
 
     <div class="top-stats">
@@ -116,12 +116,14 @@
 
         const dr = document.getElementById('lRisco');
         const ds = document.getElementById('lSeg');
-        ativosRisco.forEach(t => dr.innerHTML += `<div class="item"><span>${t}</span><span class="tag t-risk">BULLISH</span></div>`);
-        ativosSeg.forEach(t => ds.innerHTML += `<div class="item"><span>${t}</span><span class="tag t-safety">BEARISH</span></div>`);
+        ativosRisco.forEach(t => dr.innerHTML += `<div class="item"><span>${t}</span><span class="tag" style="color:#22c55e">BULLISH</span></div>`);
+        ativosSeg.forEach(t => ds.innerHTML += `<div class="item"><span>${t}</span><span class="tag" style="color:#ef4444">BEARISH</span></div>`);
+        
+        // Inicia a engine imediatamente após o gráfico ser criado
+        engine();
     }
 
     function engine() {
-        // Horário de Brasília
         const agora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         const h = agora.getHours();
         const m = agora.getMinutes();
@@ -129,55 +131,53 @@
         
         document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
 
-        // JANELA SOLICITADA: 01:00 às 18:00
+        // Janela das 01:00 às 18:00
         if (h >= 1 && h < 18) {
-            // Lógica de simulação de dados
             acumuladoRisco += (Math.random() - 0.495) * 0.1;
             acumuladoSeg += (Math.random() - 0.505) * 0.1;
 
             document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
             document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
 
-            // INSERÇÃO CORRETA DE DADOS NO GRÁFICO
+            // CORREÇÃO DEFINITIVA NA INSERÇÃO DE DADOS
             const labelTempo = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
             chart.data.labels.push(labelTempo);
-            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2)); // Linha Verde (Índice 0)
-            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));   // Linha Vermelha (Índice 1)
+            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2));
+            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));
 
             chart.update('none');
 
-            // Atualização dos Alertas de Sentimento
+            // Atualização de Alertas
             const diff = acumuladoRisco - acumuladoSeg;
             const alG = document.getElementById('alertaGlobal');
             const alD = document.getElementById('alertaDomestico');
 
-            if (diff > 0.3) {
+            if (diff > 0.1) {
                 alG.className = 'alert-box alert-bullish';
                 alG.innerHTML = '🟢 SENTIMENTO: COMPRA (BULLISH)';
                 alD.className = 'alert-box alert-bullish';
                 alD.innerHTML = '🟢 DOMÉSTICO: FLUXO COMPRADOR';
-            } else if (diff < -0.3) {
+            } else if (diff < -0.1) {
                 alG.className = 'alert-box alert-bearish';
                 alG.innerHTML = '🔴 SENTIMENTO: VENDA (BEARISH)';
                 alD.className = 'alert-box alert-bearish';
                 alD.innerHTML = '🔴 DOMÉSTICO: FLUXO VENDEDOR';
             } else {
                 alG.className = 'alert-box alert-neutral';
-                alG.innerHTML = '🔵 SENTIMENTO: NEUTRO / LATERAL';
+                alG.innerHTML = '🔵 SENTIMENTO: NEUTRO';
                 alD.className = 'alert-box alert-neutral';
                 alD.innerHTML = '🔵 DOMÉSTICO: AGUARDANDO VOLUME';
             }
         } else {
-            document.getElementById('alertaGlobal').innerHTML = 'MERCADO FECHADO (ABERTURA AS 01:00)';
-            document.getElementById('alertaDomestico').innerHTML = 'MERCADO FECHADO (ABERTURA AS 01:00)';
+            document.getElementById('alertaGlobal').innerHTML = 'FORA DO HORÁRIO (01:00-18:00)';
+            document.getElementById('alertaDomestico').innerHTML = 'MERCADO FECHADO';
         }
     }
 
     window.onload = () => {
         init();
-        // Atualiza a cada 3 segundos
+        // Atualiza o gráfico de forma contínua a cada 3 segundos
         setInterval(engine, 3000); 
-        engine();
     };
 </script>
 </body>
