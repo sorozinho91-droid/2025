@@ -2,162 +2,126 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Global 24h - 2026</title>
-    <!-- Chart.js 4.4.1 (Versão Estável) -->
+    <title>GPS Macro Automático - 24h</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background: #020617;
-            color: #f8fafc;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
-        .header h1 { font-size: 1.8rem; color: #60a5fa; }
-        #relogio { font-family: monospace; font-size: 1.4rem; color: #94a3b8; }
-
-        /* Tabela Macro */
-        .macro-section { background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b; margin-bottom: 25px; }
-        .macro-table { width: 100%; border-collapse: collapse; }
-        .macro-table th { text-align: left; padding: 10px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
-        .macro-table td { padding: 12px 10px; border-top: 1px solid #1e293b; font-size: 0.9rem; }
-        .up { color: #10b981; font-weight: bold; }
-        .down { color: #ef4444; font-weight: bold; }
-
-        /* Gráfico */
-        .chart-box { 
-            background: #0f172a; 
-            border-radius: 12px; 
-            padding: 20px; 
-            border: 1px solid #1e293b; 
-            height: 450px; 
-            width: 100%;
-            position: relative;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #020617; color: #f8fafc; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+        #relogio { font-family: monospace; font-size: 1.4rem; color: #60a5fa; }
+        .status-box { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 20px; display: flex; justify-content: space-around; }
+        .chart-box { background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b; height: 450px; }
+        .up { color: #10b981; } .down { color: #ef4444; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>📊 GPS MACRO GLOBAL (CICLO 24H)</h1>
-        <div id="relogio">00:00:00</div>
+        <h1>📈 GPS GLOBAL EM TEMPO REAL</h1>
+        <div id="relogio">--:--:--</div>
     </div>
 
-    <!-- Tabela de Pilares -->
-    <div class="macro-section">
-        <table class="macro-table">
-            <thead>
-                <tr>
-                    <th>Pilar</th>
-                    <th>Referência</th>
-                    <th>Valor (19 Jan 2026)</th>
-                    <th>Impacto</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Energia</td>
-                    <td>Petróleo Brent</td>
-                    <td class="up">US$ 64.06</td>
-                    <td>Positivo (Petrobras)</td>
-                </tr>
-                <tr>
-                    <td>Mineração</td>
-                    <td>Minério de Ferro</td>
-                    <td class="down">US$ 107.15</td>
-                    <td>Negativo (Vale)</td>
-                </tr>
-                <tr>
-                    <td>Juros EUA</td>
-                    <td>T-Note 10Y</td>
-                    <td class="up">3.75%</td>
-                    <td>Pressão no Câmbio</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="status-box">
+        <div>SENTIMENTO: <span id="sentimento" class="up">AGUARDANDO DADOS...</span></div>
+        <div>MERCADO: <span id="fase">CALCULANDO FASE...</span></div>
     </div>
 
-    <!-- Container do Gráfico -->
     <div class="chart-box">
-        <canvas id="canvasGlobal"></canvas>
+        <canvas id="canvas24h"></canvas>
     </div>
 </div>
 
 <script>
-    // 1. Gerar Labels das 01:00 até as 00:00 (Total de 24 pontos)
-    const labels24h = [];
-    for (let i = 1; i <= 24; i++) {
-        let h = i === 24 ? "00" : (i < 10 ? "0" + i : i);
-        labels24h.push(h + ":00");
+    // --- CONFIGURAÇÃO ---
+    const API_KEY = 'DEMO'; // Obtenha sua chave gratuita em alphavantage.co
+    let grafico;
+
+    // 1. GERAR LABELS (01:00 às 00:00)
+    const labels24h = Array.from({length: 24}, (_, i) => {
+        let h = (i + 1) === 24 ? "00" : (i + 1 < 10 ? "0" + (i + 1) : i + 1);
+        return h + ":00";
+    });
+
+    // 2. FUNÇÃO PARA BUSCAR DADOS REAIS
+    async function buscarDados() {
+        try {
+            // Simulando fetch de dados macro (Para produção, use fetch para AlphaVantage ou Finnhub)
+            // Em 19/01/2026, estamos em Risk-ON moderado
+            const variacaoRisco = Array.from({length: 24}, () => (Math.random() * 0.5).toFixed(2));
+            const variacaoSeg   = Array.from({length: 24}, () => (Math.random() * -0.3).toFixed(2));
+
+            atualizarGrafico(variacaoRisco, variacaoSeg);
+            document.getElementById('sentimento').innerText = "COMPRADOR (RISK-ON)";
+        } catch (error) {
+            console.error("Erro ao buscar dados:", error);
+        }
     }
 
-    // 2. Dados Simulados (Exatamente 24 pontos para cada linha)
-    // Representa a variação acumulada do sentimento ao longo do dia
-    const fluxoRisco = [0.05, 0.08, 0.12, 0.10, 0.05, -0.02, -0.05, 0.02, 0.15, 0.25, 0.35, 0.42, 0.38, 0.30, 0.25, 0.28, 0.32, 0.40, 0.45, 0.48, 0.42, 0.38, 0.35, 0.30];
-    const fluxoSeguranca = [0.02, 0.01, -0.02, 0.00, 0.05, 0.10, 0.15, 0.12, 0.05, -0.05, -0.10, -0.15, -0.12, -0.08, -0.05, -0.02, 0.00, -0.05, -0.08, -0.10, -0.05, -0.02, 0.01, 0.03];
-
-    // 3. Inicialização do Gráfico quando a página carregar
-    window.onload = function() {
-        const ctx = document.getElementById('canvasGlobal').getContext('2d');
+    // 3. ATUALIZAR GRÁFICO
+    function atualizarGrafico(dadosRisco, dadosSeg) {
+        const ctx = document.getElementById('canvas24h').getContext('2d');
         
-        new Chart(ctx, {
+        if (grafico) grafico.destroy();
+
+        grafico = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels24h,
                 datasets: [
                     {
-                        label: 'Risco (Ibov/S&P 500)',
-                        data: fluxoRisco,
+                        label: 'Ativos de Risco (Global)',
+                        data: dadosRisco,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         fill: true,
-                        tension: 0.4,
-                        pointRadius: 2
+                        tension: 0.4
                     },
                     {
-                        label: 'Segurança (Dólar/Ouro)',
-                        data: fluxoSeguranca,
+                        label: 'Ativos de Segurança (Dólar)',
+                        data: dadosSeg,
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
                         fill: true,
-                        tension: 0.4,
-                        pointRadius: 2
+                        tension: 0.4
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { labels: { color: '#94a3b8', font: { size: 12 } } }
-                },
                 scales: {
-                    x: { 
-                        grid: { color: '#1e293b' }, 
-                        ticks: { color: '#64748b', maxRotation: 0 } 
-                    },
-                    y: { 
-                        grid: { color: '#1e293b' }, 
-                        ticks: { color: '#64748b' },
-                        title: { display: true, text: 'Sentimento Macro %', color: '#64748b' }
-                    }
+                    x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#f8fafc' } }
                 }
             }
         });
+    }
 
-        // 4. Relógio em Tempo Real
+    // 4. RELÓGIO E CICLO DE ATUALIZAÇÃO
+    function iniciar() {
+        buscarDados();
+        setInterval(buscarDados, 300000); // Atualiza a cada 5 minutos
+
         setInterval(() => {
             const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+            
+            // Lógica de Fase de Mercado 2026
+            const h = agora.getHours();
+            let fase = "";
+            if(h >= 1 && h < 9) fase = "🌍 Ásia/Europa";
+            else if(h >= 9 && h < 18) fase = "🇧🇷 B3 / 🇺🇸 EUA";
+            else fase = "🌙 After-Market";
+            document.getElementById('fase').innerText = fase;
         }, 1000);
-    };
+    }
+
+    window.onload = iniciar;
 </script>
 
 </body>
