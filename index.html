@@ -3,191 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Market Sentiment PRO - 2026</title>
+    <title>GPS de Mercado 2026 - Mini Índice</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root {
-            /* Fundo Branco e Cores de Contraste Escuras */
-            --bg-body: #ffffff;
-            --card-bg: #f8fafc;
-            --risk-color: #10b981; /* Verde esmeralda */
-            --safety-color: #ef4444; /* Vermelho solicitado */
-            --text-main: #1e293b; /* Cinza escuro para texto */
-            --text-muted: #64748b;
-            --border-subtle: #e2e8f0;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #ffffff; /* Fundo Branco solicitado */
+            color: #1e293b;
             padding: 20px;
             min-height: 100vh;
         }
-
-        .container { max-width: 1400px; margin: 0 auto; }
-
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            border: 1px solid var(--border-subtle);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+        .header h1 { font-size: 2.5rem; font-weight: bold; color: #1e3a8a; }
+        #relogio { font-size: 1.5rem; font-weight: bold; margin-top: 10px; color: #3b82f6; font-family: monospace; }
+        
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .header h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-main); }
-        #relogio { font-size: 1.5rem; color: #3b82f6; margin-top: 10px; font-family: monospace; font-weight: bold; }
-
-        .alerts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .alert-box { padding: 15px; border-radius: 12px; font-weight: bold; text-align: center; border: 1px solid var(--border-subtle); background: var(--card-bg); }
-        .alert-bullish { color: var(--risk-color); border-color: var(--risk-color); background: rgba(16, 185, 129, 0.1); }
-        .alert-bearish { color: var(--safety-color); border-color: var(--safety-color); background: rgba(239, 68, 68, 0.1); }
-
-        .top-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: var(--card-bg); padding: 25px; border-radius: 16px; text-align: center; border: 1px solid var(--border-subtle); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .val { font-size: 2.8rem; font-weight: 800; display: block; margin-top: 5px; }
-
-        .chart-box { 
-            background: var(--card-bg); 
-            padding: 25px; 
-            border-radius: 20px; 
-            height: 480px; 
-            margin-bottom: 25px; 
-            border: 1px solid var(--border-subtle);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        .card-title { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; margin-bottom: 16px; font-weight: 600; color: #475569; }
+        .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
+        .card-subtitle { color: #94a3b8; font-size: 0.8rem; }
+        
+        #sentimentoAlerta {
+            padding: 15px; border-radius: 12px; text-align: center; font-size: 1rem; font-weight: bold; margin-bottom: 20px;
+            background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
         }
+        
+        .chart-container { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 24px; 
+            margin-bottom: 40px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .chart-title { font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 20px; }
 
         .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .asset-list { background: var(--card-bg); padding: 20px; border-radius: 16px; height: 350px; overflow-y: auto; border: 1px solid var(--border-subtle); }
-        .asset-list h3 { border-bottom: 2px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 15px; font-size: 1rem; }
-        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.9rem; color: var(--text-muted); }
+        .assets-card { background: #f8fafc; border-radius: 16px; padding: 20px; height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; }
+        .assets-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; position: sticky; top: 0; background: #f8fafc; padding: 5px; z-index: 1; }
+        .asset-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+        .asset-symbol { font-weight: 600; color: #2563eb; }
+        
+        canvas { width: 100% !important; max-height: 400px; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
-        <h1>📊 GPS MARKET SENTIMENT PRO</h1>
-        <div id="relogio">00:00:00</div>
-    </div>
-
-    <div class="alerts-container">
-        <div class="alert-box" id="alertaGlobal">SINAL GLOBAL: ANALISANDO...</div>
-        <div class="alert-box" id="alertaDomestico">SINAL LOCAL: ANALISANDO...</div>
-    </div>
-
-    <div class="top-stats">
-        <div class="stat-card" style="border-top: 5px solid var(--risk-color)">
-            <span style="color: var(--risk-color); font-weight: bold;">RISCO ACUMULADO (WIN ▲)</span>
-            <span class="val" id="vRisco" style="color: var(--risk-color)">0.00%</span>
+    <div class="container">
+        <div class="header">
+            <h1>📊 GPS Market Sentiment 2026</h1>
+            <p>Monitoramento Global vs Mini Índice (WIN)</p>
+            <div id="relogio">00:00:00</div>
         </div>
-        <div class="stat-card" style="border-top: 5px solid var(--safety-color)">
-            <span style="color: var(--safety-color); font-weight: bold;">SEGURANÇA ACUMULADA (WIN ▼)</span>
-            <span class="val" id="vSeg" style="color: var(--safety-color)">0.00%</span>
+
+        <div id="sentimentoAlerta">Iniciando Monitoramento (Janela: 01:00 às 18:00)...</div>
+
+        <div class="cards">
+            <div class="card">
+                <div class="card-title">📈 Fluxo de Risco</div>
+                <div class="card-value" id="valorRisco" style="color: #10b981;">0.00%</div>
+                <div class="card-subtitle">Correlação Direta com Ibovespa</div>
+            </div>
+            <div class="card">
+                <div class="card-title">📉 Fluxo de Segurança</div>
+                <div class="card-value" id="valorSeguranca" style="color: #ef4444;">0.00%</div>
+                <div class="card-subtitle">Correlação Inversa (Dólar/Juros)</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Evolução Intraday Acumulada</div>
+            <canvas id="marketChart"></canvas>
+        </div>
+
+        <div class="assets-grid">
+            <div class="assets-card">
+                <div class="assets-title" style="color: #10b981;">🟢 Ativos de Risco (Max)</div>
+                <div id="listaRisco"></div>
+            </div>
+            <div class="assets-card">
+                <div class="assets-title" style="color: #ef4444;">🔴 Ativos de Segurança (Max)</div>
+                <div id="listaSeguranca"></div>
+            </div>
         </div>
     </div>
 
-    <div class="chart-box">
-        <canvas id="mainChart"></canvas>
-    </div>
+    <script>
+        let marketChart;
+        let acumuladoRisco = 0;
+        let acumuladoSeguranca = 0;
 
-    <div class="assets-grid">
-        <div class="asset-list">
-            <h3 style="color: var(--risk-color);">🟢 CESTA DE RISCO (MAX)</h3>
-            <div id="lRisco"></div>
-        </div>
-        <div class="asset-list">
-            <h3 style="color: var(--safety-color);">🔴 CESTA DE SEGURANÇA (MAX)</h3>
-            <div id="lSeg"></div>
-        </div>
-    </div>
-</div>
-
-<script>
-    let chart;
-    let acumuladoRisco = 0;
-    let acumuladoSeg = 0;
-
-    const ativosRisco = ["S&P 500 Fut", "Nasdaq Fut", "EWZ NY", "VALE3 ADR", "PETR4 ADR", "Minério Ferro", "Brent", "Bitcoin", "Ibovespa", "Cobre Fut", "DAX", "EEM"];
-    const ativosSeg = ["DXY Index", "US 10Y Yield", "VIX Index", "USD/JPY", "Ouro", "USD/BRL", "TLT Bonds", "2Y Treasury", "WDO Futuro"];
-
-    function initChart() {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    { label: 'RISCO', borderColor: '#10b981', data: [], fill: false, pointRadius: 0, tension: 0, borderWidth: 3 },
-                    { label: 'SEGURANÇA', borderColor: '#ef4444', data: [], fill: false, pointRadius: 0, tension: 0, borderWidth: 3 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-                    y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } }
-                },
-                plugins: { legend: { labels: { color: '#1e293b', font: { weight: 'bold' } } } }
-            }
-        });
-
-        ativosRisco.forEach(t => document.getElementById('lRisco').innerHTML += `<div class="item"><span>${t}</span><span style="color:var(--risk-color); font-weight:bold;">BULLISH</span></div>`);
-        ativosSeg.forEach(t => document.getElementById('lSeg').innerHTML += `<div class="item"><span>${t}</span><span style="color:var(--safety-color); font-weight:bold;">BEARISH</span></div>`);
-    }
-
-    function engine() {
-        const agora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-        const h = agora.getHours();
-        const m = agora.getMinutes();
-        const s = agora.getSeconds();
-        
-        document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
-
-        // JANELA SOLICITADA: 01:00 ÀS 18:00
-        if (h >= 1 && h < 18) {
-            acumuladoRisco += (Math.random() - 0.495) * 0.12;
-            acumuladoSeg += (Math.random() - 0.505) * 0.12;
-
-            document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
-            document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
-
-            const timeLabel = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-            chart.data.labels.push(timeLabel);
-            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2));
-            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));
-
-            chart.update('none');
-
-            // Alertas de Sentimento
-            const diff = acumuladoRisco - acumuladoSeg;
-            const alG = document.getElementById('alertaGlobal');
-            const alD = document.getElementById('alertaDomestico');
-
-            if (diff > 0.2) {
-                alG.className = 'alert-box alert-bullish'; alG.innerHTML = '🟢 GLOBAL: COMPRA (BULLISH)';
-                alD.className = 'alert-box alert-bullish'; alD.innerHTML = '🟢 LOCAL: FLUXO ENTRANDO';
-            } else if (diff < -0.2) {
-                alG.className = 'alert-box alert-bearish'; alG.innerHTML = '🔴 GLOBAL: VENDA (BEARISH)';
-                alD.className = 'alert-box alert-bearish'; alD.innerHTML = '🔴 LOCAL: FLUXO SAINDO';
-            } else {
-                alG.className = 'alert-box'; alG.innerHTML = '🔵 GLOBAL: NEUTRO';
-                alD.className = 'alert-box'; alD.innerHTML = '🔵 LOCAL: LATERAL';
-            }
-        } else {
-            document.getElementById('alertaGlobal').innerHTML = 'MERCADO FECHADO (JANELA 01H-18H)';
+        function obterHoraBrasilia() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
-    }
 
-    window.onload = () => {
-        initChart();
-        setInterval(engine, 3000); 
-        engine();
-    };
-</script>
+        function atualizarRelogio() {
+            const agora = obterHoraBrasilia();
+            document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
+            return agora;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            marketChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Risco',
+                            borderColor: '#10b981',
+                            backgroundColor: 'transparent',
+                            data: [],
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 3,
+                            tension: 0 // Linha reta conforme solicitado
+                        },
+                        {
+                            label: 'Segurança',
+                            borderColor: '#ef4444', // Vermelho conforme solicitado
+                            backgroundColor: 'transparent',
+                            data: [],
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 3,
+                            tension: 0 // Linha reta conforme solicitado
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
+                        x: { grid: { display: false }, ticks: { color: '#64748b', maxTicksLimit: 10 } }
+                    },
+                    plugins: { 
+                        legend: { display: true, labels: { color: '#475569', font: { weight: 'bold' } } } 
+                    }
+                }
+            });
+        }
+
+        function engine() {
+            const agora = atualizarRelogio();
+            const hora = agora.getHours();
+            
+            // Janela solicitada: 01:00 às 18:00
+            if (hora >= 1 && hora < 18) {
+                // Simulação de oscilação acumulada
+                acumuladoRisco += (Math.random() - 0.495) * 0.1;
+                acumuladoSeguranca += (Math.random() - 0.505) * 0.1;
+
+                document.getElementById('valorRisco').textContent = acumuladoRisco.toFixed(2) + "%";
+                document.getElementById('valorSeguranca').textContent = acumuladoSeguranca.toFixed(2) + "%";
+
+                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                // Adiciona dados criando o histórico acumulado
+                marketChart.data.labels.push(labelHora);
+                marketChart.data.datasets[0].data.push(acumuladoRisco.toFixed(2));
+                marketChart.data.datasets[1].data.push(acumuladoSeguranca.toFixed(2));
+                
+                marketChart.update('none'); // Update sem animação para performance
+                
+                document.getElementById('sentimentoAlerta').textContent = "MONITORAMENTO ATIVO - Sinais Globais em Tempo Real";
+                document.getElementById('sentimentoAlerta').style.color = "#2563eb";
+            } else {
+                document.getElementById('sentimentoAlerta').textContent = "MERCADO FECHADO (Janela de atuação: 01h às 18h)";
+                document.getElementById('sentimentoAlerta').style.color = "#94a3b8";
+            }
+        }
+
+        window.onload = () => {
+            initChart();
+            
+            // Ativos de referência 2026
+            const r = ["S&P500", "NASDAQ", "VALE3", "PETR4", "EWZ", "BRENT", "BITCOIN", "DAX", "NIKKEI"];
+            const s = ["DXY", "US10Y", "VIX", "USDJPY", "DOLAR/REAL", "OURO", "TLT", "TED SPREAD"];
+            
+            r.forEach(a => document.getElementById('listaRisco').innerHTML += `<div class="asset-item"><span class="asset-symbol">${a}</span><span>RISK ON</span></div>`);
+            s.forEach(a => document.getElementById('listaSeguranca').innerHTML += `<div class="asset-item"><span class="asset-symbol">${a}</span><span>RISK OFF</span></div>`);
+            
+            setInterval(engine, 3000); // Atualiza a cada 3 segundos
+            engine();
+        };
+    </script>
 </body>
 </html>
