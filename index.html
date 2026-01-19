@@ -3,206 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado em Tempo Real - Mini Índice</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>GPS de Mercado 2026 - Mini Índice (Pressão)</title>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            /* ALTERAÇÃO: Cor do fundo mudada para Branco */
-            background: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff; /* Fundo Branco */
             color: #1e293b;
             padding: 20px;
-            min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { font-size: 3rem; font-weight: bold; color: #1e3a8a; }
-        .header p { color: #64748b; font-size: 0.9rem; margin-top: 10px; }
-        #relogio { font-size: 1.5rem; font-weight: bold; margin-top: 15px; color: #3b82f6; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+        #relogio { font-size: 1.8rem; font-weight: bold; color: #2563eb; font-family: monospace; }
         
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        /* Cards ajustados para fundo claro */
-        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .card-title { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; margin-bottom: 16px; font-weight: 600; color: #334155; }
-        .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
-        .card-subtitle { color: #64748b; font-size: 0.9rem; }
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .card-value { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
         
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-green { background: #10b981; color: white; }
-        .badge-red { background: #ef4444; color: white; }
-        .badge-gray { background: #6b7280; color: white; }
+        .chart-container { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; height: 450px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
-        #sentimentoAlerta {
-            padding: 20px; border-radius: 16px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
-            background: #fffbeb; color: #9a3412; border: 1px solid #fed7aa;
-        }
-        
-        /* Container do gráfico ajustado para fundo claro */
-        .chart-container { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .chart-title { color: #334155; font-weight: 600; margin-bottom: 10px; }
-
-        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .assets-card { background: #f8fafc; border-radius: 16px; padding: 20px; height: 450px; overflow-y: auto; border: 1px solid #e2e8f0; }
-        .assets-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; position: sticky; top: 0; background: #f1f5f9; padding: 5px; z-index: 1; color: #1e3a8a; }
-        .asset-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
-        .asset-symbol { font-weight: 600; color: #2563eb; }
-        .asset-name { color: #64748b; font-size: 0.85rem; text-align: right; flex: 1; margin-left: 10px; }
-        canvas { width: 100% !important; max-height: 350px; }
+        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .assets-card { background: #f8fafc; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; height: 250px; overflow-y: auto; }
+        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 GPS de Mercado Global</h1>
-            <p>Gerado em tempo real • <span id="relogio"></span></p>
+
+<div class="container">
+    <div class="header">
+        <h1>📊 GPS DE MERCADO GLOBAL v2026</h1>
+        <div id="relogio">00:00:00</div>
+        <p id="status" style="margin-top:10px; font-weight:bold;">Sincronizando...</p>
+    </div>
+
+    <div class="cards">
+        <div class="card" style="border-top: 6px solid #10b981;">
+            <div style="color: #10b981; font-weight: bold; letter-spacing: 1px;">RISCO ACUMULADO (WIN ▲)</div>
+            <div class="card-value" id="vRisco" style="color: #10b981;">0.00%</div>
         </div>
-
-        <div id="sentimentoAlerta">Iniciando monitoramento (01:00 às 18:00)...</div>
-
-        <div class="cards">
-            <div class="card">
-                <div class="card-title">📈 Ativos de Risco <span class="badge badge-gray" id="badgeRisco">Neutro</span></div>
-                <div class="card-value" id="valorRisco">0.0%</div>
-                <div class="card-subtitle">Se subir: Ibov sobe, Dólar cai</div>
-            </div>
-            <div class="card">
-                <div class="card-title">📉 Ativos de Segurança <span class="badge badge-gray" id="badgeSeguranca">Neutro</span></div>
-                <div class="card-value" id="valorSeguranca">0.0%</div>
-                <div class="card-subtitle">Se subir: Ibov cai, Dólar sobe</div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <div class="chart-title">Evolução Comparativa Histórica (01h - 18h)</div>
-            <canvas id="marketChart"></canvas>
-        </div>
-
-        <div class="assets-grid">
-            <div class="assets-card risk">
-                <div class="assets-title">🟢 Ativos de Risco</div>
-                <div class="asset-item"><span class="asset-symbol">GCJ25</span><span class="asset-name">Ouro Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">HGH5</span><span class="asset-name">Cobre Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">CL</span><span class="asset-name">Petróleo WTI Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">.OSEAX</span><span class="asset-name">Oslo All Share</span></div>
-                <div class="asset-item"><span class="asset-symbol">ZS</span><span class="asset-name">Soja Chicago Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">1YMH25</span><span class="asset-name">Dow Jones Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">.GDOW</span><span class="asset-name">The Global Dow USD</span></div>
-                <div class="asset-item"><span class="asset-symbol">VALE.K</span><span class="asset-name">Vale SA ADR</span></div>
-                <div class="asset-item"><span class="asset-symbol">PBR</span><span class="asset-name">Petrobras SA ADR</span></div>
-                <div class="asset-item"><span class="asset-symbol">EWZ</span><span class="asset-name">iShares MSCI Brazil ETF</span></div>
-            </div>
-            <div class="assets-card safety">
-                <div class="assets-title">🔴 Ativos de Segurança</div>
-                <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar Global</span></div>
-                <div class="asset-item"><span class="asset-symbol">DXH25</span><span class="asset-name">Dólar Futuro</span></div>
-                <div class="asset-item"><span class="asset-symbol">TLT</span><span class="asset-name">Treasury Bond 20Y+</span></div>
-                <div class="asset-item"><span class="asset-symbol">USDJPY</span><span class="asset-name">Dólar / Iene Japonês</span></div>
-                <div class="asset-item"><span class="asset-symbol">VIX</span><span class="asset-name">Índice de Volatilidade</span></div>
-                <div class="asset-item"><span class="asset-symbol">SHY</span><span class="asset-name">Treasury 1-3 Year</span></div>
-                <div class="asset-item"><span class="asset-symbol">GLD</span><span class="asset-name">SPDR Gold Shares</span></div>
-                <div class="asset-item"><span class="asset-symbol">TIP</span><span class="asset-name">Treasury Infl. Protected</span></div>
-            </div>
+        <div class="card" style="border-top: 6px solid #ef4444;">
+            <div style="color: #ef4444; font-weight: bold; letter-spacing: 1px;">SEGURANÇA ACUMULADA (WIN ▼)</div>
+            <div class="card-value" id="vSeg" style="color: #ef4444;">0.00%</div>
         </div>
     </div>
 
-    <script>
-        let marketChart;
-        let valorAtualRisco = 0;
-        let valorAtualSeguranca = 0;
+    <div class="chart-container">
+        <canvas id="marketChart"></canvas>
+    </div>
 
-        function obterHoraBrasilia() {
-            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-        }
+    <div class="assets-grid">
+        <div class="assets-card">
+            <h3 style="color: #10b981; margin-bottom: 10px;">🟢 Ativos de Risco (Max)</h3>
+            <div id="listaRisco"></div>
+        </div>
+        <div class="assets-card">
+            <h3 style="color: #ef4444; margin-bottom: 10px;">🔴 Ativos de Segurança (Max)</h3>
+            <div id="listaSeguranca"></div>
+        </div>
+    </div>
+</div>
 
-        function atualizarRelogio() {
-            const agora = obterHoraBrasilia();
-            const formatado = agora.toLocaleTimeString('pt-BR', { hour12: false });
-            document.getElementById('relogio').textContent = formatado;
-            return agora;
-        }
+<script>
+    let chart;
+    let acumuladoRisco = 0.00;
+    let acumuladoSeg = 0.00;
+    let pressaoSeg = 0.00; // Nova variável para a linha de pressão
 
-        function initChart() {
-            const ctx = document.getElementById('marketChart').getContext('2d');
-            marketChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Ativos de Risco',
-                            borderColor: '#10b981',
-                            backgroundColor: 'transparent',
-                            data: [],
-                            fill: false,
-                            pointRadius: 0,
-                            tension: 0
-                        },
-                        {
-                            label: 'Ativos de Segurança',
-                            borderColor: '#ef4444',
-                            backgroundColor: 'transparent',
-                            data: [],
-                            fill: false,
-                            pointRadius: 0,
-                            tension: 0
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { 
-                            grid: { color: '#e2e8f0' }, 
-                            ticks: { color: '#475569' } 
-                        },
-                        x: { 
-                            grid: { color: '#e2e8f0' }, 
-                            ticks: { color: '#475569' } 
-                        }
+    function initChart() {
+        const ctx = document.getElementById('marketChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Risco (Acumulado)',
+                        borderColor: '#10b981',
+                        data: [],
+                        fill: false, pointRadius: 0, tension: 0, borderWidth: 3
                     },
-                    plugins: { 
-                        legend: { labels: { color: '#334155' } } 
+                    {
+                        label: 'Segurança (Acumulado)',
+                        borderColor: '#ef4444', 
+                        data: [],
+                        fill: false, pointRadius: 0, tension: 0, borderWidth: 3
+                    },
+                    {
+                        label: 'Pressão Seg (Momento)', // NOVA LINHA DE PRESSÃO
+                        borderColor: '#f59e0b', // Laranja para destaque
+                        borderDash: [5, 5], // Linha tracejada
+                        data: [],
+                        fill: false, pointRadius: 0, tension: 0, borderWidth: 2
                     }
-                }
-            });
-        }
-
-        function atualizarDados() {
-            const agora = atualizarRelogio();
-            const hora = agora.getHours();
-            
-            // Janela de funcionamento: 01:00 às 18:00
-            if (hora >= 1 && hora < 18) {
-                valorAtualRisco += (Math.random() - 0.495) * 0.1;
-                valorAtualSeguranca += (Math.random() - 0.505) * 0.1;
-
-                document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
-                document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
-
-                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                
-                marketChart.data.labels.push(labelHora);
-                // Correção técnica para garantir inserção nos datasets específicos
-                marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
-                marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-                
-                marketChart.update('none');
-                
-                document.getElementById('sentimentoAlerta').textContent = "Monitoramento Ativo - Fluxo Intraday";
-                document.getElementById('sentimentoAlerta').style.color = "#059669";
-            } else {
-                document.getElementById('sentimentoAlerta').textContent = "Fora da Janela de Monitoramento (01:00 às 18:00)";
-                document.getElementById('sentimentoAlerta').style.color = "#64748b";
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
+                    y: { ticks: { color: '#64748b' }, grid: { color: '#f1f5f9' } }
+                },
+                plugins: { legend: { labels: { color: '#1e293b', font: { weight: 'bold' } } } }
             }
-        }
+        });
+    }
 
-        window.onload = () => {
-            initChart();
-            setInterval(atualizarDados, 3000); 
-            atualizarDados();
-        };
-    </script>
+    function engine() {
+        const agora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        const h = agora.getHours();
+        const m = agora.getMinutes();
+        const s = agora.getSeconds();
+        const timestamp = agora.toLocaleTimeString('pt-BR');
+        document.getElementById('relogio').textContent = timestamp;
+
+        if (h >= 1 && h < 18) {
+            document.getElementById('status').textContent = "🟢 MONITORAMENTO EM TEMPO REAL";
+            document.getElementById('status').style.color = "#10b981";
+
+            let variacaoSeg = (Math.random() - 0.51) * 0.1;
+
+            acumuladoRisco += (Math.random() - 0.49) * 0.1;
+            acumuladoSeg += variacaoSeg;
+            
+            // Lógica da linha de pressão: 
+            // Ela reage à variação atual do acumulado de segurança.
+            pressaoSeg += variacaoSeg * 5; // Amplifica a variação para mostrar o "momento"
+
+            document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
+            document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
+
+            chart.data.labels.push(timestamp);
+            chart.data.datasets.data.push(acumuladoRisco.toFixed(2));
+            chart.data.datasets.data.push(acumuladoSeg.toFixed(2));
+            chart.data.datasets.data.push(pressaoSeg.toFixed(2)); // Adiciona o dado de pressão
+
+            chart.update('none'); 
+        } else {
+            document.getElementById('status').textContent = "🔴 MERCADO FECHADO (JANELA 01:00 - 18:00)";
+            document.getElementById('status').style.color = "#ef4444";
+        }
+    }
+
+    window.onload = () => {
+        initChart();
+        const r = ["S&P500", "NASDAQ", "VALE3", "PETR4", "EWZ", "BRENT", "BITCOIN"];
+        const s = ["DXY", "US10Y", "VIX", "USD/BRL", "OURO", "TLT"];
+        r.forEach(a => document.getElementById('listaRisco').innerHTML += `<div class="asset-item"><span>${a}</span><span style="color:#10b981">RISK ON</span></div>`);
+        s.forEach(a => document.getElementById('listaSeguranca').innerHTML += `<div class="asset-item"><span>${a}</span><span style="color:#ef4444">RISK OFF</span></div>`);
+        
+        setInterval(engine, 3000); 
+        engine();
+    };
+</script>
 </body>
 </html>
