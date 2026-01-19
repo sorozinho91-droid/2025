@@ -2,92 +2,87 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Macro Global - 24 Horas</title>
+    <title>GPS Macro Global - Estabilizado</title>
+    <!-- Importação do Chart.js via CDN Confiável -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #020617;
-            color: #f8fafc;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
-        #relogio { font-family: monospace; font-size: 1.5rem; color: #60a5fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: #020617; color: #f8fafc; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
         
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .card { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; text-align: center; }
-        .card-val { font-size: 1.8rem; font-weight: bold; margin-top: 5px; }
+        /* Layout Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+        #relogio { font-family: monospace; font-size: 1.4rem; color: #60a5fa; }
 
+        /* Tabela e Cards */
+        .macro-table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 12px; margin-bottom: 20px; border: 1px solid #1e293b; overflow: hidden; }
+        .macro-table td { padding: 12px; border-top: 1px solid #1e293b; font-size: 0.9rem; }
+        .up { color: #10b981; font-weight: bold; }
+        .down { color: #ef4444; font-weight: bold; }
+
+        /* Container do Gráfico - CRÍTICO PARA FUNCIONAR */
         .chart-box { 
             background: #0f172a; 
             border-radius: 12px; 
             padding: 20px; 
-            border: 1px solid #1e293b; 
-            height: 500px; /* Altura fixa para garantir visibilidade */
+            border: 2px solid #1e293b; 
+            height: 450px; 
             width: 100%;
-            position: relative;
+            position: relative; /* Necessário para o Chart.js */
         }
-        
-        .macro-table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 1px solid #1e293b; }
-        .macro-table th { text-align: left; padding: 12px; color: #64748b; font-size: 0.8rem; background: #1e293b; }
-        .macro-table td { padding: 12px; border-top: 1px solid #1e293b; font-size: 0.9rem; }
-        .up { color: #10b981; } .down { color: #ef4444; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>📊 GPS MACRO GLOBAL 24H</h1>
+        <h1>📊 GPS GLOBAL (01:00 às 00:00)</h1>
         <div id="relogio">00:00:00</div>
     </div>
 
+    <!-- Tabela Macro 2026 -->
     <table class="macro-table">
-        <thead>
-            <tr><th>PILAR</th><th>REFERÊNCIA</th><th>VALOR (JAN/2026)</th><th>IMPACTO</th></tr>
-        </thead>
         <tbody>
-            <tr><td>Energia</td><td>Petróleo Brent</td><td class="up">US$ 64.06</td><td>Positivo Petro</td></tr>
-            <tr><td>Mineração</td><td>Minério de Ferro</td><td class="down">US$ 107.15</td><td>Negativo Vale</td></tr>
-            <tr><td>Câmbio</td><td>DXY Global</td><td class="up">103.45</td><td>Pressão Real</td></tr>
+            <tr><td>Petróleo Brent (Energia)</td><td class="up">US$ 64.06</td><td>Positivo Petrobras</td></tr>
+            <tr><td>Minério de Ferro (Vale)</td><td class="down">US$ 107.15</td><td>Baixa Demanda China</td></tr>
+            <tr><td>Dólar Global (DXY)</td><td class="up">103.45</td><td>Fluxo para Segurança</td></tr>
         </tbody>
     </table>
 
-    <div class="cards">
-        <div class="card"><h3>FLUXO DE RISCO</h3><div class="card-val up">+0.38%</div></div>
-        <div class="card"><h3>FLUXO SEGURANÇA</h3><div class="card-val down">-0.12%</div></div>
-    </div>
-
+    <!-- ÁREA DO GRÁFICO -->
     <div class="chart-box">
-        <canvas id="canvasGlobal"></canvas>
+        <canvas id="meuGrafico"></canvas>
     </div>
 </div>
 
 <script>
-    // 1. Criar Labels de 01:00 até 00:00 (24 pontos exatos)
-    const labels24h = [];
+    // 1. GERAR AS 24 HORAS (Labels)
+    const horas = [];
     for (let i = 1; i <= 24; i++) {
-        let hora = i === 24 ? "00" : (i < 10 ? "0" + i : i);
-        labels24h.push(hora + ":00");
+        let h = i === 24 ? "00" : (i < 10 ? "0" + i : i);
+        horas.push(h + ":00");
     }
 
-    // 2. Dados Simulados (24 valores para cada série)
-    const dadosRisco = [0.05, 0.08, 0.12, 0.10, 0.05, -0.02, -0.05, 0.02, 0.15, 0.25, 0.35, 0.42, 0.38, 0.30, 0.25, 0.28, 0.32, 0.40, 0.45, 0.48, 0.42, 0.38, 0.35, 0.30];
-    const dadosSeg = [0.02, 0.01, -0.02, 0.00, 0.05, 0.10, 0.15, 0.12, 0.05, -0.05, -0.10, -0.15, -0.12, -0.08, -0.05, -0.02, 0.00, -0.05, -0.08, -0.10, -0.05, -0.02, 0.01, 0.03];
+    // 2. DADOS (24 pontos exatos para evitar erro de sumiço)
+    const dadosRisco = [0.1, 0.12, 0.15, 0.1, 0.05, 0, -0.05, 0.05, 0.15, 0.25, 0.35, 0.45, 0.5, 0.48, 0.42, 0.45, 0.52, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25];
+    const dadosSeg   = [0.05, 0.04, 0.02, 0.05, 0.1, 0.15, 0.2, 0.15, 0.05, -0.05, -0.1, -0.15, -0.2, -0.18, -0.15, -0.12, -0.1, -0.05, 0, 0.05, 0.1, 0.08, 0.05, 0.02];
 
-    // 3. Renderizar o Gráfico
-    function renderChart() {
-        const ctx = document.getElementById('canvasGlobal').getContext('2d');
+    // 3. FUNÇÃO DE INICIALIZAÇÃO DO GRÁFICO
+    function iniciarGrafico() {
+        const ctx = document.getElementById('meuGrafico');
+        
+        if (!ctx) {
+            console.error("Canvas não encontrado!");
+            return;
+        }
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels24h,
+                labels: horas,
                 datasets: [
                     {
-                        label: 'Risco (Ibov/S&P)',
+                        label: 'Ativos de Risco (Compra)',
                         data: dadosRisco,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -95,7 +90,7 @@
                         tension: 0.4
                     },
                     {
-                        label: 'Segurança (DXY/Ouro)',
+                        label: 'Ativos de Segurança (Venda)',
                         data: dadosSeg,
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -107,28 +102,27 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#f8fafc', font: { size: 14 } } }
+                },
                 scales: {
                     x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
                     y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
-                },
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } }
                 }
             }
         });
     }
 
-    // 4. Iniciar e Relógio
-    function updateClock() {
-        const agora = new Date();
-        document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
-    }
-
-    window.onload = () => {
-        renderChart();
-        setInterval(updateClock, 1000);
-        updateClock();
-    };
+    // 4. GARANTIR QUE RODE APÓS CARREGAR TUDO
+    window.addEventListener('load', () => {
+        iniciarGrafico();
+        
+        // Relógio de Brasília
+        setInterval(() => {
+            const agora = new Date();
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+        }, 1000);
+    });
 </script>
 
 </body>
