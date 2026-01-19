@@ -3,149 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado 2026 - Mini Índice</title>
+    <title>GPS de Mercado 2026 - Real Time</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
             color: white;
             padding: 20px;
-            min-height: 100vh;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 2.5rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        #relogio { font-size: 1.2rem; color: #94a3b8; font-family: monospace; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
+        #relogio { font-size: 1.5rem; color: #60a5fa; font-family: monospace; font-weight: bold; }
         
         #sentimentoAlerta {
-            padding: 15px; border-radius: 12px; text-align: center; font-size: 1.1rem; font-weight: bold; margin-bottom: 20px;
-            transition: all 0.5s ease; border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px; border-radius: 10px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
+            background: #1e293b; border: 1px solid #334155;
         }
 
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; }
-        .card-title { display: flex; align-items: center; justify-content: space-between; font-size: 1rem; margin-bottom: 10px; color: #cbd5e1; }
-        .card-value { font-size: 2.2rem; font-weight: 800; margin-bottom: 5px; }
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; }
+        .card-value { font-size: 2.5rem; font-weight: 800; margin-top: 10px; }
         
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; text-transform: uppercase; }
-        .badge-green { background: #059669; color: white; }
-        .badge-red { background: #dc2626; color: white; }
-        .badge-blue { background: #2563eb; color: white; }
-
-        .chart-container { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; margin-bottom: 25px; height: 400px; }
+        .chart-container { background: #1e293b; border-radius: 12px; padding: 20px; height: 450px; position: relative; margin-bottom: 20px; }
         
-        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .assets-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 15px; height: 300px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); }
-        .assets-title { font-size: 1rem; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; position: sticky; top: 0; background: #1e293b; }
-        .asset-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .asset-symbol { color: #60a5fa; font-weight: bold; }
+        .status-dot { height: 10px; width: 10px; background-color: #10b981; border-radius: 50%; display: inline-block; margin-right: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>GPS DE MERCADO GLOBAL</h1>
-            <div id="relogio">00:00:00</div>
+            <h1>📊 GPS DE MERCADO GLOBAL v2026</h1>
+            <div id="relogio">--:--:--</div>
+            <p><span class="status-dot"></span> Dados em Tempo Real (Simulado para 2026)</p>
         </div>
 
-        <div id="sentimentoAlerta">Iniciando análise de fluxo...</div>
+        <div id="sentimentoAlerta">AGUARDANDO CONEXÃO...</div>
 
         <div class="cards">
             <div class="card">
-                <div class="card-title">ATIVOS DE RISCO <span class="badge badge-green" id="badgeRisco">Monitorando</span></div>
+                <div style="color: #34d399;">🟢 ATIVOS DE RISCO</div>
                 <div class="card-value" id="valorRisco">0.00%</div>
-                <div style="color: #94a3b8; font-size: 0.8rem;">Correlação Direta: Mini Índice</div>
             </div>
             <div class="card">
-                <div class="card-title">PRESSÃO SEGURANÇA <span class="badge badge-blue" id="badgePressao">Ativa</span></div>
-                <div class="card-value" id="valorPressao" style="color: #60a5fa;">0.00%</div>
-                <div style="color: #94a3b8; font-size: 0.8rem;">Linha Tracejada: Direção Global</div>
+                <div style="color: #60a5fa;">🔵 PRESSÃO GLOBAL (SEGURANÇA)</div>
+                <div class="card-value" id="valorPressao">0.00%</div>
             </div>
         </div>
 
         <div class="chart-container">
             <canvas id="marketChart"></canvas>
         </div>
-
-        <div class="assets-grid">
-            <div class="assets-card">
-                <div class="assets-title" style="color: #34d399;">🟢 Cesta Risk-On</div>
-                <div class="asset-item"><span class="asset-symbol">GCJ26</span><span>Ouro Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">VALE3</span><span>Vale SA</span></div>
-                <div class="asset-item"><span class="asset-symbol">SPX</span><span>S&P 500</span></div>
-                <div class="asset-item"><span class="asset-symbol">CL1!</span><span>Petróleo WTI</span></div>
-            </div>
-            <div class="assets-card">
-                <div class="assets-title" style="color: #f87171;">🔴 Cesta Risk-Off</div>
-                <div class="asset-item"><span class="asset-symbol">DXY</span><span>Dólar Global</span></div>
-                <div class="asset-item"><span class="asset-symbol">DXH26</span><span>Dólar Futuro</span></div>
-                <div class="asset-item"><span class="asset-symbol">VIX</span><span>Volatilidade</span></div>
-                <div class="asset-item"><span class="asset-symbol">US10Y</span><span>Treasury 10Y</span></div>
-            </div>
-        </div>
     </div>
 
     <script>
         let marketChart;
-        const limit = 30; // Pontos no gráfico
-        const dataRisco = [];
-        const dataSeguranca = [];
-        const dataPressao = [];
+        const maxPontos = 20;
         const labels = [];
+        const historicoRisco = [];
+        const historicoSeguranca = [];
+        const historicoPressao = [];
 
-        function atualizarRelogio() {
-            const agora = new Date();
-            document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
-            verificarSentimento(agora.getHours());
-        }
-
-        function verificarSentimento(hora) {
-            const alerta = document.getElementById('sentimentoAlerta');
-            if (hora < 1 || hora > 18) {
-                alerta.innerHTML = "MERCADO FECHADO (Janela: 01h às 18h)";
-                alerta.style.background = "#334155";
-                return;
-            }
-
-            const r = dataRisco[dataRisco.length - 1];
-            const p = dataPressao[dataPressao.length - 1];
-
-            if (r > p) {
-                alerta.innerHTML = "🚀 VIÉS COMPRADOR: Risco superando Pressão de Segurança";
-                alerta.style.background = "rgba(5, 150, 105, 0.2)";
-                alerta.style.color = "#34d399";
-            } else {
-                alerta.innerHTML = "⚠️ VIÉS VENDEDOR: Pressão Global em ativos de Segurança";
-                alerta.style.background = "rgba(220, 38, 38, 0.2)";
-                alerta.style.color = "#f87171";
-            }
-        }
-
-        function simularDados() {
-            const r = (Math.random() * 2 - 1).toFixed(2);
-            const s = (Math.random() * 2 - 1).toFixed(2);
-            const p = ((parseFloat(s) * 0.8) + (Math.random() * 0.5)).toFixed(2); // Pressão baseada na segurança
-
-            document.getElementById('valorRisco').textContent = r + "%";
-            document.getElementById('valorPressao').textContent = p + "%";
-
-            const agora = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-
-            if (labels.length >= limit) {
-                labels.shift(); dataRisco.shift(); dataSeguranca.shift(); dataPressao.shift();
-            }
-
-            labels.push(agora);
-            dataRisco.push(r);
-            dataSeguranca.push(s);
-            dataPressao.push(p);
-
-            marketChart.update();
-        }
-
-        function initChart() {
+        function inicializarGrafico() {
             const ctx = document.getElementById('marketChart').getContext('2d');
             marketChart = new Chart(ctx, {
                 type: 'line',
@@ -153,50 +74,106 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Ativos de Risco',
-                            data: dataRisco,
+                            label: 'Risco (Risk-On)',
+                            data: historicoRisco,
                             borderColor: '#34d399',
-                            backgroundColor: '#34d399',
+                            borderWidth: 3,
                             tension: 0.4,
-                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Pressão Global (DIREÇÃO)',
+                            data: historicoPressao,
+                            borderColor: '#60a5fa',
+                            borderWidth: 3,
+                            borderDash: [5, 5], // TRACEJADO AZUL
+                            tension: 0.4,
+                            fill: false,
                             pointRadius: 0
                         },
                         {
-                            label: 'Ativos de Segurança',
-                            data: dataSeguranca,
-                            borderColor: '#f87171',
+                            label: 'Segurança (Risk-Off)',
+                            data: historicoSeguranca,
+                            borderColor: '#ef4444',
                             borderWidth: 1,
-                            pointRadius: 0,
-                            hidden: true // Foco na pressão
-                        },
-                        {
-                            label: 'Pressão Global (Direção)',
-                            data: dataPressao,
-                            borderColor: '#60a5fa',
-                            borderDash: [5, 5], // TRACEJADO
-                            borderWidth: 3,
                             tension: 0.4,
+                            fill: false,
                             pointRadius: 0,
-                            fill: false
+                            hidden: false
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#94a3b8' } } },
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 12 } } }
                     }
                 }
             });
+            console.log("Gráfico Inicializado");
         }
 
-        window.onload = () => {
-            initChart();
-            setInterval(atualizarRelogio, 1000);
-            setInterval(simularDados, 3000);
+        function atualizarDados() {
+            const agora = new Date();
+            const timeStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            // Gerar valores simulados
+            const r = (Math.random() * 2 - 1).toFixed(2);
+            const s = (Math.random() * 2 - 1).toFixed(2);
+            const p = (parseFloat(s) * 1.1 + (Math.random() * 0.3)).toFixed(2);
+
+            // Atualizar Cards
+            document.getElementById('valorRisco').innerText = r + "%";
+            document.getElementById('valorPressao').innerText = p + "%";
+            document.getElementById('relogio').innerText = timeStr;
+
+            // Alerta de Sentimento
+            const alerta = document.getElementById('sentimentoAlerta');
+            if (parseFloat(r) > parseFloat(p)) {
+                alerta.innerText = "🚀 VIÉS DE ALTA (COMPRA): Risco Dominando";
+                alerta.style.color = "#34d399";
+                alerta.style.borderColor = "#34d399";
+            } else {
+                alerta.innerText = "⚠️ VIÉS DE BAIXA (VENDA): Pressão de Segurança Alta";
+                alerta.style.color = "#f87171";
+                alerta.style.borderColor = "#f87171";
+            }
+
+            // Atualizar Arrays do Gráfico
+            if (labels.length >= maxPontos) {
+                labels.shift();
+                historicoRisco.shift();
+                historicoSeguranca.shift();
+                historicoPressao.shift();
+            }
+
+            labels.push(timeStr);
+            historicoRisco.push(r);
+            historicoSeguranca.push(s);
+            historicoPressao.push(p);
+
+            // Renderizar atualização
+            marketChart.update('none'); // 'none' para performance
+            console.log("Dados Atualizados: ", timeStr);
+        }
+
+        // Iniciar tudo ao carregar a página
+        window.onload = function() {
+            inicializarGrafico();
+            atualizarDados(); // Primeira execução
+            setInterval(atualizarDados, 3000); // Atualiza a cada 3 segundos
         };
     </script>
 </body>
