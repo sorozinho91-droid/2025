@@ -54,8 +54,8 @@
     </div>
 
     <div class="alerts-container">
-        <div class="alert-box alert-neutral" id="alertaGlobal">CONECTANDO GLOBAL...</div>
-        <div class="alert-box alert-neutral" id="alertaDomestico">CONECTANDO LOCAL...</div>
+        <div class="alert-box alert-neutral" id="alertaGlobal">SINAL GLOBAL: AGUARDANDO...</div>
+        <div class="alert-box alert-neutral" id="alertaDomestico">SINAL LOCAL: AGUARDANDO...</div>
     </div>
 
     <div class="top-stats">
@@ -121,6 +121,7 @@
     }
 
     function engine() {
+        // Horário de Brasília
         const agora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         const h = agora.getHours();
         const m = agora.getMinutes();
@@ -128,49 +129,53 @@
         
         document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
 
-        // JANELA: 01:00 às 18:00
+        // JANELA SOLICITADA: 01:00 às 18:00
         if (h >= 1 && h < 18) {
+            // Lógica de simulação de dados
             acumuladoRisco += (Math.random() - 0.495) * 0.1;
             acumuladoSeg += (Math.random() - 0.505) * 0.1;
 
             document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
             document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
 
-            // ADICIONANDO DADOS CORRETAMENTE NOS DATASETS
-            chart.data.labels.push(`${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`);
-            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2)); // Linha Verde
-            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));   // Linha Vermelha
+            // INSERÇÃO CORRETA DE DADOS NO GRÁFICO
+            const labelTempo = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+            chart.data.labels.push(labelTempo);
+            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2)); // Linha Verde (Índice 0)
+            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));   // Linha Vermelha (Índice 1)
 
             chart.update('none');
 
-            // Lógica de Alertas
+            // Atualização dos Alertas de Sentimento
             const diff = acumuladoRisco - acumuladoSeg;
             const alG = document.getElementById('alertaGlobal');
             const alD = document.getElementById('alertaDomestico');
 
             if (diff > 0.3) {
                 alG.className = 'alert-box alert-bullish';
-                alG.innerHTML = '🟢 GLOBAL: COMPRA (BULLISH)';
-                alD.innerHTML = '🟢 DOMÉSTICO: FLUXO ENTRANDO';
+                alG.innerHTML = '🟢 SENTIMENTO: COMPRA (BULLISH)';
                 alD.className = 'alert-box alert-bullish';
+                alD.innerHTML = '🟢 DOMÉSTICO: FLUXO COMPRADOR';
             } else if (diff < -0.3) {
                 alG.className = 'alert-box alert-bearish';
-                alG.innerHTML = '🔴 GLOBAL: VENDA (BEARISH)';
-                alD.innerHTML = '🔴 DOMÉSTICO: FLUXO SAINDO';
+                alG.innerHTML = '🔴 SENTIMENTO: VENDA (BEARISH)';
                 alD.className = 'alert-box alert-bearish';
+                alD.innerHTML = '🔴 DOMÉSTICO: FLUXO VENDEDOR';
             } else {
                 alG.className = 'alert-box alert-neutral';
-                alG.innerHTML = '🔵 GLOBAL: NEUTRO';
-                alD.innerHTML = '🔵 DOMÉSTICO: LATERAL';
+                alG.innerHTML = '🔵 SENTIMENTO: NEUTRO / LATERAL';
                 alD.className = 'alert-box alert-neutral';
+                alD.innerHTML = '🔵 DOMÉSTICO: AGUARDANDO VOLUME';
             }
         } else {
-            document.getElementById('alertaGlobal').innerHTML = 'FORA DO HORÁRIO DE MERCADO (01:00-18:00)';
+            document.getElementById('alertaGlobal').innerHTML = 'MERCADO FECHADO (ABERTURA AS 01:00)';
+            document.getElementById('alertaDomestico').innerHTML = 'MERCADO FECHADO (ABERTURA AS 01:00)';
         }
     }
 
     window.onload = () => {
         init();
+        // Atualiza a cada 3 segundos
         setInterval(engine, 3000); 
         engine();
     };
