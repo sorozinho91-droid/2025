@@ -17,29 +17,23 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Consolas', monospace; background: var(--bg); color: var(--text); padding: 15px; }
         .container { max-width: 1600px; margin: 0 auto; }
-        
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 25px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
         #relogio { font-size: 2.2rem; font-weight: bold; color: #3b82f6; }
-
         .alerts-container { margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .alert-box { padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; border: 1px solid transparent; }
         .alert-bullish { background: rgba(34, 197, 94, 0.2); color: var(--risk); border-color: var(--risk); }
         .alert-bearish { background: rgba(239, 68, 68, 0.2); color: var(--safety); border-color: var(--safety); }
         .alert-neutral { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: #3b82f6; }
-
         .top-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .stat-card { background: var(--card); padding: 25px; border-radius: 8px; text-align: center; border-bottom: 5px solid #334155; }
         .stat-card.risk { border-color: var(--risk); }
         .stat-card.safety { border-color: var(--safety); }
         .val { font-size: 3rem; font-weight: 800; display: block; }
-
-        .chart-box { background: var(--card); padding: 20px; border-radius: 8px; height: 450px; margin-bottom: 15px; border: 1px solid var(--border); position: relative; }
+        .chart-box { background: var(--card); padding: 20px; border-radius: 8px; height: 450px; margin-bottom: 15px; border: 1px solid var(--border); }
         canvas { width: 100% !important; height: 100% !important; }
-
-        .assets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 15px; }
+        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .asset-list { background: var(--card); padding: 20px; border-radius: 8px; height: 350px; overflow-y: auto; border: 1px solid var(--border); }
         .item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 0.85rem; }
-        .tag { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -48,14 +42,14 @@
     <div class="header">
         <div>
             <h1 style="font-size: 1.4rem; color: #94a3b8; letter-spacing: 1px;">GPS SENTIMENT GLOBAL v2026</h1>
-            <p>Monitoramento Intraday (01:00h - 18:00h)</p>
+            <p>Monitoramento Intraday (Janela: 01:00h - 18:00h)</p>
         </div>
         <div id="relogio">--:--:--</div>
     </div>
 
     <div class="alerts-container">
-        <div class="alert-box alert-neutral" id="alertaGlobal">SINAL GLOBAL: PROCESSANDO...</div>
-        <div class="alert-box alert-neutral" id="alertaDomestico">SINAL LOCAL: PROCESSANDO...</div>
+        <div class="alert-box alert-neutral" id="alertaGlobal">STATUS GLOBAL: ANALISANDO...</div>
+        <div class="alert-box alert-neutral" id="alertaDomestico">STATUS LOCAL: ANALISANDO...</div>
     </div>
 
     <div class="top-stats">
@@ -75,11 +69,11 @@
 
     <div class="assets-grid">
         <div class="asset-list">
-            <h3 style="color: var(--risk); border-bottom: 2px solid var(--risk); padding-bottom: 5px; margin-bottom: 10px;">🟢 ATIVOS DE RISCO</h3>
+            <h3 style="color: var(--risk); margin-bottom: 10px;">🟢 ATIVOS DE RISCO</h3>
             <div id="lRisco"></div>
         </div>
         <div class="asset-list">
-            <h3 style="color: var(--safety); border-bottom: 2px solid var(--safety); padding-bottom: 5px; margin-bottom: 10px;">🔴 ATIVOS DE SEGURANÇA</h3>
+            <h3 style="color: var(--safety); margin-bottom: 10px;">🔴 ATIVOS DE SEGURANÇA</h3>
             <div id="lSeg"></div>
         </div>
     </div>
@@ -90,8 +84,8 @@
     let acumuladoRisco = 0;
     let acumuladoSeg = 0;
 
-    const ativosRisco = ["S&P 500 Fut", "Nasdaq Fut", "EWZ (Brasil NY)", "VALE3 ADR", "PETR4 ADR", "Minério Ferro", "Brent", "Cobre", "Bitcoin", "DAX", "EEM", "Nikkei 225", "Ibovespa", "Hang Seng", "Ethereum"];
-    const ativosSeg = ["DXY Index", "US 10Y Yield", "VIX Index", "USD/JPY", "Ouro", "USD/BRL", "TLT Bonds", "USD/CHF", "TED Spread", "2Y Treasury", "WDO Futuro"];
+    const ativosRisco = ["S&P 500 Fut", "Nasdaq Fut", "EWZ NY", "VALE3 ADR", "PETR4 ADR", "Brent", "Bitcoin", "Ibovespa"];
+    const ativosSeg = ["DXY Index", "US 10Y Yield", "VIX Index", "USD/JPY", "Ouro", "USD/BRL", "WDO Futuro"];
 
     function init() {
         const ctx = document.getElementById('canvasChart').getContext('2d');
@@ -114,13 +108,8 @@
             }
         });
 
-        const dr = document.getElementById('lRisco');
-        const ds = document.getElementById('lSeg');
-        ativosRisco.forEach(t => dr.innerHTML += `<div class="item"><span>${t}</span><span class="tag" style="color:#22c55e">BULLISH</span></div>`);
-        ativosSeg.forEach(t => ds.innerHTML += `<div class="item"><span>${t}</span><span class="tag" style="color:#ef4444">BEARISH</span></div>`);
-        
-        // Inicia a engine imediatamente após o gráfico ser criado
-        engine();
+        ativosRisco.forEach(t => document.getElementById('lRisco').innerHTML += `<div class="item"><span>${t}</span><span style="color:#22c55e">BULLISH</span></div>`);
+        ativosSeg.forEach(t => document.getElementById('lSeg').innerHTML += `<div class="item"><span>${t}</span><span style="color:#ef4444">BEARISH</span></div>`);
     }
 
     function engine() {
@@ -131,7 +120,7 @@
         
         document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
 
-        // Janela das 01:00 às 18:00
+        // JANELA: 01:00 ÀS 18:00
         if (h >= 1 && h < 18) {
             acumuladoRisco += (Math.random() - 0.495) * 0.1;
             acumuladoSeg += (Math.random() - 0.505) * 0.1;
@@ -139,11 +128,11 @@
             document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
             document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
 
-            // CORREÇÃO DEFINITIVA NA INSERÇÃO DE DADOS
-            const labelTempo = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-            chart.data.labels.push(labelTempo);
-            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2));
-            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));
+            // INSERÇÃO DE DADOS CORRIGIDA POR ÍNDICE
+            const timeLabel = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+            chart.data.labels.push(timeLabel);
+            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2)); // Dataset Risco
+            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));   // Dataset Segurança
 
             chart.update('none');
 
@@ -152,32 +141,25 @@
             const alG = document.getElementById('alertaGlobal');
             const alD = document.getElementById('alertaDomestico');
 
-            if (diff > 0.1) {
-                alG.className = 'alert-box alert-bullish';
-                alG.innerHTML = '🟢 SENTIMENTO: COMPRA (BULLISH)';
-                alD.className = 'alert-box alert-bullish';
-                alD.innerHTML = '🟢 DOMÉSTICO: FLUXO COMPRADOR';
-            } else if (diff < -0.1) {
-                alG.className = 'alert-box alert-bearish';
-                alG.innerHTML = '🔴 SENTIMENTO: VENDA (BEARISH)';
-                alD.className = 'alert-box alert-bearish';
-                alD.innerHTML = '🔴 DOMÉSTICO: FLUXO VENDEDOR';
+            if (diff > 0.15) {
+                alG.className = 'alert-box alert-bullish'; alG.innerHTML = '🟢 GLOBAL: COMPRA (BULLISH)';
+                alD.className = 'alert-box alert-bullish'; alD.innerHTML = '🟢 LOCAL: FLUXO COMPRADOR';
+            } else if (diff < -0.15) {
+                alG.className = 'alert-box alert-bearish'; alG.innerHTML = '🔴 GLOBAL: VENDA (BEARISH)';
+                alD.className = 'alert-box alert-bearish'; alD.innerHTML = '🔴 LOCAL: FLUXO VENDEDOR';
             } else {
-                alG.className = 'alert-box alert-neutral';
-                alG.innerHTML = '🔵 SENTIMENTO: NEUTRO';
-                alD.className = 'alert-box alert-neutral';
-                alD.innerHTML = '🔵 DOMÉSTICO: AGUARDANDO VOLUME';
+                alG.className = 'alert-box alert-neutral'; alG.innerHTML = '🔵 GLOBAL: NEUTRO';
+                alD.className = 'alert-box alert-neutral'; alD.innerHTML = '🔵 LOCAL: AGUARDANDO VOLUME';
             }
         } else {
-            document.getElementById('alertaGlobal').innerHTML = 'FORA DO HORÁRIO (01:00-18:00)';
-            document.getElementById('alertaDomestico').innerHTML = 'MERCADO FECHADO';
+            document.getElementById('alertaGlobal').innerHTML = 'MERCADO FECHADO (01H-18H)';
         }
     }
 
     window.onload = () => {
         init();
-        // Atualiza o gráfico de forma contínua a cada 3 segundos
-        setInterval(engine, 3000); 
+        setInterval(engine, 2000); // Atualiza a cada 2 segundos para teste rápido
+        engine();
     };
 </script>
 </body>
