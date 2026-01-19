@@ -15,12 +15,21 @@
             min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 3rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 10px; }
+        #relogio { font-size: 1.5rem; font-weight: bold; margin-top: 15px; }
         canvas { width: 100% !important; max-height: 350px; }
     </style>
 </head>
 
 <body>
 <div class="container">
+    <div class="header">
+        <h1>📊 GPS de Mercado Global</h1>
+        <p>Gerado em tempo real • <span id="relogio"></span></p>
+    </div>
+
     <canvas id="marketChart"></canvas>
 </div>
 
@@ -28,10 +37,17 @@
 let marketChart;
 let valorAtualRisco = 0;
 let valorAtualSeguranca = 0;
-let pressaoSeguranca = 0; // PRESSÃO DOS ATIVOS DE SEGURANÇA
+let pressaoSeguranca = 0; // NOVA VARIÁVEL
 
 function obterHoraBrasilia() {
     return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+}
+
+function atualizarRelogio() {
+    const agora = obterHoraBrasilia();
+    document.getElementById('relogio').textContent =
+        agora.toLocaleTimeString('pt-BR', { hour12: false });
+    return agora;
 }
 
 function initChart() {
@@ -57,6 +73,7 @@ function initChart() {
                     label: 'Ativos de Risco',
                     borderColor: '#10b981',
                     data: [],
+                    fill: false,
                     pointRadius: 0,
                     tension: 0
                 },
@@ -64,6 +81,7 @@ function initChart() {
                     label: 'Ativos de Segurança',
                     borderColor: '#ff0000',
                     data: [],
+                    fill: false,
                     pointRadius: 0,
                     tension: 0
                 },
@@ -71,6 +89,7 @@ function initChart() {
                     label: 'Pressão nos Ativos de Segurança',
                     borderColor: '#2563eb',
                     data: [],
+                    fill: false,
                     pointRadius: 0,
                     tension: 0,
                     borderDash: [6, 4]
@@ -90,24 +109,19 @@ function initChart() {
 }
 
 function atualizarDados() {
-    const agora = obterHoraBrasilia();
+    const agora = atualizarRelogio();
     const hora = agora.getHours();
 
     if (hora >= 1 && hora < 18) {
         const variacaoRisco = (Math.random() - 0.49) * 0.15;
-        const variacaoSeguranca = (Math.random() - 0.51) * 0.15;
+        const variacaoSeg = (Math.random() - 0.51) * 0.15;
 
         valorAtualRisco += variacaoRisco;
-        valorAtualSeguranca += variacaoSeguranca;
-
-        // PRESSÃO = fluxo direto dos ativos de segurança
-        pressaoSeguranca += variacaoSeguranca;
+        valorAtualSeguranca += variacaoSeg;
+        pressaoSeguranca += variacaoSeg; // PRESSÃO = FLUXO DE SEGURANÇA
 
         const labelHora = agora.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         });
 
         marketChart.data.labels.push(labelHora);
