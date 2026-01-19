@@ -3,192 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado em Tempo Real - 2026</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Monitor Global 24h - GPS Macro</title>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
-            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #020617;
+            color: #f8fafc;
             padding: 20px;
-            min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { font-size: 2.5rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        #relogio { font-size: 1.2rem; color: #94a3b8; font-weight: bold; }
+        /* Header e Relógio */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
+        .header h1 { font-size: 1.8rem; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #relogio { font-family: monospace; font-size: 1.4rem; color: #94a3b8; }
 
-        /* Estilo da Nova Tabela Macro */
-        .macro-table-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .macro-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        .macro-table th {
-            text-align: left;
-            padding: 12px;
-            color: #94a3b8;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .macro-table td {
-            padding: 15px 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.95rem;
-        }
-        .status-up { color: #10b981; font-weight: bold; }
-        .status-down { color: #ef4444; font-weight: bold; }
-
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; }
-        .card-value { font-size: 2.2rem; font-weight: bold; margin: 10px 0; }
+        /* Tabela Macro */
+        .macro-section { background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b; margin-bottom: 25px; }
+        .macro-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .macro-table th { text-align: left; padding: 10px; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
+        .macro-table td { padding: 12px 10px; border-top: 1px solid #1e293b; font-size: 0.9rem; }
         
-        .badge { padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-green { background: #10b981; }
-        .badge-red { background: #ef4444; }
+        /* Cards */
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .card { background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; text-align: center; }
+        .card h3 { font-size: 0.9rem; color: #94a3b8; margin-bottom: 10px; }
+        .val { font-size: 2rem; font-weight: bold; }
+        .up { color: #10b981; }
+        .down { color: #ef4444; }
 
-        .chart-container { background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .assets-card { background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }
+        /* Gráfico */
+        .chart-box { background: #0f172a; border-radius: 12px; padding: 20px; border: 1px solid #1e293b; height: 450px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 GPS DE MERCADO GLOBAL</h1>
-            <p id="relogio">Carregando hora de Brasília...</p>
-        </div>
 
-        <!-- TABELA MACRO INTEGRADA -->
-        <div class="macro-table-container">
-            <h3 style="margin-bottom: 15px;">🔍 Monitor de Pilares (Mundo Real)</h3>
-            <table class="macro-table">
-                <thead>
-                    <tr>
-                        <th>Pilar</th>
-                        <th>Ativo Referência</th>
-                        <th>Status 2026</th>
-                        <th>Impacto IBOV</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Petróleo</td>
-                        <td>Brent Oil</td>
-                        <td class="status-up">US$ 64.06</td>
-                        <td>Misto / Energia</td>
-                    </tr>
-                    <tr>
-                        <td>Minério</td>
-                        <td>Iron Ore (Dalian)</td>
-                        <td class="status-down">US$ 107.15</td>
-                        <td>Negativo (Vale)</td>
-                    </tr>
-                    <tr>
-                        <td>Juros EUA</td>
-                        <td>T-Note 10Y</td>
-                        <td class="status-up">3.75%</td>
-                        <td>Saída de Fluxo</td>
-                    </tr>
-                    <tr>
-                        <td>Bancos</td>
-                        <td>Selic / Inadimplência</td>
-                        <td>15.00%</td>
-                        <td>Spread vs Risco</td>
-                    </tr>
-                    <tr>
-                        <td>Clima</td>
-                        <td>Agro/Exportação</td>
-                        <td class="status-up">La Niña</td>
-                        <td>Safra / Câmbio</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>📊 GPS MACRO GLOBAL 24H</h1>
+        <div id="relogio">00:00:00</div>
+    </div>
 
-        <div class="cards">
-            <div class="card">
-                <div>📈 Ativos de Risco <span class="badge badge-green">RISK ON</span></div>
-                <div class="card-value" id="valorRisco">+0.42%</div>
-                <div style="font-size: 0.8rem; color: #94a3b8;">S&P500, Commodities, EWZ</div>
-            </div>
-            <div class="card">
-                <div>📉 Ativos de Segurança <span class="badge badge-red">RISK OFF</span></div>
-                <div class="card-value" id="valorSeguranca">+0.15%</div>
-                <div style="font-size: 0.8rem; color: #94a3b8;">DXY, Ouro, Bonds</div>
-            </div>
+    <!-- Cards de Resumo Rápido -->
+    <div class="cards">
+        <div class="card">
+            <h3>ATIVOS DE RISCO (Bolsas/Commodities)</h3>
+            <div class="val up" id="riscoTotal">+0.38%</div>
         </div>
-
-        <div class="chart-container">
-            <canvas id="marketChart"></canvas>
-        </div>
-
-        <div class="assets-grid">
-            <div class="assets-card">
-                <h4 style="color: #10b981; margin-bottom: 10px;">🟢 RISK-ON (Alta)</h4>
-                <div class="asset-item"><span>SPX</span><span>S&P 500 Global</span></div>
-                <div class="asset-item"><span>VALE3</span><span>Mineração Brasil</span></div>
-                <div class="asset-item"><span>PETR4</span><span>Energia/Óleo</span></div>
-                <div class="asset-item"><span>EWZ</span><span>ETF Brasil NY</span></div>
-            </div>
-            <div class="assets-card">
-                <h4 style="color: #ef4444; margin-bottom: 10px;">🔴 SAFETY (Proteção)</h4>
-                <div class="asset-item"><span>DXY</span><span>Dólar Index</span></div>
-                <div class="asset-item"><span>GOLD</span><span>Ouro Spot</span></div>
-                <div class="asset-item"><span>US10Y</span><span>Treasury 10 anos</span></div>
-                <div class="asset-item"><span>VIX</span><span>Índice do Medo</span></div>
-            </div>
+        <div class="card">
+            <h3>SEGURANÇA (Dólar/Bonds)</h3>
+            <div class="val down" id="segTotal">-0.12%</div>
         </div>
     </div>
 
-    <script>
-        function atualizarRelogio() {
-            const agora = new Date();
-            const opcoes = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            document.getElementById('relogio').textContent = 'Brasília: ' + agora.toLocaleTimeString('pt-BR', opcoes);
-        }
-        setInterval(atualizarRelogio, 1000);
+    <!-- Tabela Macro -->
+    <div class="macro-section">
+        <h2 style="font-size: 1.1rem; margin-bottom: 10px;">🔍 Pilares do Mundo Real (Dados de Jan/2026)</h2>
+        <table class="macro-table">
+            <thead>
+                <tr>
+                    <th>Pilar</th>
+                    <th>Referência</th>
+                    <th>Cotação Real-Time</th>
+                    <th>Impacto BR</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Energia</td>
+                    <td>Petróleo Brent</td>
+                    <td class="up">US$ 64.06</td>
+                    <td>Positivo (Petrobras)</td>
+                </tr>
+                <tr>
+                    <td>Mineração</td>
+                    <td>Minério de Ferro</td>
+                    <td class="down">US$ 107.15</td>
+                    <td>Negativo (Vale)</td>
+                </tr>
+                <tr>
+                    <td>Juros EUA</td>
+                    <td>T-Note 10Y</td>
+                    <td class="up">3.75%</td>
+                    <td>Pressão no Câmbio</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-        const ctx = document.getElementById('marketChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['09:00', '11:00', '13:00', '15:00', '17:00'],
-                datasets: [{
-                    label: 'Fluxo de Risco',
-                    data: [0, 0.2, 0.5, 0.3, 0.42],
-                    borderColor: '#10b981',
-                    tension: 0.4
-                }, {
-                    label: 'Fluxo de Segurança',
-                    data: [0, 0.1, 0.05, 0.12, 0.15],
-                    borderColor: '#ef4444',
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: 'white' } } },
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } },
-                    x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } }
+    <!-- Gráfico Acumulado 24h -->
+    <div class="chart-box">
+        <canvas id="canvas24h"></canvas>
+    </div>
+</div>
+
+<script>
+    // 1. Gerar Labels das 01:00 até as 00:00 (Ciclo de 24h)
+    const labels24h = [];
+    for (let i = 1; i <= 24; i++) {
+        let h = i === 24 ? 0 : i;
+        labels24h.push((h < 10 ? '0' + h : h) + ':00');
+    }
+
+    // 2. Simulação de Dados Acumulados (Histórico 24h)
+    // Risco: Sobe na Ásia, cai na Europa, recupera nos EUA
+    const dadosRisco = [0.05, 0.08, 0.12, 0.10, 0.05, -0.02, -0.05, 0.02, 0.15, 0.25, 0.35, 0.42, 0.38, 0.30, 0.25, 0.28, 0.32, 0.40, 0.45, 0.48, 0.42, 0.38, 0.35, 0.30];
+    const dadosSeg = [0.02, 0.01, -0.02, 0.00, 0.05, 0.10, 0.15, 0.12, 0.05, -0.05, -0.10, -0.15, -0.12, -0.08, -0.05, -0.02, 0.00, -0.05, -0.08, -0.10, -0.05, -0.02, 0.01, 0.03];
+
+    // 3. Inicialização do Gráfico
+    const ctx = document.getElementById('canvas24h').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels24h,
+            datasets: [
+                {
+                    label: 'Fluxo Risco (Ibov/S&P)',
+                    data: dadosRisco,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
+                },
+                {
+                    label: 'Fluxo Segurança (DXY/Ouro)',
+                    data: dadosSeg,
+                    borderColor: '#f87171',
+                    backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
                 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { labels: { color: '#94a3b8', font: { size: 12 } } }
+            },
+            scales: {
+                x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
             }
-        });
-    </script>
+        }
+    });
+
+    // 4. Relógio e Atualização
+    function update() {
+        const agora = new Date();
+        document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    }
+    setInterval(update, 1000);
+    update();
+</script>
+
 </body>
 </html>
