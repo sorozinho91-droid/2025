@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPS de Mercado em Tempo Real - Mini Índice</title>
-    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -101,10 +101,6 @@
 
     <script>
         let marketChart;
-        let valorAtualRisco = 0;
-        let valorAtualSeguranca = 0;
-        // Variável adicionada para a pressão global
-        let valorAtualPressao = 0;
 
         function obterHoraBrasilia() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -112,8 +108,7 @@
 
         function atualizarRelogio() {
             const agora = obterHoraBrasilia();
-            const formatado = agora.toLocaleTimeString('pt-BR', { hour12: false });
-            document.getElementById('relogio').textContent = formatado;
+            document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR', { hour12: false });
             return agora;
         }
 
@@ -124,101 +119,68 @@
                 data: {
                     labels: [],
                     datasets: [
-                        {
-                            label: 'Ativos de Risco',
-                            borderColor: '#10b981',
-                            data: [],
-                            fill: false,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Ativos de Segurança',
-                            borderColor: '#ef4444',
-                            data: [],
-                            fill: false,
-                            tension: 0.4
-                        },
-                        // Terceira linha adicionada (Cinza e Tracejada)
-                        {
-                            label: 'Pressão Global (Direção)',
-                            borderColor: '#9ca3af', // Cor cinza
-                            borderDash:, // Tracejado
-                            data: [],
-                            fill: false,
-                            tension: 0.4
-                        }
+                        { label: 'Risco', borderColor: '#10b981', data: [], fill: false, tension: 0.4 },
+                        { label: 'Segurança', borderColor: '#ef4444', data: [], fill: false, tension: 0.4 },
+                        { label: 'Pressão Global', borderColor: '#94a3b8', borderDash:, data: [], fill: false, tension: 0.4 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: 'white' } }
-                    },
                     scales: {
                         x: { ticks: { color: 'white' } },
                         y: { ticks: { color: 'white' } }
-                    }
+                    },
+                    plugins: { legend: { labels: { color: 'white' } } }
                 }
             });
         }
 
-        // Função de simulação mínima adicionada para fazer o gráfico se mover
         function atualizarDados() {
             const agora = atualizarRelogio();
             const hora = agora.getHours();
 
             if (hora >= 1 && hora < 18) {
-                // Simulação: Risco e Segurança com valores aleatórios
-                valorAtualRisco = (Math.random() * 2 - 1).toFixed(2);
-                valorAtualSeguranca = (Math.random() * 2 - 1).toFixed(2);
-                // Simulação: Pressão Global é uma média dos ativos de segurança
-                valorAtualPressao = (parseFloat(valorAtualSeguranca) * 0.8 + (Math.random() * 0.4 - 0.2)).toFixed(2);
+                const r = (Math.random() * 2 - 1).toFixed(2);
+                const s = (Math.random() * 2 - 1).toFixed(2);
+                const p = (parseFloat(s) * 0.9).toFixed(2);
 
-                document.getElementById('valorRisco').textContent = valorAtualRisco + "%";
-                document.getElementById('valorSeguranca').textContent = valorAtualSeguranca + "%";
+                document.getElementById('valorRisco').textContent = r + "%";
+                document.getElementById('valorSeguranca').textContent = s + "%";
 
-                // Lógica de UI para fazer os badges e alertas funcionarem com os novos dados
                 const br = document.getElementById('badgeRisco');
                 const bs = document.getElementById('badgeSeguranca');
-                br.className = valorAtualRisco >= 0 ? 'badge badge-green' : 'badge badge-red';
-                br.textContent = valorAtualRisco >= 0 ? 'Alta' : 'Baixa';
-                bs.className = valorAtualSeguranca >= 0 ? 'badge badge-red' : 'badge badge-green';
-                bs.textContent = valorAtualSeguranca >= 0 ? 'Alta' : 'Baixa';
+                br.className = r >= 0 ? 'badge badge-green' : 'badge badge-red';
+                br.textContent = r >= 0 ? 'Alta' : 'Baixa';
+                bs.className = s >= 0 ? 'badge badge-red' : 'badge badge-green';
+                bs.textContent = s >= 0 ? 'Alta' : 'Baixa';
 
                 const alerta = document.getElementById('sentimentoAlerta');
-                if (valorAtualRisco > valorAtualSeguranca) {
+                if (parseFloat(r) > parseFloat(s)) {
                     alerta.textContent = "🚀 Sentimento: RISK-ON (Alta do Índice)";
                     alerta.style.background = "#d1fae5"; alerta.style.color = "#065f46";
                 } else {
                     alerta.textContent = "⚠️ Sentimento: RISK-OFF (Baixa do Índice)";
                     alerta.style.background = "#fee2e2"; alerta.style.color = "#991b1b";
                 }
-                
-                // Adiciona dados ao gráfico
+
                 if (marketChart.data.labels.length > 20) {
                     marketChart.data.labels.shift();
-                    // Importante: Acessar datasets pelo índice
-                    marketChart.data.datasets.data.shift();
-                    marketChart.data.datasets.data.shift();
-                    marketChart.data.datasets.data.shift();
+                    marketChart.data.datasets.forEach(ds => ds.data.shift());
                 }
 
                 marketChart.data.labels.push(agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
-                // Importante: Adicionar dados para todas as 3 linhas
-                marketChart.data.datasets.data.push(valorAtualRisco);
-                marketChart.data.datasets.data.push(valorAtualSeguranca);
-                marketChart.data.datasets.data.push(valorAtualPressao);
-                
+                marketChart.data.datasets[0].data.push(r);
+                marketChart.data.datasets[1].data.push(s);
+                marketChart.data.datasets[2].data.push(p);
                 marketChart.update();
             }
         }
 
         window.onload = () => {
             initChart();
-            // Define o intervalo para mover o gráfico
             setInterval(atualizarDados, 5000);
-            atualizarDados(); // Executa uma vez na carga
+            atualizarDados();
         };
     </script>
 </body>
