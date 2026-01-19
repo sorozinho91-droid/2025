@@ -103,7 +103,6 @@
         let marketChart;
         let valorAtualRisco = 0;
         let valorAtualSeguranca = 0;
-        let valorAtualPressao = 0;
 
         function obterHoraBrasilia() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -138,8 +137,8 @@
                             tension: 0.4
                         },
                         {
-                            label: 'Pressão Global (Direção)',
-                            borderColor: '#9ca3af',
+                            label: 'Pressão Global (Cinza)',
+                            borderColor: '#94a3b8',
                             borderDash:,
                             data: [],
                             fill: false,
@@ -150,51 +149,28 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: 'white' }
-                        }
-                    },
                     scales: {
                         x: { ticks: { color: 'white' } },
                         y: { ticks: { color: 'white' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
                     }
                 }
             });
         }
 
-        function simularDados() {
+        function atualizarDados() {
             const agora = atualizarRelogio();
             const hora = agora.getHours();
 
             if (hora >= 1 && hora < 18) {
                 valorAtualRisco = (Math.random() * 2 - 1).toFixed(2);
                 valorAtualSeguranca = (Math.random() * 2 - 1).toFixed(2);
-                // Pressão global baseada na tendência da segurança
-                valorAtualPressao = (parseFloat(valorAtualSeguranca) * 0.8 + (Math.random() * 0.4 - 0.2)).toFixed(2);
+                let valorPressao = (parseFloat(valorAtualSeguranca) * 1.1).toFixed(2);
 
                 document.getElementById('valorRisco').textContent = valorAtualRisco + "%";
                 document.getElementById('valorSeguranca').textContent = valorAtualSeguranca + "%";
-
-                const badgeR = document.getElementById('badgeRisco');
-                const badgeS = document.getElementById('badgeSeguranca');
-
-                badgeR.className = valorAtualRisco >= 0 ? 'badge badge-green' : 'badge badge-red';
-                badgeR.textContent = valorAtualRisco >= 0 ? 'Alta' : 'Baixa';
-
-                badgeS.className = valorAtualSeguranca >= 0 ? 'badge badge-red' : 'badge badge-green';
-                badgeS.textContent = valorAtualSeguranca >= 0 ? 'Alta' : 'Baixa';
-
-                const alerta = document.getElementById('sentimentoAlerta');
-                if (valorAtualRisco > valorAtualSeguranca) {
-                    alerta.textContent = "🚀 Sentimento: RISK-ON (Alta do Índice)";
-                    alerta.style.background = "#d1fae5";
-                    alerta.style.color = "#065f46";
-                } else {
-                    alerta.textContent = "⚠️ Sentimento: RISK-OFF (Baixa do Índice)";
-                    alerta.style.background = "#fee2e2";
-                    alerta.style.color = "#991b1b";
-                }
 
                 if (marketChart.data.labels.length > 20) {
                     marketChart.data.labels.shift();
@@ -206,15 +182,15 @@
                 marketChart.data.labels.push(agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 marketChart.data.datasets[0].data.push(valorAtualRisco);
                 marketChart.data.datasets[1].data.push(valorAtualSeguranca);
-                marketChart.data.datasets[2].data.push(valorAtualPressao);
+                marketChart.data.datasets[2].data.push(valorPressao);
                 marketChart.update();
             }
         }
 
         window.onload = () => {
             initChart();
-            setInterval(simularDados, 5000);
-            simularDados();
+            setInterval(atualizarDados, 5000);
+            atualizarDados();
         };
     </script>
 </body>
