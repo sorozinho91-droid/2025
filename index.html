@@ -25,8 +25,6 @@
         .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
         .card-subtitle { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-green { background: #10b981; color: white; }
-        .badge-red { background: #ef4444; color: white; }
         .badge-gray { background: #6b7280; color: white; }
         #sentimentoAlerta {
             padding: 20px; border-radius: 16px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
@@ -36,14 +34,9 @@
         canvas { width: 100% !important; max-height: 350px; }
     </style>
 </head>
+
 <body>
-
 <div class="container">
-    <div class="header">
-        <h1>📊 GPS de Mercado Global</h1>
-        <p>Gerado em tempo real • <span id="relogio"></span></p>
-    </div>
-
     <div class="chart-container">
         <canvas id="marketChart"></canvas>
     </div>
@@ -53,21 +46,27 @@
 let marketChart;
 let valorAtualRisco = 0;
 let valorAtualSeguranca = 0;
-let pressaoSeguranca = 0;
+let pressaoSeguranca = 0; // ← APENAS VARIÁVEL NOVA
 
 function obterHoraBrasilia() {
     return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
 }
 
-function atualizarRelogio() {
-    const agora = obterHoraBrasilia();
-    document.getElementById('relogio').textContent =
-        agora.toLocaleTimeString('pt-BR', { hour12: false });
-    return agora;
-}
-
 function initChart() {
     const ctx = document.getElementById('marketChart').getContext('2d');
+
+    // FUNDO BRANCO DO GRÁFICO (PLUGIN)
+    const fundoBranco = {
+        id: 'fundoBranco',
+        beforeDraw(chart) {
+            const { ctx, width, height } = chart;
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+            ctx.restore();
+        }
+    };
+
     marketChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -88,13 +87,12 @@ function initChart() {
                     tension: 0
                 },
                 {
-                    label: 'Pressão Segurança',
-                    borderColor: '#3b82f6',
-                    borderDash: [6, 6],
-                    borderWidth: 1,
+                    label: 'Pressão Ativos de Segurança',
+                    borderColor: '#2563eb',
                     data: [],
                     pointRadius: 0,
-                    tension: 0
+                    tension: 0,
+                    borderDash: [6, 4] // ← TRACEJADA
                 }
             ]
         },
@@ -102,44 +100,45 @@ function initChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: {
-                    grid: { display: false },
-                    ticks: { color: '#fff' }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#fff' }
-                }
-            },
-            plugins: {
-                legend: { labels: { color: '#fff' } }
+                x: { grid: { display: false } }, // ← GRADE REMOVIDA
+                y: { grid: { display: false } }  // ← GRADE REMOVIDA
             }
-        }
+        },
+        plugins: [fundoBranco]
     });
 }
 
 function atualizarDados() {
-    const agora = atualizarRelogio();
-    valorAtualRisco += (Math.random() - 0.49) * 0.15;
-    valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
-    pressaoSeguranca = valorAtualSeguranca - valorAtualRisco;
+    const agora = obterHoraBrasilia();
+    const hora = agora.getHours();
 
-    const labelHora = agora.toLocaleTimeString('pt-BR', { hour12: false });
+    if (hora >= 1 && hora < 18) {
+        const variacaoRisco = (Math.random() - 0.49) * 0.15;
+        const variacaoSeg = (Math.random() - 0.51) * 0.15;
 
-    marketChart.data.labels.push(labelHora);
-    marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
-    marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-    marketChart.data.datasets[2].data.push(pressaoSeguranca.toFixed(2));
+        valorAtualRisco += variacaoRisco;
+        valorAtualSeguranca += variacaoSeg;
 
-    marketChart.update('none');
+        // PRESSÃO = MOVIMENTO DOS ATIVOS DE SEGURANÇA
+        pressaoSeguranca += variacaoSeg;
+
+        const labelHora = agora.toLocaleTimeString('pt-BR', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        });
+
+        marketChart.data.labels.push(labelHora);
+        marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
+        marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
+        marketChart.data.datasets[2].data.push(pressaoSeguranca.toFixed(2));
+
+        marketChart.update('none');
+    }
 }
 
 window.onload = () => {
     initChart();
     setInterval(atualizarDados, 2000);
-    atualizarDados();
 };
 </script>
-
 </body>
 </html>
