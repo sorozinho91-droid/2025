@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPS de Mercado em Tempo Real - Mini Índice</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -103,6 +103,7 @@
         let marketChart;
         let valorAtualRisco = 0;
         let valorAtualSeguranca = 0;
+        let valorAtualPressao = 0;
 
         function obterHoraBrasilia() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -125,69 +126,95 @@
                         {
                             label: 'Ativos de Risco',
                             borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0)',
                             data: [],
-                            fill: false, // REMOVIDO SOMBRA
-                            pointRadius: 0,
-                            tension: 0  // LINHA RETA
+                            fill: false,
+                            tension: 0.4
                         },
                         {
                             label: 'Ativos de Segurança',
-                            borderColor: '#ff0000', // COR ALTERADA PARA VERMELHO
-                            backgroundColor: 'rgba(255, 0, 0, 0)',
+                            borderColor: '#ef4444',
                             data: [],
-                            fill: false, // REMOVIDO SOMBRA
-                            pointRadius: 0,
-                            tension: 0  // LINHA RETA
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Pressão Global (Direção)',
+                            borderColor: '#9ca3af',
+                            borderDash:,
+                            data: [],
+                            fill: false,
+                            tension: 0.4
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
-                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
                     },
-                    plugins: { legend: { labels: { color: '#fff' } } }
+                    scales: {
+                        x: { ticks: { color: 'white' } },
+                        y: { ticks: { color: 'white' } }
+                    }
                 }
             });
         }
 
-        function atualizarDados() {
+        function simularDados() {
             const agora = atualizarRelogio();
             const hora = agora.getHours();
-            
-            // FILTRO DE HORÁRIO: 01:00 às 18:00
+
             if (hora >= 1 && hora < 18) {
-                valorAtualRisco += (Math.random() - 0.49) * 0.15;
-                valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
+                valorAtualRisco = (Math.random() * 2 - 1).toFixed(2);
+                valorAtualSeguranca = (Math.random() * 2 - 1).toFixed(2);
+                // Pressão global baseada na tendência da segurança
+                valorAtualPressao = (parseFloat(valorAtualSeguranca) * 0.8 + (Math.random() * 0.4 - 0.2)).toFixed(2);
 
-                document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
-                document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
+                document.getElementById('valorRisco').textContent = valorAtualRisco + "%";
+                document.getElementById('valorSeguranca').textContent = valorAtualSeguranca + "%";
 
-                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                
-                marketChart.data.labels.push(labelHora);
-                marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
-                marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-                
-                marketChart.update('none');
-                
-                document.getElementById('sentimentoAlerta').textContent = "Mercado Ativo - Monitorando Fluxo Global";
-                document.getElementById('sentimentoAlerta').style.background = "#d1fae5";
-                document.getElementById('sentimentoAlerta').style.color = "#065f46";
-            } else {
-                document.getElementById('sentimentoAlerta').textContent = "Fora do Horário de Monitoramento (01:00 às 18:00).";
-                document.getElementById('sentimentoAlerta').style.background = "#fee2e2";
-                document.getElementById('sentimentoAlerta').style.color = "#991b1b";
+                const badgeR = document.getElementById('badgeRisco');
+                const badgeS = document.getElementById('badgeSeguranca');
+
+                badgeR.className = valorAtualRisco >= 0 ? 'badge badge-green' : 'badge badge-red';
+                badgeR.textContent = valorAtualRisco >= 0 ? 'Alta' : 'Baixa';
+
+                badgeS.className = valorAtualSeguranca >= 0 ? 'badge badge-red' : 'badge badge-green';
+                badgeS.textContent = valorAtualSeguranca >= 0 ? 'Alta' : 'Baixa';
+
+                const alerta = document.getElementById('sentimentoAlerta');
+                if (valorAtualRisco > valorAtualSeguranca) {
+                    alerta.textContent = "🚀 Sentimento: RISK-ON (Alta do Índice)";
+                    alerta.style.background = "#d1fae5";
+                    alerta.style.color = "#065f46";
+                } else {
+                    alerta.textContent = "⚠️ Sentimento: RISK-OFF (Baixa do Índice)";
+                    alerta.style.background = "#fee2e2";
+                    alerta.style.color = "#991b1b";
+                }
+
+                if (marketChart.data.labels.length > 20) {
+                    marketChart.data.labels.shift();
+                    marketChart.data.datasets[0].data.shift();
+                    marketChart.data.datasets[1].data.shift();
+                    marketChart.data.datasets[2].data.shift();
+                }
+
+                marketChart.data.labels.push(agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                marketChart.data.datasets[0].data.push(valorAtualRisco);
+                marketChart.data.datasets[1].data.push(valorAtualSeguranca);
+                marketChart.data.datasets[2].data.push(valorAtualPressao);
+                marketChart.update();
             }
         }
 
         window.onload = () => {
             initChart();
-            setInterval(atualizarDados, 2000); 
-            atualizarDados();
+            setInterval(simularDados, 5000);
+            simularDados();
         };
     </script>
 </body>
