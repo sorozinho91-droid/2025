@@ -51,7 +51,7 @@
             <p>Gerado em tempo real • <span id="relogio"></span></p>
         </div>
 
-        <div id="sentimentoAlerta">Aguardando abertura do mercado (07:00)...</div>
+        <div id="sentimentoAlerta">Aguardando janela de monitoramento (01:00 às 18:00)...</div>
 
         <div class="cards">
             <div class="card">
@@ -67,7 +67,7 @@
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">Evolução Comparativa Histórica (07h - 17h)</div>
+            <div class="chart-title">Evolução Comparativa Histórica (01h - 18h)</div>
             <canvas id="marketChart"></canvas>
         </div>
 
@@ -104,7 +104,6 @@
         let valorAtualRisco = 0;
         let valorAtualSeguranca = 0;
 
-        // --- Relógio e Controle de Horário ---
         function obterHoraBrasilia() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
@@ -116,7 +115,6 @@
             return agora;
         }
 
-        // --- Inicialização do Gráfico ---
         function initChart() {
             const ctx = document.getElementById('marketChart').getContext('2d');
             marketChart = new Chart(ctx, {
@@ -127,18 +125,20 @@
                         {
                             label: 'Ativos de Risco',
                             borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            backgroundColor: 'rgba(16, 185, 129, 0)',
                             data: [],
-                            fill: true,
-                            tension: 0.4
+                            fill: false, // REMOVIDO SOMBRA
+                            pointRadius: 0,
+                            tension: 0  // LINHA RETA
                         },
                         {
                             label: 'Ativos de Segurança',
-                            borderColor: '#ef4444', // MUDADO PARA VERMELHO
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderColor: '#ff0000', // COR ALTERADA PARA VERMELHO
+                            backgroundColor: 'rgba(255, 0, 0, 0)',
                             data: [],
-                            fill: true,
-                            tension: 0.4
+                            fill: false, // REMOVIDO SOMBRA
+                            pointRadius: 0,
+                            tension: 0  // LINHA RETA
                         }
                     ]
                 },
@@ -154,44 +154,39 @@
             });
         }
 
-        // --- Lógica de Dados e Histórico ---
         function atualizarDados() {
             const agora = atualizarRelogio();
             const hora = agora.getHours();
             
-            // FILTRO DE HORÁRIO: 07:00 às 17:00
-            if (hora >= 7 && hora < 17) {
-                // Simulação de oscilação
-                valorAtualRisco += (Math.random() - 0.5) * 0.5;
-                valorAtualSeguranca += (Math.random() - 0.5) * 0.5;
+            // FILTRO DE HORÁRIO: 01:00 às 18:00
+            if (hora >= 1 && hora < 18) {
+                valorAtualRisco += (Math.random() - 0.49) * 0.15;
+                valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
 
-                // Atualiza Cards
                 document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
                 document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
 
-                // ACUMULA DADOS NO GRÁFICO (Sem remover os antigos para criar histórico)
-                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                 
                 marketChart.data.labels.push(labelHora);
                 marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
                 marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
                 
-                marketChart.update();
+                marketChart.update('none');
                 
-                document.getElementById('sentimentoAlerta').textContent = "Mercado Aberto - Coletando Dados...";
+                document.getElementById('sentimentoAlerta').textContent = "Mercado Ativo - Monitorando Fluxo Global";
                 document.getElementById('sentimentoAlerta').style.background = "#d1fae5";
                 document.getElementById('sentimentoAlerta').style.color = "#065f46";
             } else {
-                document.getElementById('sentimentoAlerta').textContent = "Mercado Fechado. Histórico preservado (Horário: 07h às 17h).";
+                document.getElementById('sentimentoAlerta').textContent = "Fora do Horário de Monitoramento (01:00 às 18:00).";
                 document.getElementById('sentimentoAlerta').style.background = "#fee2e2";
                 document.getElementById('sentimentoAlerta').style.color = "#991b1b";
             }
         }
 
-        // Inicialização
         window.onload = () => {
             initChart();
-            setInterval(atualizarDados, 5000); // Atualiza a cada 5 segundos
+            setInterval(atualizarDados, 2000); 
             atualizarDados();
         };
     </script>
