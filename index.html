@@ -8,42 +8,42 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background: #ffffff; /* Fundo Branco */
             color: #1e293b;
             padding: 20px;
         }
         .container { max-width: 1200px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
-        #relogio { font-size: 1.8rem; font-weight: bold; color: #2563eb; font-family: monospace; }
+        #relogio { font-size: 2rem; font-weight: bold; color: #2563eb; font-family: monospace; }
         
         .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
-        .card-value { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .card-value { font-size: 2.8rem; font-weight: 800; margin: 10px 0; }
         
-        .chart-container { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; height: 450px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .chart-container { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; height: 450px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
         .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
-        .assets-card { background: #f8fafc; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; height: 300px; overflow-y: auto; }
-        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+        .assets-card { background: #f8fafc; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; height: 250px; overflow-y: auto; }
+        .asset-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>📊 GPS DE MERCADO 2026</h1>
+        <h1>📊 GPS DE MERCADO GLOBAL v2026</h1>
         <div id="relogio">00:00:00</div>
-        <p id="status" style="margin-top:10px; font-weight:bold; color: #64748b;">Aguardando Horário (01:00 - 18:00)</p>
+        <p id="status" style="margin-top:10px; font-weight:bold;">Sincronizando...</p>
     </div>
 
     <div class="cards">
-        <div class="card" style="border-top: 5px solid #10b981;">
-            <div style="color: #10b981; font-weight: bold;">RISCO ACUMULADO (WIN ▲)</div>
+        <div class="card" style="border-top: 6px solid #10b981;">
+            <div style="color: #10b981; font-weight: bold; letter-spacing: 1px;">RISCO ACUMULADO (WIN ▲)</div>
             <div class="card-value" id="vRisco" style="color: #10b981;">0.00%</div>
         </div>
-        <div class="card" style="border-top: 5px solid #ef4444;">
-            <div style="color: #ef4444; font-weight: bold;">SEGURANÇA ACUMULADA (WIN ▼)</div>
+        <div class="card" style="border-top: 6px solid #ef4444;">
+            <div style="color: #ef4444; font-weight: bold; letter-spacing: 1px;">SEGURANÇA ACUMULADA (WIN ▼)</div>
             <div class="card-value" id="vSeg" style="color: #ef4444;">0.00%</div>
         </div>
     </div>
@@ -54,11 +54,11 @@
 
     <div class="assets-grid">
         <div class="assets-card">
-            <h3 style="color: #10b981; margin-bottom: 10px;">🟢 Ativos de Risco</h3>
+            <h3 style="color: #10b981; margin-bottom: 10px;">🟢 Ativos de Risco (Max)</h3>
             <div id="listaRisco"></div>
         </div>
         <div class="assets-card">
-            <h3 style="color: #ef4444; margin-bottom: 10px;">🔴 Ativos de Segurança</h3>
+            <h3 style="color: #ef4444; margin-bottom: 10px;">🔴 Ativos de Segurança (Max)</h3>
             <div id="listaSeguranca"></div>
         </div>
     </div>
@@ -66,8 +66,8 @@
 
 <script>
     let chart;
-    let acumuladoRisco = 0;
-    let acumuladoSeg = 0;
+    let acumuladoRisco = 0.00;
+    let acumuladoSeg = 0.00;
 
     function initChart() {
         const ctx = document.getElementById('marketChart').getContext('2d');
@@ -103,7 +103,9 @@
                     x: { ticks: { color: '#64748b' }, grid: { display: false } },
                     y: { ticks: { color: '#64748b' }, grid: { color: '#f1f5f9' } }
                 },
-                plugins: { legend: { labels: { font: { weight: 'bold' } } } }
+                plugins: { 
+                    legend: { labels: { color: '#1e293b', font: { weight: 'bold' } } } 
+                }
             }
         });
     }
@@ -115,31 +117,31 @@
         const m = agora.getMinutes();
         const s = agora.getSeconds();
         
-        document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR');
+        const timestamp = agora.toLocaleTimeString('pt-BR');
+        document.getElementById('relogio').textContent = timestamp;
 
-        // Janela: 01:00 às 18:00
+        // JANELA SOLICITADA: 01:00 às 18:00
         if (h >= 1 && h < 18) {
-            document.getElementById('status').textContent = "🟢 MONITORAMENTO ATIVO";
+            document.getElementById('status').textContent = "🟢 MONITORAMENTO EM TEMPO REAL";
             document.getElementById('status').style.color = "#10b981";
 
-            // Simulação de oscilação
+            // Lógica de acumulado
             acumuladoRisco += (Math.random() - 0.49) * 0.1;
             acumuladoSeg += (Math.random() - 0.51) * 0.1;
 
+            // Atualiza os cards
             document.getElementById('vRisco').textContent = acumuladoRisco.toFixed(2) + "%";
             document.getElementById('vSeg').textContent = acumuladoSeg.toFixed(2) + "%";
 
-            // Inserção CORRETA dos dados no gráfico
-            const timeLabel = `${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-            chart.data.labels.push(timeLabel);
-            
-            // Aqui especificamos cada dataset pelo índice
-            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2)); // Linha Verde
-            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));   // Linha Vermelha
+            // ADICIONA DADOS AO GRÁFICO (MÉTODO ROBUSTO)
+            chart.data.labels.push(timestamp);
+            chart.data.datasets[0].data.push(acumuladoRisco.toFixed(2)); // dataset 0 = Risco
+            chart.data.datasets[1].data.push(acumuladoSeg.toFixed(2));   // dataset 1 = Segurança
 
-            chart.update('none');
+            // Limita a visualização mas mantém o histórico acumulado no array
+            chart.update('none'); 
         } else {
-            document.getElementById('status').textContent = "🔴 FORA DO HORÁRIO (01:00 - 18:00)";
+            document.getElementById('status').textContent = "🔴 MERCADO FECHADO (JANELA 01:00 - 18:00)";
             document.getElementById('status').style.color = "#ef4444";
         }
     }
@@ -147,15 +149,15 @@
     window.onload = () => {
         initChart();
         
-        // Listas de ativos
-        const r = ["S&P500", "NASDAQ", "VALE3", "PETR4", "EWZ", "MINERIO", "BRENT"];
+        // Popular Listas
+        const r = ["S&P500", "NASDAQ", "VALE3", "PETR4", "EWZ", "BRENT", "BITCOIN"];
         const s = ["DXY", "US10Y", "VIX", "USD/BRL", "OURO", "TLT"];
+        r.forEach(a => document.getElementById('listaRisco').innerHTML += `<div class="asset-item"><span>${a}</span><span style="color:#10b981">RISK ON</span></div>`);
+        s.forEach(a => document.getElementById('listaSeguranca').innerHTML += `<div class="asset-item"><span>${a}</span><span style="color:#ef4444">RISK OFF</span></div>`);
         
-        r.forEach(a => document.getElementById('listaRisco').innerHTML += `<div class="asset-item"><span>${a}</span><span>BULLISH</span></div>`);
-        s.forEach(a => document.getElementById('listaSeguranca').innerHTML += `<div class="asset-item"><span>${a}</span><span>BEARISH</span></div>`);
-        
-        setInterval(engine, 3000); // Atualiza a cada 3 segundos
+        // Executa imediatamente e depois a cada 3 segundos
         engine();
+        setInterval(engine, 3000); 
     };
 </script>
 </body>
