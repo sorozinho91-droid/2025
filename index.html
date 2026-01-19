@@ -16,23 +16,23 @@
         }
         .container { max-width: 1200px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 40px; }
-        .header h1 {
-            font-size: 3rem;
-            font-weight: bold;
-            background: linear-gradient(to right, #60a5fa, #34d399);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .header h1 { font-size: 3rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header p { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 10px; }
         #relogio { font-size: 1.5rem; font-weight: bold; margin-top: 15px; }
-        .chart-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 40px;
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; }
+        .card-title { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; margin-bottom: 16px; font-weight: 600; }
+        .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
+        .card-subtitle { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: #10b981; color: white; }
+        .badge-red { background: #ef4444; color: white; }
+        .badge-gray { background: #6b7280; color: white; }
+        #sentimentoAlerta {
+            padding: 20px; border-radius: 16px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
+            background: #ffecb3; color: #e65100;
         }
+        .chart-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 40px; }
         canvas { width: 100% !important; max-height: 350px; }
     </style>
 </head>
@@ -53,20 +53,7 @@
 let marketChart;
 let valorAtualRisco = 0;
 let valorAtualSeguranca = 0;
-let valorPressaoSeguranca = 0;
-
-// FUNDO BRANCO DO GRÁFICO
-const fundoBrancoPlugin = {
-    id: 'fundoBranco',
-    beforeDraw: (chart) => {
-        const ctx = chart.ctx;
-        const area = chart.chartArea;
-        ctx.save();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(area.left, area.top, area.width, area.height);
-        ctx.restore();
-    }
-};
+let pressaoSeguranca = 0;
 
 function obterHoraBrasilia() {
     return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
@@ -83,14 +70,12 @@ function initChart() {
     const ctx = document.getElementById('marketChart').getContext('2d');
     marketChart = new Chart(ctx, {
         type: 'line',
-        plugins: [fundoBrancoPlugin],
         data: {
             labels: [],
             datasets: [
                 {
                     label: 'Ativos de Risco',
                     borderColor: '#10b981',
-                    borderWidth: 2,
                     data: [],
                     pointRadius: 0,
                     tension: 0
@@ -98,16 +83,15 @@ function initChart() {
                 {
                     label: 'Ativos de Segurança',
                     borderColor: '#ff0000',
-                    borderWidth: 2,
                     data: [],
                     pointRadius: 0,
                     tension: 0
                 },
                 {
-                    label: 'Pressão da Segurança',
-                    borderColor: '#6b7280',
-                    borderWidth: 1,
+                    label: 'Pressão Segurança',
+                    borderColor: '#3b82f6',
                     borderDash: [6, 6],
+                    borderWidth: 1,
                     data: [],
                     pointRadius: 0,
                     tension: 0
@@ -128,9 +112,7 @@ function initChart() {
                 }
             },
             plugins: {
-                legend: {
-                    labels: { color: '#fff' }
-                }
+                legend: { labels: { color: '#fff' } }
             }
         }
     });
@@ -138,22 +120,18 @@ function initChart() {
 
 function atualizarDados() {
     const agora = atualizarRelogio();
-    const hora = agora.getHours();
+    valorAtualRisco += (Math.random() - 0.49) * 0.15;
+    valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
+    pressaoSeguranca = valorAtualSeguranca - valorAtualRisco;
 
-    if (hora >= 1 && hora < 18) {
-        valorAtualRisco += (Math.random() - 0.49) * 0.15;
-        valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
-        valorPressaoSeguranca = valorAtualSeguranca * -1;
+    const labelHora = agora.toLocaleTimeString('pt-BR', { hour12: false });
 
-        const labelHora = agora.toLocaleTimeString('pt-BR', { hour12: false });
+    marketChart.data.labels.push(labelHora);
+    marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
+    marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
+    marketChart.data.datasets[2].data.push(pressaoSeguranca.toFixed(2));
 
-        marketChart.data.labels.push(labelHora);
-        marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
-        marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-        marketChart.data.datasets[2].data.push(valorPressaoSeguranca.toFixed(2));
-
-        marketChart.update('none');
-    }
+    marketChart.update('none');
 }
 
 window.onload = () => {
