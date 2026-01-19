@@ -16,21 +16,23 @@
         }
         .container { max-width: 1200px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { font-size: 3rem; font-weight: bold; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .header p { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 10px; }
         #relogio { font-size: 1.5rem; font-weight: bold; margin-top: 15px; }
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; }
-        .card-title { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; margin-bottom: 16px; font-weight: 600; }
-        .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
-        .card-subtitle { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-gray { background: #6b7280; color: white; }
-        #sentimentoAlerta {
-            padding: 20px; border-radius: 16px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
-            background: #ffecb3; color: #e65100;
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 40px;
         }
-        .chart-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 40px; }
         canvas { width: 100% !important; max-height: 350px; }
     </style>
 </head>
@@ -41,8 +43,6 @@
         <h1>📊 GPS de Mercado Global</h1>
         <p>Gerado em tempo real • <span id="relogio"></span></p>
     </div>
-
-    <div id="sentimentoAlerta">Aguardando janela de monitoramento (01:00 às 18:00)...</div>
 
     <div class="chart-container">
         <canvas id="marketChart"></canvas>
@@ -55,6 +55,7 @@ let valorAtualRisco = 0;
 let valorAtualSeguranca = 0;
 let valorPressaoSeguranca = 0;
 
+// FUNDO BRANCO DO GRÁFICO
 const fundoBrancoPlugin = {
     id: 'fundoBranco',
     beforeDraw: (chart) => {
@@ -117,11 +118,19 @@ function initChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { ticks: { color: '#000' } },
-                x: { ticks: { color: '#000' } }
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#fff' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#fff' }
+                }
             },
             plugins: {
-                legend: { labels: { color: '#000' } }
+                legend: {
+                    labels: { color: '#fff' }
+                }
             }
         }
     });
