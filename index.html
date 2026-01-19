@@ -25,26 +25,17 @@
         .card-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
         .card-subtitle { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-green { background: #10b981; color: white; }
-        .badge-red { background: #ef4444; color: white; }
         .badge-gray { background: #6b7280; color: white; }
         #sentimentoAlerta {
             padding: 20px; border-radius: 16px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
             background: #ffecb3; color: #e65100;
         }
         .chart-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 40px; }
-        .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .assets-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; height: 450px; overflow-y: auto; }
-        .assets-card.risk { border: 1px solid rgba(52, 211, 153, 0.3); background: rgba(16, 185, 129, 0.05); }
-        .assets-card.safety { border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
-        .assets-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; position: sticky; top: 0; background: rgba(30, 41, 59, 0.9); padding: 5px; z-index: 1; }
-        .asset-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        .asset-symbol { font-weight: 600; color: #60a5fa; }
-        .asset-name { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; text-align: right; flex: 1; margin-left: 10px; }
         canvas { width: 100% !important; max-height: 350px; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="header">
         <h1>📊 GPS de Mercado Global</h1>
@@ -53,130 +44,115 @@
 
     <div id="sentimentoAlerta">Aguardando janela de monitoramento (01:00 às 18:00)...</div>
 
-    <div class="cards">
-        <div class="card">
-            <div class="card-title">📈 Ativos de Risco <span class="badge badge-gray" id="badgeRisco">Neutro</span></div>
-            <div class="card-value" id="valorRisco">0.0%</div>
-            <div class="card-subtitle">Se subir: Ibov sobe, Dólar cai</div>
-        </div>
-        <div class="card">
-            <div class="card-title">📉 Ativos de Segurança <span class="badge badge-gray" id="badgeSeguranca">Neutro</span></div>
-            <div class="card-value" id="valorSeguranca">0.0%</div>
-            <div class="card-subtitle">Se subir: Ibov cai, Dólar sobe</div>
-        </div>
-    </div>
-
     <div class="chart-container">
-        <div class="chart-title">Evolução Comparativa Histórica (01h - 18h)</div>
         <canvas id="marketChart"></canvas>
     </div>
 </div>
 
 <script>
-    let marketChart;
-    let valorAtualRisco = 0;
-    let valorAtualSeguranca = 0;
-    let valorPressaoSeguranca = 0;
+let marketChart;
+let valorAtualRisco = 0;
+let valorAtualSeguranca = 0;
+let valorPressaoSeguranca = 0;
 
-    const fundoBrancoPlugin = {
-        id: 'fundoBranco',
-        beforeDraw: (chart) => {
-            const ctx = chart.ctx;
-            const area = chart.chartArea;
-            ctx.save();
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(area.left, area.top, area.width, area.height);
-            ctx.restore();
-        }
-    };
-
-    function obterHoraBrasilia() {
-        return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+const fundoBrancoPlugin = {
+    id: 'fundoBranco',
+    beforeDraw: (chart) => {
+        const ctx = chart.ctx;
+        const area = chart.chartArea;
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(area.left, area.top, area.width, area.height);
+        ctx.restore();
     }
+};
 
-    function atualizarRelogio() {
-        const agora = obterHoraBrasilia();
-        document.getElementById('relogio').textContent =
-            agora.toLocaleTimeString('pt-BR', { hour12: false });
-        return agora;
-    }
+function obterHoraBrasilia() {
+    return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+}
 
-    function initChart() {
-        const ctx = document.getElementById('marketChart').getContext('2d');
-        marketChart = new Chart(ctx, {
-            type: 'line',
-            plugins: [fundoBrancoPlugin],
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Ativos de Risco',
-                        borderColor: '#10b981',
-                        data: [],
-                        fill: false,
-                        pointRadius: 0,
-                        tension: 0
-                    },
-                    {
-                        label: 'Ativos de Segurança',
-                        borderColor: '#ff0000',
-                        data: [],
-                        fill: false,
-                        pointRadius: 0,
-                        tension: 0
-                    },
-                    {
-                        label: 'Pressão da Segurança',
-                        borderColor: '#6b7280',
-                        data: [],
-                        fill: false,
-                        pointRadius: 0,
-                        tension: 0
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { ticks: { color: '#000' } },
-                    x: { ticks: { color: '#000' } }
+function atualizarRelogio() {
+    const agora = obterHoraBrasilia();
+    document.getElementById('relogio').textContent =
+        agora.toLocaleTimeString('pt-BR', { hour12: false });
+    return agora;
+}
+
+function initChart() {
+    const ctx = document.getElementById('marketChart').getContext('2d');
+    marketChart = new Chart(ctx, {
+        type: 'line',
+        plugins: [fundoBrancoPlugin],
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Ativos de Risco',
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    data: [],
+                    pointRadius: 0,
+                    tension: 0
                 },
-                plugins: {
-                    legend: { labels: { color: '#000' } }
+                {
+                    label: 'Ativos de Segurança',
+                    borderColor: '#ff0000',
+                    borderWidth: 2,
+                    data: [],
+                    pointRadius: 0,
+                    tension: 0
+                },
+                {
+                    label: 'Pressão da Segurança',
+                    borderColor: '#6b7280',
+                    borderWidth: 1,
+                    borderDash: [6, 6],
+                    data: [],
+                    pointRadius: 0,
+                    tension: 0
                 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { ticks: { color: '#000' } },
+                x: { ticks: { color: '#000' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#000' } }
             }
-        });
-    }
-
-    function atualizarDados() {
-        const agora = atualizarRelogio();
-        const hora = agora.getHours();
-
-        if (hora >= 1 && hora < 18) {
-            valorAtualRisco += (Math.random() - 0.49) * 0.15;
-            valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
-            valorPressaoSeguranca = valorAtualSeguranca * -1;
-
-            document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
-            document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
-
-            const labelHora = agora.toLocaleTimeString('pt-BR', { hour12: false });
-
-            marketChart.data.labels.push(labelHora);
-            marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
-            marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-            marketChart.data.datasets[2].data.push(valorPressaoSeguranca.toFixed(2));
-
-            marketChart.update('none');
         }
-    }
+    });
+}
 
-    window.onload = () => {
-        initChart();
-        setInterval(atualizarDados, 2000);
-        atualizarDados();
-    };
+function atualizarDados() {
+    const agora = atualizarRelogio();
+    const hora = agora.getHours();
+
+    if (hora >= 1 && hora < 18) {
+        valorAtualRisco += (Math.random() - 0.49) * 0.15;
+        valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
+        valorPressaoSeguranca = valorAtualSeguranca * -1;
+
+        const labelHora = agora.toLocaleTimeString('pt-BR', { hour12: false });
+
+        marketChart.data.labels.push(labelHora);
+        marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
+        marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
+        marketChart.data.datasets[2].data.push(valorPressaoSeguranca.toFixed(2));
+
+        marketChart.update('none');
+    }
+}
+
+window.onload = () => {
+    initChart();
+    setInterval(atualizarDados, 2000);
+    atualizarDados();
+};
 </script>
+
 </body>
 </html>
