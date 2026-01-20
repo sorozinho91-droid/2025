@@ -2,126 +2,214 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Terminal Macro Laatus - Risco vs Segurança</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Macro 2026 | Fluxo de Risco vs Segurança</title>
     <style>
-        body { font-family: 'Trebuchet MS', sans-serif; background-color: #06090f; color: #ffffff; margin: 0; padding: 15px; }
-        .grid-layout { display: grid; grid-template-columns: 300px 1fr 1fr; gap: 15px; height: 95vh; }
-        .sidebar { background: #131722; border-radius: 8px; padding: 10px; border: 1px solid #2a2e39; display: flex; flex-direction: column; }
-        .main-charts { display: flex; flex-direction: column; gap: 15px; }
-        .chart-box { background: #131722; border-radius: 8px; padding: 10px; border: 1px solid #2a2e39; flex: 1; }
-        h3 { font-size: 0.9rem; margin-bottom: 10px; color: #d1d4dc; text-transform: uppercase; border-bottom: 1px solid #2a2e39; padding-bottom: 5px; }
-        .label-risk { color: #2962ff; }
-        .label-safe { color: #ff9800; }
-        .label-market { color: #00bcd4; }
-        .status-header { grid-column: 1 / span 3; background: #131722; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; border-bottom: 2px solid #2962ff; margin-bottom: 10px; }
+        :root {
+            --bg-color: #06090f;
+            --card-bg: #131722;
+            --border-color: #2a2e39;
+            --accent-blue: #2962ff;
+            --accent-gold: #f2cc60;
+            --text-main: #d1d4dc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            color: white;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden; /* Mantém o terminal fixo na tela */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Topo do Terminal */
+        .header {
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .header-title { display: flex; align-items: center; gap: 15px; }
+        .badge { background: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+        #clock { font-family: 'Courier New', monospace; font-size: 1.4rem; color: #00bcd4; font-weight: bold; }
+        #market-status { font-size: 13px; font-weight: bold; text-transform: uppercase; }
+
+        /* Layout Principal */
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr; /* Coluna lateral fixa e gráfico expansível */
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        /* Barra Lateral (Cotações) */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex-grow: 1;
+            padding: 5px;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 10px;
+            font-size: 12px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Área do Gráfico Principal */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            padding: 5px;
+        }
+
+        .chart-label {
+            position: absolute;
+            top: 15px;
+            left: 70px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .label-risk { color: var(--accent-blue); font-size: 12px; font-weight: bold; }
+        .label-safe { color: var(--accent-gold); font-size: 12px; font-weight: bold; }
+
     </style>
 </head>
 <body>
 
-<div class="status-header" id="market-status">
-    MONITOR DE FLUXO GLOBAL | 00:00 ÀS 19:00 | <span id="clock">00:00:00</span>
-</div>
-
-<div class="grid-layout">
-    <!-- TABELA DE COTAÇÕES (SIDEBAR) -->
-    <div class="sidebar">
-        <h3 class="label-market">Cotações Chave</h3>
-        <!-- Widget de Lista de Cotações do TradingView -->
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com" async>
-            {
-              "colorTheme": "dark",
-              "dateRange": "12M",
-              "showChart": false,
-              "locale": "br",
-              "width": "100%",
-              "height": "100%",
-              "largeChartUrl": "",
-              "isTransparent": true,
-              "showSymbolLogo": true,
-              "showFloatingTooltip": false,
-              "tabs": [
-                {
-                  "title": "Macro / Commo",
-                  "symbols": [
-                    { "s": "TVC:DXY", "d": "Dólar Index (DXY)" },
-                    { "s": "TVC:VIX", "d": "VIX (Índice do Medo)" },
-                    { "s": "TVC:UKOIL", "d": "Brent Crude Oil" },
-                    { "s": "TVC:USOIL", "d": "WTI Crude Oil" },
-                    { "s": "ECONOMICS:CNIRONORE", "d": "Minério de Ferro" }
-                  ]
-                }
-              ]
-            }
-            </script>
+    <!-- CABEÇALHO -->
+    <div class="header">
+        <div class="header-title">
+            <span class="badge">SISTEMA LAATUS 2026</span>
+            <div style="line-height: 1.2;">
+                <div style="font-size: 16px; font-weight: bold;">MONITOR DE FLUXO GLOBAL</div>
+                <div id="market-status">VERIFICANDO HORÁRIO...</div>
+            </div>
         </div>
+        <div id="clock">00:00:00</div>
     </div>
 
-    <!-- GRÁFICO ATIVOS DE RISCO -->
-    <div class="main-charts">
-        <div class="chart-box">
-            <h3 class="label-risk">Ativos de Risco (S&P 500 Futuro)</h3>
-            <div id="chart_risk" style="height: calc(100% - 30px);"></div>
-        </div>
-    </div>
-
-    <!-- GRÁFICO ATIVOS DE SEGURANÇA -->
-    <div class="main-charts">
-        <div class="chart-box">
-            <h3 class="label-safe">Ativos de Segurança (Ouro Spot)</h3>
-            <div id="chart_safe" style="height: calc(100% - 30px);"></div>
-        </div>
-    </div>
-</div>
-
-<script type="text/javascript" src="https://s3.tradingview.com"></script>
-<script type="text/javascript">
-    // Gráfico de Risco
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": "CME_MINI:ES1!",
-        "interval": "5",
-        "timezone": "America/Sao_Paulo",
-        "theme": "dark",
-        "style": "1",
-        "locale": "br",
-        "container_id": "chart_risk",
-        "enable_publishing": false,
-        "hide_top_toolbar": false,
-        "save_image": false
-    });
-
-    // Gráfico de Segurança
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": "OANDA:XAUUSD",
-        "interval": "5",
-        "timezone": "America/Sao_Paulo",
-        "theme": "dark",
-        "style": "1",
-        "locale": "br",
-        "container_id": "chart_safe",
-        "enable_publishing": false,
-        "hide_top_toolbar": false,
-        "save_image": false
-    });
-
-    // Relógio e Lógica de Horário (00:00 às 19:00)
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR');
-        const h = now.getHours();
-        const header = document.getElementById('market-status');
+    <!-- CORPO DO TERMINAL -->
+    <div class="main-container">
         
-        if (h >= 0 && h < 19) {
-            header.style.borderBottomColor = "#238636"; // Verde se estiver no horário
-        } else {
-            header.style.borderBottomColor = "#da3633"; // Vermelho se fora
-        }
-    }
-    setInterval(updateClock, 1000);
-</script>
+        <!-- SIDEBAR: COTAÇÕES SEPARADAS -->
+        <div class="sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-header">Commodities & Índices Macro</div>
+                <!-- Widget de Mercado do TradingView -->
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com" async>
+                    {
+                        "colorTheme": "dark",
+                        "dateRange": "12M",
+                        "showChart": false,
+                        "locale": "br",
+                        "width": "100%",
+                        "height": "100%",
+                        "isTransparent": true,
+                        "showSymbolLogo": true,
+                        "showFloatingTooltip": false,
+                        "tabs": [
+                            {
+                                "title": "Panorama",
+                                "symbols": [
+                                    { "s": "TVC:DXY", "d": "DXY (Dólar Index)" },
+                                    { "s": "TVC:VIX", "d": "VIX (Índice do Medo)" },
+                                    { "s": "TVC:UKOIL", "d": "Petróleo Brent" },
+                                    { "s": "TVC:USOIL", "d": "Petróleo WTI" },
+                                    { "s": "ECONOMICS:CNIRONORE", "d": "Minério de Ferro" },
+                                    { "s": "FX:USDJPY", "d": "USD/JPY (Risk-Off)" }
+                                ]
+                            }
+                        ]
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
 
+        <!-- GRÁFICO CENTRAL: COMPARATIVO 60 SEG -->
+        <div class="chart-container">
+            <div class="chart-label">
+                <span class="label-safe">● OURO (XAUUSD)</span> <span style="color:white">vs</span> <span class="label-risk">● S&P 500 (ES1!)</span>
+            </div>
+            <div id="tradingview_compare_60s" style="height: 100%; width: 100%;"></div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="text/javascript" src="https://s3.tradingview.com"></script>
+    <script type="text/javascript">
+        // Configuração do Gráfico Comparativo de Linhas
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": "OANDA:XAUUSD", // Ativo de Segurança (Ouro)
+            "interval": "1",          // 60 Segundos (Histórico minuto a minuto)
+            "timezone": "America/Sao_Paulo",
+            "theme": "dark",
+            "style": "2",             // 2 = Estilo Gráfico de Linhas
+            "locale": "br",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "hide_side_toolbar": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_compare_60s",
+            "studies": [
+                {
+                    "id": "Overlay@tv-basicstudies",
+                    "inputs": {
+                        "symbol": "CME_MINI:ES1!" // Ativo de Risco (S&P 500 Futuro)
+                    }
+                }
+            ]
+        });
+
+        // Lógica de Relógio e Status (00:00 às 19:00)
+        function updateTerminal() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR');
+            
+            const hours = now.getHours();
+            const statusEl = document.getElementById('market-status');
+            
+            // Período solicitado: 00:00 às 19:00
+            if (hours >= 0 && hours < 19) {
+                statusEl.innerText = "Sessão Ativa: Coletando Histórico 60s";
+                statusEl.style.color = "#4caf50";
+            } else {
+                statusEl.innerText = "Fora do Horário: Monitoramento Pausado";
+                statusEl.style.color = "#ff5252";
+            }
+        }
+
+        setInterval(updateTerminal, 1000);
+        updateTerminal();
+    </script>
 </body>
 </html>
