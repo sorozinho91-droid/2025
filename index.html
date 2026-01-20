@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS de Mercado em Tempo Real - Mini Índice</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>GPS de Mercado em Tempo Real 24h</title>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%);
             color: white;
             padding: 20px;
@@ -30,7 +30,6 @@
         .badge-gray { background: #6b7280; color: white; }
         #sentimentoAlerta {
             padding: 20px; border-radius: 16px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;
-            background: #ffecb3; color: #e65100;
         }
         .chart-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 40px; }
         .assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -47,11 +46,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 GPS de Mercado Global</h1>
-            <p>Gerado em tempo real • <span id="relogio"></span></p>
+            <h1>📊 GPS de Mercado Global 24h</h1>
+            <p>Monitoramento contínuo em tempo real • <span id="relogio"></span></p>
         </div>
 
-        <div id="sentimentoAlerta">Aguardando janela de monitoramento (01:00 às 18:00)...</div>
+        <div id="sentimentoAlerta">Iniciando monitoramento 24h...</div>
 
         <div class="cards">
             <div class="card">
@@ -67,34 +66,26 @@
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">Evolução Comparativa Histórica (01h - 18h)</div>
+            <div class="chart-title">Evolução Comparativa Histórica (Últimos 30 minutos)</div>
             <canvas id="marketChart"></canvas>
         </div>
 
         <div class="assets-grid">
             <div class="assets-card risk">
-                <div class="assets-title">🟢 Ativos de Risco</div>
-                <div class="asset-item"><span class="asset-symbol">GCJ25</span><span class="asset-name">Ouro Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">HGH5</span><span class="asset-name">Cobre Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">CL</span><span class="asset-name">Petróleo WTI Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">.OSEAX</span><span class="asset-name">Oslo All Share</span></div>
-                <div class="asset-item"><span class="asset-symbol">ZS</span><span class="asset-name">Soja Chicago Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">1YMH25</span><span class="asset-name">Dow Jones Futuros</span></div>
-                <div class="asset-item"><span class="asset-symbol">.GDOW</span><span class="asset-name">The Global Dow USD</span></div>
-                <div class="asset-item"><span class="asset-symbol">VALE.K</span><span class="asset-name">Vale SA ADR</span></div>
-                <div class="asset-item"><span class="asset-symbol">PBR</span><span class="asset-name">Petrobras SA ADR</span></div>
-                <div class="asset-item"><span class="asset-symbol">EWZ</span><span class="asset-name">iShares MSCI Brazil ETF</span></div>
+                <div class="assets-title">🟢 Ativos de Risco (Exemplos)</div>
+                <div class="asset-item"><span class="asset-symbol">IBOV</span><span class="asset-name">Ibovespa Index</span></div>
+                <div class="asset-item"><span class="asset-symbol">ES1!</span><span class="asset-name">S&P 500 Futuros</span></div>
+                <div class="asset-item"><span class="asset-symbol">CL1!</span><span class="asset-name">Petróleo WTI Futuros</span></div>
+                <div class="asset-item"><span class="asset-symbol">VALE3</span><span class="asset-name">Vale SA</span></div>
+                <div class="asset-item"><span class="asset-symbol">PETR4</span><span class="asset-name">Petrobras SA</span></div>
             </div>
             <div class="assets-card safety">
-                <div class="assets-title">🔴 Ativos de Segurança</div>
+                <div class="assets-title">🔴 Ativos de Segurança (Exemplos)</div>
                 <div class="asset-item"><span class="asset-symbol">DXY</span><span class="asset-name">Índice Dólar Global</span></div>
-                <div class="asset-item"><span class="asset-symbol">DXH25</span><span class="asset-name">Dólar Futuro</span></div>
-                <div class="asset-item"><span class="asset-symbol">TLT</span><span class="asset-name">Treasury Bond 20Y+</span></div>
-                <div class="asset-item"><span class="asset-symbol">USDJPY</span><span class="asset-name">Dólar / Iene Japonês</span></div>
+                <div class="asset-item"><span class="asset-symbol">DOL1!</span><span class="asset-name">Dólar Futuro Brasil</span></div>
+                <div class="asset-item"><span class="asset-symbol">GC1!</span><span class="asset-name">Ouro Futuro Global</span></div>
                 <div class="asset-item"><span class="asset-symbol">VIX</span><span class="asset-name">Índice de Volatilidade</span></div>
-                <div class="asset-item"><span class="asset-symbol">SHY</span><span class="asset-name">Treasury 1-3 Year</span></div>
-                <div class="asset-item"><span class="asset-symbol">GLD</span><span class="asset-name">SPDR Gold Shares</span></div>
-                <div class="asset-item"><span class="asset-symbol">TIP</span><span class="asset-name">Treasury Infl. Protected</span></div>
+                <div class="asset-item"><span class="asset-symbol">TLT</span><span class="asset-name">Treasury Bond 20Y+</span></div>
             </div>
         </div>
     </div>
@@ -110,9 +101,7 @@
 
         function atualizarRelogio() {
             const agora = obterHoraBrasilia();
-            const formatado = agora.toLocaleTimeString('pt-BR', { hour12: false });
-            document.getElementById('relogio').textContent = formatado;
-            return agora;
+            document.getElementById('relogio').textContent = agora.toLocaleTimeString('pt-BR', { hour12: false });
         }
 
         function initChart() {
@@ -123,22 +112,20 @@
                     labels: [],
                     datasets: [
                         {
-                            label: 'Ativos de Risco',
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0)',
+                            label: 'Ativos de Risco (%)',
                             data: [],
-                            fill: false, // REMOVIDO SOMBRA
-                            pointRadius: 0,
-                            tension: 0  // LINHA RETA
+                            borderColor: '#34d399', // Verde
+                            backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                            fill: false, /* Alterado para não preencher a área e focar na linha */
+                            tension: 0.4
                         },
                         {
-                            label: 'Ativos de Segurança',
-                            borderColor: '#ff0000', // COR ALTERADA PARA VERMELHO
-                            backgroundColor: 'rgba(255, 0, 0, 0)',
+                            label: 'Ativos de Segurança (%)',
                             data: [],
-                            fill: false, // REMOVIDO SOMBRA
-                            pointRadius: 0,
-                            tension: 0  // LINHA RETA
+                            borderColor: '#ef4444', // Vermelho
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            fill: false, /* Alterado para não preencher a área */
+                            tension: 0.4
                         }
                     ]
                 },
@@ -146,49 +133,81 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
-                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }
+                        x: { ticks: { color: 'rgba(255, 255, 255, 0.7)' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        y: { ticks: { color: 'rgba(255, 255, 255, 0.7)' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                     },
-                    plugins: { legend: { labels: { color: '#fff' } } }
+                    plugins: { legend: { labels: { color: 'white' } } }
                 }
             });
         }
 
-        function atualizarDados() {
-            const agora = atualizarRelogio();
-            const hora = agora.getHours();
-            
-            // FILTRO DE HORÁRIO: 01:00 às 18:00
-            if (hora >= 1 && hora < 18) {
-                valorAtualRisco += (Math.random() - 0.49) * 0.15;
-                valorAtualSeguranca += (Math.random() - 0.51) * 0.15;
+        // Simulação de Dados em Tempo Real (Mock)
+        function simularDados() {
+            // Simula uma variação aleatória para fins de demonstração 24h.
+            valorAtualRisco += (Math.random() - 0.5) * 0.1; 
+            valorAtualSeguranca += (Math.random() - 0.5) * 0.1;
 
-                document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + "%";
-                document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + "%";
+            document.getElementById('valorRisco').textContent = valorAtualRisco.toFixed(2) + '%';
+            document.getElementById('valorSeguranca').textContent = valorAtualSeguranca.toFixed(2) + '%';
 
-                const labelHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                
-                marketChart.data.labels.push(labelHora);
-                marketChart.data.datasets[0].data.push(valorAtualRisco.toFixed(2));
-                marketChart.data.datasets[1].data.push(valorAtualSeguranca.toFixed(2));
-                
-                marketChart.update('none');
-                
-                document.getElementById('sentimentoAlerta').textContent = "Mercado Ativo - Monitorando Fluxo Global";
-                document.getElementById('sentimentoAlerta').style.background = "#d1fae5";
-                document.getElementById('sentimentoAlerta').style.color = "#065f46";
+            atualizarBadge('badgeRisco', valorAtualRisco);
+            atualizarBadge('badgeSeguranca', valorAtualSeguranca);
+            atualizarSentimento(valorAtualRisco, valorAtualSeguranca);
+
+            const agora = obterHoraBrasilia();
+            const label = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            // Adiciona dados e garante histórico de 30 pontos (30 minutos)
+            marketChart.data.labels.push(label);
+            marketChart.data.datasets[0].data.push(valorAtualRisco);
+            marketChart.data.datasets[1].data.push(valorAtualSeguranca);
+
+            if (marketChart.data.labels.length > 30) {
+                marketChart.data.labels.shift();
+                marketChart.data.datasets[0].data.shift();
+                marketChart.data.datasets[1].data.shift();
+            }
+
+            marketChart.update();
+        }
+
+        function atualizarBadge(id, valor) {
+            const badge = document.getElementById(id);
+            if (valor > 0.1) {
+                badge.className = 'badge badge-green';
+                badge.textContent = 'Positivo';
+            } else if (valor < -0.1) {
+                badge.className = 'badge badge-red';
+                badge.textContent = 'Negativo';
             } else {
-                document.getElementById('sentimentoAlerta').textContent = "Fora do Horário de Monitoramento (01:00 às 18:00).";
-                document.getElementById('sentimentoAlerta').style.background = "#fee2e2";
-                document.getElementById('sentimentoAlerta').style.color = "#991b1b";
+                badge.className = 'badge badge-gray';
+                badge.textContent = 'Neutro';
             }
         }
 
-        window.onload = () => {
-            initChart();
-            setInterval(atualizarDados, 2000); 
-            atualizarDados();
-        };
+        function atualizarSentimento(risco, seguranca) {
+            const alerta = document.getElementById('sentimentoAlerta');
+            if (risco > seguranca + 0.1) {
+                alerta.style.background = '#d4edda';
+                alerta.style.color = '#155724';
+                alerta.textContent = '🟢 SENTIMENTO PREDOMINANTE: RISK-ON (Apetite ao Risco) - Fluxo favorece o Mini Índice';
+            } else if (seguranca > risco + 0.1) {
+                alerta.style.background = '#f8d7da';
+                alerta.style.color = '#721c24';
+                alerta.textContent = '🔴 SENTIMENTO PREDOMINANTE: RISK-OFF (Aversão ao Risco) - Fluxo desfavorece o Mini Índice';
+            } else {
+                alerta.style.background = '#ffecb3';
+                alerta.style.color = '#e65100';
+                alerta.textContent = '🟡 SENTIMENTO INDEFINIDO: Mercado aguarda direção clara.';
+            }
+        }
+
+        // Inicialização 24h - Removemos a checagem de horário
+        initChart();
+        setInterval(simularDados, 60000); // Atualiza a cada 60 segundos (1 minuto)
+        setInterval(atualizarRelogio, 1000);
+        simularDados(); // Primeira execução imediata
+        atualizarRelogio();
     </script>
 </body>
 </html>
