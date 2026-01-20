@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL MACRO 2026 | Fluxo Global 24h</title>
+    <title>TERMINAL PRO 2026 | Fluxo Global</title>
     <style>
-        /* Reset e Base */
-        * { margin: 0; padding: 0; box-box-sizing: border-box; }
+        :root {
+            --bg: #06090f;
+            --card: #131722;
+            --border: #2a2e39;
+            --green: #00ff88;
+            --blue: #2962ff;
+            --gold: #f2cc60;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
-            background-color: #06090f; 
+            background-color: var(--bg); 
             color: #ffffff; 
-            font-family: "Trebuchet MS", Arial, sans-serif; 
+            font-family: "Trebuchet MS", sans-serif; 
             height: 100vh; 
             display: flex; 
             flex-direction: column;
@@ -18,182 +27,150 @@
             overflow: hidden;
         }
 
-        /* Topo: Relógio e Status */
+        /* Cabeçalho */
         .header {
-            background-color: #131722;
-            border: 1px solid #2a2e39;
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .live-indicator {
-            height: 12px; width: 12px; background-color: #00ff88;
-            border-radius: 50%; box-shadow: 0 0 10px #00ff88;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .info-group h1 { font-size: 1.3rem; letter-spacing: 1px; color: #f0f3fa; }
+        .info-group p { font-size: 0.8rem; color: #848e9c; }
 
-        .title-group h1 { font-size: 1.2rem; letter-spacing: 1px; color: #f0f3fa; }
-        .title-group p { font-size: 0.75rem; color: #848e9c; font-weight: bold; }
-
-        .clock-group { text-align: right; }
-        #clock { font-family: 'Courier New', monospace; font-size: 2.2rem; color: #00ff88; font-weight: bold; line-height: 1; }
-        .tz { font-size: 0.7rem; color: #848e9c; text-transform: uppercase; margin-top: 5px; }
+        .clock-box { text-align: right; }
+        #clock { font-family: 'Courier New', monospace; font-size: 2.5rem; color: var(--green); font-weight: bold; line-height: 1; }
+        .tz { font-size: 0.7rem; color: #848e9c; margin-top: 5px; font-weight: bold; }
 
         /* Container Principal */
-        .main-content {
+        .main-grid {
             display: grid;
             grid-template-columns: 320px 1fr;
             gap: 10px;
             flex: 1;
-            min-height: 0; /* Essencial para o scroll interno */
         }
 
-        /* Lateral: Cotações */
+        /* Lateral - Cotações */
         .sidebar {
-            background-color: #131722;
-            border: 1px solid #2a2e39;
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 8px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
         .sidebar-header {
             padding: 12px;
             background: #1e222d;
             font-size: 0.75rem;
             font-weight: bold;
-            color: #d1d4dc;
             text-transform: uppercase;
-            border-bottom: 1px solid #2a2e39;
+            border-bottom: 1px solid var(--border);
         }
 
-        /* Área do Gráfico */
-        .chart-area {
-            background-color: #131722;
-            border: 1px solid #2a2e39;
+        /* Gráfico */
+        .chart-box {
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 8px;
             position: relative;
-            overflow: hidden;
         }
-        .chart-label {
+        .legend {
             position: absolute;
             top: 15px;
             left: 65px;
             z-index: 10;
-            background: rgba(19, 23, 34, 0.8);
-            padding: 5px 12px;
+            background: rgba(19, 23, 34, 0.9);
+            padding: 6px 15px;
             border-radius: 4px;
-            font-size: 0.75rem;
-            border: 1px solid #2a2e39;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
             pointer-events: none;
         }
-        .label-safe { color: #f2cc60; font-weight: bold; }
-        .label-risk { color: #2962ff; font-weight: bold; }
-
     </style>
 </head>
 <body>
 
-    <!-- TOPO -->
     <header class="header">
-        <div class="header-left">
-            <div class="live-indicator"></div>
-            <div class="title-group">
-                <h1>TERMINAL PANORAMA 24H</h1>
-                <p>ANÁLISE DE FLUXO MACRO • DADOS 2026</p>
-            </div>
+        <div class="info-group">
+            <h1>TERMINAL MACRO 2026</h1>
+            <p>DIREÇÃO DE FLUXO • HISTÓRICO 60S • LAATUS STYLE</p>
         </div>
-        <div class="clock-group">
+        <div class="clock-box">
             <div id="clock">00:00:00</div>
-            <div class="tz">Brasília Time (UTC-3)</div>
+            <div class="tz">HORÁRIO DE BRASÍLIA (BRT)</div>
         </div>
     </header>
 
-    <!-- CONTEÚDO -->
-    <main class="main-content">
-        
-        <!-- BARRA LATERAL COM COTAÇÕES -->
+    <div class="main-grid">
+        <!-- BARRA LATERAL -->
         <aside class="sidebar">
-            <div class="sidebar-header">Ativos Chave (Direção)</div>
-            <div id="tradingview_market_data" style="height: 100%;">
-                <!-- Widget Market Overview -->
-                <div class="tradingview-widget-container">
-                    <div class="tradingview-widget-container__widget"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com" async>
-                    {
-                        "colorTheme": "dark",
-                        "dateRange": "12M",
-                        "showChart": false,
-                        "locale": "br",
-                        "width": "100%",
-                        "height": "100%",
-                        "isTransparent": true,
-                        "showSymbolLogo": true,
-                        "symbols": [
-                            { "s": "TVC:DXY", "d": "DXY (Dólar Index)" },
-                            { "s": "TVC:VIX", "d": "VIX (Medo)" },
-                            { "s": "TVC:UKOIL", "d": "Brent (Petróleo)" },
-                            { "s": "ECONOMICS:CNIRONORE", "d": "Minério de Ferro" },
-                            { "s": "FX:USDJPY", "d": "USD/JPY (Fluxo Yen)" },
-                            { "s": "BITSTAMP:BTCUSD", "d": "Bitcoin (BTC)" }
-                        ]
-                    }
-                    </script>
-                </div>
+            <div class="sidebar-header">Ativos de Referência</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com" async>
+                {
+                    "colorTheme": "dark",
+                    "showChart": false,
+                    "locale": "br",
+                    "width": "100%",
+                    "height": "600",
+                    "isTransparent": true,
+                    "symbols": [
+                        { "s": "TVC:DXY", "d": "DXY (Dólar)" },
+                        { "s": "TVC:VIX", "d": "VIX (Volatilidade)" },
+                        { "s": "TVC:UKOIL", "d": "BRENT (Petróleo)" },
+                        { "s": "TVC:USOIL", "d": "WTI (Petróleo)" },
+                        { "s": "ECONOMICS:CNIRONORE", "d": "MINÉRIO (China)" },
+                        { "s": "BITSTAMP:BTCUSD", "d": "BITCOIN" }
+                    ]
+                }
+                </script>
             </div>
         </aside>
 
-        <!-- GRÁFICO CENTRAL COMPARATIVO -->
-        <section class="chart-area">
-            <div class="chart-label">
-                <span class="label-safe">● OURO (Segurança)</span> 
+        <!-- ÁREA DO GRÁFICO -->
+        <main class="chart-box">
+            <div class="legend">
+                <span style="color:var(--gold)">● OURO (Safe)</span> 
                 <span style="margin: 0 10px; color: #848e9c;">vs</span> 
-                <span class="label-risk">● S&P 500 (Risco)</span>
-                <span style="margin-left: 10px; color: #00ff88;">• 60 SEG</span>
+                <span style="color:var(--blue)">● S&P 500 (Risk)</span>
             </div>
-            <div id="tradingview_main_chart" style="height: 100%; width: 100%;"></div>
-        </section>
+            <div id="tradingview_main" style="height: 100%; width: 100%;"></div>
+        </main>
+    </div>
 
-    </main>
-
-    <!-- CARREGAMENTO DOS DADOS (SCRIPTS) -->
+    <!-- SCRIPTS DE CARREGAMENTO -->
     <script type="text/javascript" src="https://s3.tradingview.com"></script>
     <script type="text/javascript">
-        
-        // 1. Relógio de Brasília (Roda localmente para nunca falhar)
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('pt-BR', { 
-                timeZone: 'America/Sao_Paulo',
-                hour12: false 
-            });
-            document.getElementById('clock').innerText = timeString;
+        // 1. RELÓGIO (Inicia imediatamente)
+        function startClock() {
+            const clockEl = document.getElementById('clock');
+            setInterval(() => {
+                const now = new Date();
+                clockEl.innerText = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+            }, 1000);
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        startClock();
 
-        // 2. Gráfico Comparativo 60s (Ouro vs S&P 500)
-        window.onload = function() {
+        // 2. CARREGAMENTO DO GRÁFICO (Com proteção contra erro)
+        function loadChart() {
             if (typeof TradingView !== 'undefined') {
                 new TradingView.widget({
                     "autosize": true,
                     "symbol": "OANDA:XAUUSD",
-                    "interval": "1", // Histórico de 1 minuto (60s)
+                    "interval": "1",
                     "timezone": "America/Sao_Paulo",
                     "theme": "dark",
-                    "style": "2", // 2 = Gráfico de Linha (melhor para direção)
+                    "style": "2",
                     "locale": "br",
                     "enable_publishing": false,
                     "hide_side_toolbar": false,
                     "allow_symbol_change": true,
-                    "container_id": "tradingview_main_chart",
+                    "container_id": "tradingview_main",
                     "studies": [
                         {
                             "id": "Overlay@tv-basicstudies",
@@ -202,9 +179,13 @@
                     ]
                 });
             } else {
-                console.error("Erro ao carregar TradingView Library");
+                // Tenta recarregar o script se falhar
+                setTimeout(loadChart, 2000);
             }
-        };
+        }
+        
+        // Garante que o gráfico carregue após o DOM
+        window.addEventListener('DOMContentLoaded', loadChart);
     </script>
 </body>
 </html>
