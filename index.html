@@ -2,8 +2,9 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Terminal de Fluxo 2026 | Direção 24h</title>
+    <title>TERMINAL TEMPO REAL 2026 | Fluxo Global</title>
     <style>
+        /* Estilos base Dark Mode */
         :root {
             --bg: #06090f; --card: #131722; --border: #2a2e39;
             --green: #00ff88; --red: #ff5252; --blue: #2962ff; --gold: #f2cc60;
@@ -14,19 +15,19 @@
             height: 100vh; display: flex; flex-direction: column; padding: 10px; overflow: hidden;
         }
         
-        /* Header Profissional */
+        /* Header e Relógio */
         header { 
             background: var(--card); border: 1px solid var(--border); border-radius: 8px;
             padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
         }
         .live-tag { background: var(--red); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        
         #clock { font-family: monospace; font-size: 2.2rem; color: var(--green); font-weight: bold; }
 
+        /* Layout Principal */
         .main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 10px; flex: 1; }
 
-        /* Tabela Macro */
+        /* Sidebar para a tabela de cotações */
         .sidebar { background: var(--card); border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; }
         .sidebar-header { padding: 12px; font-size: 11px; color: #848e9c; text-transform: uppercase; border-bottom: 1px solid var(--border); font-weight: bold; }
 
@@ -44,8 +45,8 @@
     <div style="display: flex; align-items: center; gap: 15px;">
         <span class="live-tag">LIVE 24H</span>
         <div>
-            <h1 style="font-size: 1.2rem; letter-spacing: 1px;">MONITOR DE DIREÇÃO GLOBAL</h1>
-            <p style="font-size: 11px; color: #848e9c;">DADOS EM TEMPO REAL • CICLO 2026</p>
+            <h1 style="font-size: 1.2rem; letter-spacing: 1px;">MONITOR DE MERCADO GLOBAL</h1>
+            <p style="font-size: 11px; color: #848e9c;">Cotações em Tempo Real • Histórico 60s</p>
         </div>
     </div>
     <div style="text-align: right;">
@@ -55,17 +56,19 @@
 </header>
 
 <div class="main-layout">
-    <!-- TABELA DE ATIVOS (DXY, VIX, COMMODITIES) -->
+    <!-- TABELA DE COTAÇÕES (TEMPO REAL) -->
     <aside class="sidebar">
-        <div class="sidebar-header">Termômetro de Mercado</div>
+        <div class="sidebar-header">Termômetro de Ativos Chave</div>
         <div class="tradingview-widget-container">
             <div class="tradingview-widget-container__widget"></div>
+            <!-- Script que carrega a tabela de cotações em tempo real -->
             <script type="text/javascript" src="https://s3.tradingview.com" async>
             {
               "colorTheme": "dark", "showChart": false, "locale": "br", "width": "100%", "height": "600", "isTransparent": true,
               "symbols": [
                 { "s": "CME_MINI:ES1!", "d": "S&P 500 Futuro" },
                 { "s": "TVC:VIX", "d": "VIX (Volatilidade)" },
+                { "s": "OANDA:XAUUSD", "d": "Ouro Spot" },
                 { "s": "TVC:DXY", "d": "Dólar Index" },
                 { "s": "TVC:UKOIL", "d": "Petróleo Brent" },
                 { "s": "ECONOMICS:CNIRONORE", "d": "Minério de Ferro" },
@@ -76,13 +79,12 @@
         </div>
     </aside>
 
-    <!-- GRÁFICO COMPARATIVO (NORMALIZADO PERCENTUAL) -->
+    <!-- GRÁFICO COMPARATIVO (TEMPO REAL E HISTÓRICO) -->
     <main class="chart-area">
         <div class="legend">
-            <span style="color:var(--gold)">● SEGURANÇA (OURO)</span> 
+            <span style="color:var(--gold)">● OURO (Segurança)</span> 
             <span style="margin: 0 10px; color: #848e9c;">vs</span> 
-            <span style="color:var(--blue)">● RISCO (S&P 500)</span>
-            <span style="margin-left: 10px; color: var(--green);">• HISTÓRICO 60S</span>
+            <span style="color:var(--blue)">● S&P 500 (Risco)</span>
         </div>
         <div id="tradingview_fluxo" style="height: 100%;"></div>
     </main>
@@ -90,28 +92,25 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com"></script>
 <script>
-    // 1. Relógio de Brasília de Alta Precisão
+    // 1. Relógio de Brasília em tempo real
     function startClock() {
         const clockElement = document.getElementById('clock');
-        const options = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        const formatter = new Intl.DateTimeFormat('pt-BR', options);
-        
         setInterval(() => {
-            clockElement.innerText = formatter.format(new Date());
+            const now = new Date();
+            clockElement.innerText = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
         }, 1000);
     }
     startClock();
 
-    // 2. Gráfico de Fluxo Comparativo (Ouro vs S&P 500)
-    // O estilo "Compare" do TradingView armazena o histórico em 1 min (60s)
+    // 2. Gráfico Comparativo de Linhas em tempo real (Ouro vs S&P 500)
     window.onload = function() {
         new TradingView.widget({
             "autosize": true,
-            "symbol": "OANDA:XAUUSD", // Ativo 1: Ouro
-            "interval": "1",          // 60 segundos
+            "symbol": "OANDA:XAUUSD", 
+            "interval": "1", // 60 segundos
             "timezone": "America/Sao_Paulo",
             "theme": "dark",
-            "style": "2",             // Estilo: Linha
+            "style": "2", // Gráfico de Linha
             "locale": "br",
             "container_id": "tradingview_fluxo",
             "hide_side_toolbar": false,
@@ -119,7 +118,7 @@
             "studies": [
                 {
                     "id": "Overlay@tv-basicstudies",
-                    "inputs": { "symbol": "CME_MINI:ES1!" } // Ativo 2: S&P 500
+                    "inputs": { "symbol": "CME_MINI:ES1!" }
                 }
             ]
         });
