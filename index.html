@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Macro 2026 | Fluxo de Risco vs Segurança</title>
+    <title>Terminal Macro 2026 | Full Time Brasília</title>
     <style>
         :root {
             --bg-color: #06090f;
@@ -12,140 +12,117 @@
             --accent-blue: #2962ff;
             --accent-gold: #f2cc60;
             --text-main: #d1d4dc;
+            --neon-green: #00ff88;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+            font-family: "Trebuchet MS", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: white;
             margin: 0;
             padding: 10px;
-            overflow: hidden; /* Mantém o terminal fixo na tela */
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Topo do Terminal */
+        /* Header com Relógio de Brasília */
         .header {
             background: var(--card-bg);
-            padding: 12px 20px;
+            padding: 15px 25px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        .header-title { display: flex; align-items: center; gap: 15px; }
-        .badge { background: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
-        #clock { font-family: 'Courier New', monospace; font-size: 1.4rem; color: #00bcd4; font-weight: bold; }
-        #market-status { font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .header-info { display: flex; align-items: center; gap: 20px; }
+        
+        .live-dot {
+            height: 10px; width: 10px; background-color: var(--neon-green);
+            border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: pulse 1.5s infinite;
+        }
 
-        /* Layout Principal */
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .clock-container { text-align: right; }
+        #clock { font-family: 'Courier New', monospace; font-size: 2rem; color: var(--neon-green); font-weight: bold; }
+        .tz-label { font-size: 11px; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Estrutura Principal */
         .main-container {
             display: grid;
-            grid-template-columns: 320px 1fr; /* Coluna lateral fixa e gráfico expansível */
+            grid-template-columns: 320px 1fr;
             gap: 10px;
             flex-grow: 1;
         }
 
-        /* Barra Lateral (Cotações) */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        .sidebar { display: flex; flex-direction: column; gap: 10px; }
+        .sidebar-card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); flex-grow: 1; padding: 5px; overflow: hidden; }
+        .sidebar-title { padding: 10px; font-size: 12px; color: var(--text-main); text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border-color); }
 
-        .sidebar-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            flex-grow: 1;
-            padding: 5px;
-            overflow: hidden;
-        }
-
-        .sidebar-header {
-            padding: 10px;
-            font-size: 12px;
-            color: var(--text-main);
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        /* Área do Gráfico Principal */
-        .chart-container {
-            background: var(--card-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            position: relative;
+        .chart-container { 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            position: relative; 
             padding: 5px;
         }
 
-        .chart-label {
-            position: absolute;
-            top: 15px;
-            left: 70px;
-            z-index: 10;
-            pointer-events: none;
+        .chart-legend {
+            position: absolute; top: 15px; left: 70px; z-index: 10;
+            background: rgba(19, 23, 34, 0.85);
+            padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color);
+            font-size: 12px; pointer-events: none;
         }
-
-        .label-risk { color: var(--accent-blue); font-size: 12px; font-weight: bold; }
-        .label-safe { color: var(--accent-gold); font-size: 12px; font-weight: bold; }
-
     </style>
 </head>
 <body>
 
     <!-- CABEÇALHO -->
     <div class="header">
-        <div class="header-title">
-            <span class="badge">SISTEMA LAATUS 2026</span>
-            <div style="line-height: 1.2;">
-                <div style="font-size: 16px; font-weight: bold;">MONITOR DE FLUXO GLOBAL</div>
-                <div id="market-status">VERIFICANDO HORÁRIO...</div>
+        <div class="header-info">
+            <span class="live-dot"></span>
+            <div>
+                <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px;">TERMINAL PANORAMA 24H</div>
+                <div style="font-size: 12px; color: var(--text-main);">DADOS EM TEMPO REAL • 2026</div>
             </div>
         </div>
-        <div id="clock">00:00:00</div>
+        <div class="clock-container">
+            <div id="clock">00:00:00</div>
+            <div class="tz-label">Horário de Brasília (BRT)</div>
+        </div>
     </div>
 
-    <!-- CORPO DO TERMINAL -->
     <div class="main-container">
-        
-        <!-- SIDEBAR: COTAÇÕES SEPARADAS -->
+        <!-- SIDEBAR: COTAÇÕES EXTRAS -->
         <div class="sidebar">
             <div class="sidebar-card">
-                <div class="sidebar-header">Commodities & Índices Macro</div>
-                <!-- Widget de Mercado do TradingView -->
-                <div class="tradingview-widget-container">
+                <div class="sidebar-title">Monitoramento de Ativos</div>
+                <div class="tradingview-widget-container" style="height: calc(100% - 40px);">
                     <div class="tradingview-widget-container__widget"></div>
                     <script type="text/javascript" src="https://s3.tradingview.com" async>
                     {
                         "colorTheme": "dark",
-                        "dateRange": "12M",
                         "showChart": false,
                         "locale": "br",
                         "width": "100%",
                         "height": "100%",
                         "isTransparent": true,
-                        "showSymbolLogo": true,
-                        "showFloatingTooltip": false,
-                        "tabs": [
-                            {
-                                "title": "Panorama",
-                                "symbols": [
-                                    { "s": "TVC:DXY", "d": "DXY (Dólar Index)" },
-                                    { "s": "TVC:VIX", "d": "VIX (Índice do Medo)" },
-                                    { "s": "TVC:UKOIL", "d": "Petróleo Brent" },
-                                    { "s": "TVC:USOIL", "d": "Petróleo WTI" },
-                                    { "s": "ECONOMICS:CNIRONORE", "d": "Minério de Ferro" },
-                                    { "s": "FX:USDJPY", "d": "USD/JPY (Risk-Off)" }
-                                ]
-                            }
+                        "symbols": [
+                            { "s": "TVC:DXY", "d": "DXY (Dólar)" },
+                            { "s": "TVC:VIX", "d": "VIX (Medo)" },
+                            { "s": "TVC:UKOIL", "d": "Brent (Petróleo)" },
+                            { "s": "TVC:USOIL", "d": "WTI (Petróleo)" },
+                            { "s": "ECONOMICS:CNIRONORE", "d": "Minério de Ferro" },
+                            { "s": "FX:USDJPY", "d": "USD/JPY (Yen)" },
+                            { "s": "BITSTAMP:BTCUSD", "d": "Bitcoin (BTC)" }
                         ]
                     }
                     </script>
@@ -153,63 +130,59 @@
             </div>
         </div>
 
-        <!-- GRÁFICO CENTRAL: COMPARATIVO 60 SEG -->
+        <!-- GRÁFICO: OURO VS S&P 500 (60 SEG) -->
         <div class="chart-container">
-            <div class="chart-label">
-                <span class="label-safe">● OURO (XAUUSD)</span> <span style="color:white">vs</span> <span class="label-risk">● S&P 500 (ES1!)</span>
+            <div class="chart-legend">
+                <span style="color:var(--accent-gold)">● OURO (Segurança)</span> 
+                <span style="color:white; margin: 0 10px;">vs</span> 
+                <span style="color:var(--accent-blue)">● S&P 500 (Risco)</span>
             </div>
-            <div id="tradingview_compare_60s" style="height: 100%; width: 100%;"></div>
+            <div id="tradingview_full_2026" style="height: 100%; width: 100%;"></div>
         </div>
-
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- SCRIPTS DE FUNCIONAMENTO -->
     <script type="text/javascript" src="https://s3.tradingview.com"></script>
     <script type="text/javascript">
-        // Configuração do Gráfico Comparativo de Linhas
+        // 1. Inicializa o Gráfico Comparativo de 60 Segundos
         new TradingView.widget({
             "autosize": true,
-            "symbol": "OANDA:XAUUSD", // Ativo de Segurança (Ouro)
-            "interval": "1",          // 60 Segundos (Histórico minuto a minuto)
+            "symbol": "OANDA:XAUUSD", 
+            "interval": "1", // Intervalo de 1 minuto (60 seg)
             "timezone": "America/Sao_Paulo",
             "theme": "dark",
-            "style": "2",             // 2 = Estilo Gráfico de Linhas
+            "style": "2", // Estilo de Linha para ver direção
             "locale": "br",
-            "toolbar_bg": "#f1f3f6",
             "enable_publishing": false,
             "hide_side_toolbar": false,
             "allow_symbol_change": true,
-            "container_id": "tradingview_compare_60s",
+            "container_id": "tradingview_full_2026",
             "studies": [
                 {
                     "id": "Overlay@tv-basicstudies",
-                    "inputs": {
-                        "symbol": "CME_MINI:ES1!" // Ativo de Risco (S&P 500 Futuro)
-                    }
+                    "inputs": { "symbol": "CME_MINI:ES1!" } // Sobrepõe o S&P 500
                 }
             ]
         });
 
-        // Lógica de Relógio e Status (00:00 às 19:00)
-        function updateTerminal() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR');
+        // 2. Relógio Digital Horário de Brasília
+        function startClock() {
+            const options = {
+                timeZone: 'America/Sao_Paulo',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
             
-            const hours = now.getHours();
-            const statusEl = document.getElementById('market-status');
+            const formatter = new Intl.DateTimeFormat('pt-BR', options);
             
-            // Período solicitado: 00:00 às 19:00
-            if (hours >= 0 && hours < 19) {
-                statusEl.innerText = "Sessão Ativa: Coletando Histórico 60s";
-                statusEl.style.color = "#4caf50";
-            } else {
-                statusEl.innerText = "Fora do Horário: Monitoramento Pausado";
-                statusEl.style.color = "#ff5252";
-            }
+            setInterval(() => {
+                document.getElementById('clock').innerText = formatter.format(new Date());
+            }, 1000);
         }
 
-        setInterval(updateTerminal, 1000);
-        updateTerminal();
+        startClock();
     </script>
 </body>
 </html>
