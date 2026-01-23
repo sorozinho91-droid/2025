@@ -2,104 +2,45 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Rotação Global - Mini-Índice 2026</title>
+    <title>Indicador de Rotação de Mercado 2026</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f1f3f6; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .widget-box { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .full-width { grid-column: span 2; }
-        h2 { font-size: 1.2rem; color: #333; border-bottom: 2px solid #2962ff; padding-bottom: 5px; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+        .dashboard { display: flex; flex-wrap: wrap; gap: 10px; font-family: sans-serif; }
+        .widget { border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex: 1; min-width: 300px; }
+        h3 { font-size: 14px; color: #333; margin-top: 0; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    
-    <!-- 1. PAINEL DE ROTAÇÃO: BRASIL VS MUNDO -->
-    <div class="widget-box">
-        <h2>🌍 Rotação de Fluxo Global (Índices)</h2>
+<div class="dashboard">
+    <!-- WIDGET 1: GRÁFICO REAL-TIME (DADOS B3) -->
+    <div class="widget">
+        <h3>📊 Mini-Índice Futuro (WIN1!)</h3>
         <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com" async>
-            {
-              "colorTheme": "light",
-              "dateRange": "12M",
-              "showChart": false,
-              "locale": "br",
-              "width": "100%",
-              "height": "400",
-              "symbolsGroups": [
-                {
-                  "name": "Rotação Global",
-                  "originalName": "Indices",
-                  "symbols": [
-                    { "name": "BMFBOVESPA:WIN1!", "displayName": "Mini-Índice Futuro" },
-                    { "name": "CME_MINI:ES1!", "displayName": "S&P 500 Futuro" },
-                    { "name": "CME:6L1!", "displayName": "Real Brasileiro (BRL/USD)" },
-                    { "name": "CAPITALCOM:DXY", "displayName": "Dólar Global (DXY)" },
-                    { "name": "TVC:DEU40", "displayName": "DAX Alemanha" },
-                    { "name": "CME_MINI:NQ1!", "displayName": "Nasdaq 100" }
-                  ]
-                }
-              ]
-            }
-            </script>
-        </div>
-    </div>
-
-    <!-- 2. MAPA DE CALOR: FORÇA RELATIVA -->
-    <div class="widget-box">
-        <h2>🔥 Mapa de Força Relativa (B3)</h2>
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com" async>
-            {
-              "exchanges": ["BMFBOVESPA"],
-              "dataSource": "IBOV",
-              "grouping": "sector",
-              "blockSize": "market_cap_basic",
-              "blockColor": "change",
-              "locale": "br",
-              "symbolUrl": "",
-              "colorTheme": "light",
-              "hasTopBar": false,
-              "isDatasetEnabled": false,
-              "isZoomEnabled": true,
-              "hasSymbolTooltip": true,
-              "width": "100%",
-              "height": "400"
-            }
-            </script>
-        </div>
-    </div>
-
-    <!-- 3. GRÁFICO TÉCNICO COM INDICADORES -->
-    <div class="widget-box full-width">
-        <h2>📊 Gráfico Avançado Mini-Índice (WIN)</h2>
-        <div class="tradingview-widget-container" style="height:500px;width:100%">
-            <div id="tradingview_chart" style="height:100%;width:100%"></div>
+            <div id="tradingview_mini_indice"></div>
             <script type="text/javascript" src="https://s3.tradingview.com"></script>
             <script type="text/javascript">
             new TradingView.widget({
-              "autosize": true,
-              "symbol": "BMFBOVESPA:WIN1!",
-              "interval": "5",
-              "timezone": "America/Sao_Paulo",
-              "theme": "light",
-              "style": "1",
-              "locale": "br",
-              "toolbar_bg": "#f1f3f6",
-              "enable_publishing": false,
-              "hide_side_toolbar": false,
-              "allow_symbol_change": true,
-              "container_id": "tradingview_chart"
+                "width": "100%",
+                "height": 400,
+                "symbol": "BMFBOVESPA:WIN1!",
+                "interval": "5",
+                "timezone": "America/Sao_Paulo",
+                "theme": "light",
+                "style": "1",
+                "locale": "br",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_mini_indice"
             });
             </script>
         </div>
     </div>
 
+    <!-- WIDGET 2: ROTAÇÃO GLOBAL (S&P 500, DXY, IBOV) -->
+    <div class="widget">
+        <h3>🌍 Fluxo de Rotação (Mundo vs Brasil)</h3>
+        <iframe src="https://br.widgets.investing.com" width="100%" height="400" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0"></iframe>
+    </div>
 </div>
 
 </body>
