@@ -1,47 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Indicador de Rotação de Mercado 2026</title>
-    <style>
-        .dashboard { display: flex; flex-wrap: wrap; gap: 10px; font-family: sans-serif; }
-        .widget { border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex: 1; min-width: 300px; }
-        h3 { font-size: 14px; color: #333; margin-top: 0; }
-    </style>
+    <title>Indicador Gráfico Ibovespa (IBOV) - Tempo Real</title>
 </head>
 <body>
-
-<div class="dashboard">
-    <!-- WIDGET 1: GRÁFICO REAL-TIME (DADOS B3) -->
-    <div class="widget">
-        <h3>📊 Mini-Índice Futuro (WIN1!)</h3>
-        <div class="tradingview-widget-container">
-            <div id="tradingview_mini_indice"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com"></script>
-            <script type="text/javascript">
-            new TradingView.widget({
-                "width": "100%",
-                "height": 400,
-                "symbol": "BMFBOVESPA:WIN1!",
-                "interval": "5",
-                "timezone": "America/Sao_Paulo",
-                "theme": "light",
-                "style": "1",
-                "locale": "br",
-                "enable_publishing": false,
-                "allow_symbol_change": true,
-                "container_id": "tradingview_mini_indice"
-            });
-            </script>
-        </div>
+    <h2>Gráfico Ibovespa em Tempo Real</h2>
+    <!-- Widget de Gráfico Técnico do TradingView -->
+    <div class="tradingview-widget-container">
+        <div id="tradingview_ibov_direction"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com"></script>
+        <script type="text/javascript">
+        new TradingView.widget({
+          "width": "100%",
+          "height": 500,
+          "symbol": "BMFBOVESPA:IBOV",
+          "interval": "15",
+          "timezone": "America/Sao_Paulo",
+          "theme": "light",
+          "style": "1",
+          "locale": "br",
+          "enable_publishing": false,
+          "allow_symbol_change": true,
+          "container_id": "tradingview_ibov_direction"
+        });
+        </script>
     </div>
-
-    <!-- WIDGET 2: ROTAÇÃO GLOBAL (S&P 500, DXY, IBOV) -->
-    <div class="widget">
-        <h3>🌍 Fluxo de Rotação (Mundo vs Brasil)</h3>
-        <iframe src="https://br.widgets.investing.com" width="100%" height="400" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0"></iframe>
-    </div>
-</div>
-
 </body>
 </html>
