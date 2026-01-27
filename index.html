@@ -1,26 +1,81 @@
-<!-- 1. Biblioteca (Coloca no head ou antes do fim do body) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gráfico Financeiro e Relógio - Tempo Real</title>
+    <script src="https://cdn.jsdelivr.net"></script>
+    <style>
+        body { font-family: sans-serif; }
+        .container { max-width: 800px; margin: 20px auto; }
+        #clock { font-size: 2em; text-align: center; margin-bottom: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="clock"></div>
+        <canvas id="financeChart"></canvas>
+    </div>
 
-<!-- 2. Espaço do gráfico (Define largura para não ficar invisível) -->
-<div style="position: relative; height:400px; width:100%;">
-    <canvas id="macroChart"></canvas>
-</div>
+    <script>
+        // --- 1. Lógica do Relógio de Brasília ---
+        function updateClock() {
+            // "America/Sao_Paulo" é o IANA Time Zone Identifier para Brasília
+            const now = new Date();
+            const options = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                timeZone: 'America/Sao_Paulo',
+                hour12: false
+            };
+            const timeString = now.toLocaleTimeString('pt-BR', options);
+            document.getElementById('clock').textContent = 'Hora de Brasília: ' + timeString + ' GMT-3';
+        }
+        
+        // Atualiza o relógio a cada segundo
+        setInterval(updateClock, 1000);
+        updateClock(); // Chama imediatamente para evitar atraso inicial
 
-<!-- 3. O Script (Sempre no fim do body) -->
-<script>
-    window.onload = function() {
-        const ctx = document.getElementById('macroChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
+        // --- 2. Lógica do Gráfico Dinâmico (Simulação) ---
+        const ctx = document.getElementById('financeChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line', // Usar linha para dados em tempo real
             data: {
-                labels: ['Político', 'Económico', 'Social', 'Tecnológico'],
+                labels: [], // Horários
                 datasets: [{
-                    label: 'Direção do Impacto',
-                    data: [-3, 2, 4, -1],
-                    backgroundColor: ['red', 'green', 'green', 'red']
+                    label: 'Pontuação Mini Índice (Simulação)',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true
                 }]
             },
-            options: { indexAxis: 'y', responsive: true }
+            options: {
+                responsive: true,
+                scales: { x: { type: 'category' } }
+            }
         });
-    };
-</script>
+
+        function addData(chart, label, newData) {
+            chart.data.labels.push(label);
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.push(newData);
+            });
+            // Mantém apenas os últimos 15 pontos de dados para não sobrecarregar
+            if (chart.data.labels.length > 15) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach((dataset) => dataset.data.shift());
+            }
+            chart.update(); // Atualiza o gráfico com os novos dados
+        }
+
+        // Simula a chegada de novos dados a cada 2 segundos (num mundo real viria de uma API)
+        setInterval(() => {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString('pt-BR', { hour12: false, timeZone: 'America/Sao_Paulo' });
+            // Simula um valor aleatório para o índice entre 100000 e 130000
+            const newValue = Math.random() * 30000 + 100000; 
+            addData(myChart, timeLabel, newValue);
+        }, 2000);
+    </script>
+</body>
+</html>
