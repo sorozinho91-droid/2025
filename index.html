@@ -2,73 +2,71 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Trader Macro</title>
-    <!-- Biblioteca Principal -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { background: #1a1a1a; color: white; font-family: Arial; text-align: center; }
-        #relogio { font-size: 40px; margin: 20px; color: #00ff00; font-family: monospace; }
-        .box { width: 90%; max-width: 700px; margin: auto; background: #222; padding: 15px; border-radius: 8px; }
+        body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
+        /* Forçamos uma altura mínima para o gráfico não "sumir" */
+        .chart-container { 
+            position: relative; 
+            height: 400px !important; 
+            width: 100%; 
+            border: 1px solid #333; 
+        }
+        #relogio { font-size: 30px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="relogio">00:00:00</div>
-    
-    <div class="box">
-        <canvas id="meuGrafico"></canvas>
+    <div id="relogio">CARREGANDO HORA...</div>
+
+    <div class="chart-container">
+        <canvas id="graficoMercado"></canvas>
     </div>
 
     <script>
-        // --- RELÓGIO BRASÍLIA ---
-        setInterval(() => {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {
-                timeZone: 'America/Sao_Paulo'
-            });
-        }, 1000);
+        // 1. Relógio imediato
+        function atualizarRelogio() {
+            document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'});
+        }
+        setInterval(atualizarRelogio, 1000);
+        atualizarRelogio();
 
-        // --- CONFIGURAÇÃO DO GRÁFICO ---
-        const ctx = document.getElementById('meuGrafico').getContext('2d');
-        const grafico = new Chart(ctx, {
+        // 2. Gráfico com dados fixos para teste imediato
+        const ctx = document.getElementById('graficoMercado').getContext('2d');
+        const config = {
             type: 'line',
             data: {
-                labels: ['Início'],
+                labels: ['Início', 'Agora'],
                 datasets: [{
                     label: 'Mini Índice (WIN)',
-                    data: [125000],
-                    borderColor: '#00ff00',
-                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
-                    fill: true,
-                    tension: 0.4
+                    data: [120000, 120500],
+                    borderColor: '#0f0',
+                    tension: 0.1
                 }]
             },
             options: {
                 responsive: true,
-                scales: {
-                    y: { grid: { color: '#444' }, ticks: { color: '#fff' } },
-                    x: { grid: { color: '#444' }, ticks: { color: '#fff' } }
-                }
+                maintainAspectRatio: false // IMPORTANTE: permite que o gráfico use a altura do container
             }
-        });
+        };
 
-        // --- ATUALIZAÇÃO EM TEMPO REAL ---
+        // Criar o gráfico
+        const meuGrafico = new Chart(ctx, config);
+
+        // 3. Simulação de atualização
         setInterval(() => {
-            const hora = new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'});
-            const ultimoValor = grafico.data.datasets[0].data[grafico.data.datasets[0].data.length - 1];
-            const variacao = (Math.random() - 0.5) * 200; // Simula oscilação
-            const novoValor = ultimoValor + variacao;
+            const novaHora = new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'});
+            const novoValor = 120000 + (Math.random() * 500);
+            
+            meuGrafico.data.labels.push(novaHora);
+            meuGrafico.data.datasets[0].data.push(novoValor);
 
-            grafico.data.labels.push(hora);
-            grafico.data.datasets[0].data.push(novoValor);
-
-            if (grafico.data.labels.length > 10) {
-                grafico.data.labels.shift();
-                grafico.data.datasets[0].data.shift();
+            if(meuGrafico.data.labels.length > 10) {
+                meuGrafico.data.labels.shift();
+                meuGrafico.data.datasets[0].data.shift();
             }
-
-            grafico.update();
-        }, 2000);
+            meuGrafico.update();
+        }, 3000);
     </script>
 </body>
 </html>
