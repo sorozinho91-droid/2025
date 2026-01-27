@@ -1,36 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Teste de Gráfico Ibovespa</title>
-</head>
-<body>
-
-    <h1>Meu Gráfico do Ibovespa</h1>
-
-    <!-- COLE O CODIGO AQUI -->
-    <div class="tradingview-widget-container">
-      <div id="tradingview_fbe5e"></div>
-      <div class="tradingview-widget-copyright"><a href="https://br.tradingview.com" rel="noopener nofollow" target="_blank"><span class="blue-text">Gráfico</span></a> por TradingView</div>
-      <script type="text/javascript" src="https://s3.tradingview.com"></script>
-      <script type="text/javascript">
-      new TradingView.widget(
-      {
-      "width": "100%",
-      "height": 450,
-      "symbol": "BMFBOVESPA:IBOV",
-      "interval": "D",
-      "timezone": "America/Sao_Paulo",
-      "theme": "light",
-      "style": "1",
-      "locale": "br",
-      "enable_publishing": false,
-      "allow_symbol_change": true,
-      "container_id": "tradingview_fbe5e"
-      }
-      );
-      </script>
-    </div>
-    <!-- FIM DO CODIGO -->
-
-</body>
-</html>
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com" async>
+  {
+  "symbols": [
+    { "proName": "BMFBOVESPA:VALE3", "title": "Vale ON" },
+    { "proName": "BMFBOVESPA:PETR4", "title": "Petrobras PN" },
+    { "proName": "BMFBOVESPA:ITUB4", "title": "Itaú Unibanco" },
+    { "proName": "BMFBOVESPA:BBDC4", "title": "Bradesco" },
+    { "proName": "BMFBOVESPA:BBAS3", "title": "Banco do Brasil" },
+    { "proName": "AMEX:EWZ", "title": "EWZ (ETF Brasil)" }
+  ],
+  "showSymbolLogo": true,
+  "colorTheme": "light",
+  "isTransparent": false,
+  "displayMode": "adaptive",
+  "locale": "br"
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
