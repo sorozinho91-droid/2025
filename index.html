@@ -1,72 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <title>Dashboard Financeiro em Tempo Real</title>
+    <!-- Carrega a biblioteca Chart.js -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
-        /* Forçamos uma altura mínima para o gráfico não "sumir" */
-        .chart-container { 
-            position: relative; 
-            height: 400px !important; 
-            width: 100%; 
-            border: 1px solid #333; 
-        }
-        #relogio { font-size: 30px; margin-bottom: 20px; }
+        body { font-family: sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #relogio { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #333; }
+        .chart-container { position: relative; height: 400px; width: 100%; }
     </style>
 </head>
 <body>
-
-    <div id="relogio">CARREGANDO HORA...</div>
-
-    <div class="chart-container">
-        <canvas id="graficoMercado"></canvas>
+    <div class="container">
+        <div id="relogio">Hora de Brasília: 00:00:00</div>
+        <div class="chart-container">
+            <canvas id="graficoRealTime"></canvas>
+        </div>
     </div>
 
     <script>
-        // 1. Relógio imediato
+        // --- 1. RELÓGIO DE BRASÍLIA ---
         function atualizarRelogio() {
-            document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'});
+            const agora = new Date();
+            const timeString = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
+            document.getElementById('relogio').innerText = 'Hora de Brasília: ' + timeString;
         }
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
-        // 2. Gráfico com dados fixos para teste imediato
-        const ctx = document.getElementById('graficoMercado').getContext('2d');
-        const config = {
+        // --- 2. CONFIGURAÇÃO DO GRÁFICO (CHART.JS) ---
+        const ctx = document.getElementById('graficoRealTime').getContext('2d');
+        const meuGrafico = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Início', 'Agora'],
+                labels: [], // Horários aparecerão aqui
                 datasets: [{
-                    label: 'Mini Índice (WIN)',
-                    data: [120000, 120500],
-                    borderColor: '#0f0',
-                    tension: 0.1
+                    label: 'Mini Índice (WIN$) - Simulação',
+                    data: [], // Valores simulados aparecerão aqui
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false // IMPORTANTE: permite que o gráfico use a altura do container
+                maintainAspectRatio: false, // Permite o ajuste de altura
+                scales: {
+                    x: { beginAtZero: false },
+                    y: { beginAtZero: false }
+                }
             }
-        };
+        });
 
-        // Criar o gráfico
-        const meuGrafico = new Chart(ctx, config);
-
-        // 3. Simulação de atualização
+        // --- 3. ATUALIZAÇÃO SIMULADA DE DADOS (TEMPO REAL) ---
         setInterval(() => {
-            const novaHora = new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'});
-            const novoValor = 120000 + (Math.random() * 500);
+            const horaAtual = new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo', hour12: false});
+            // Simula um valor do índice (ex: 120.000 pontos) com flutuação aleatória
+            const novoValor = 120000 + (Math.random() * 500 - 250); 
             
-            meuGrafico.data.labels.push(novaHora);
-            meuGrafico.data.datasets[0].data.push(novoValor);
+            // Adiciona o novo ponto de dados
+            meuGrafico.data.labels.push(horaAtual);
+            meuGrafico.data.datasets.data.push(novoValor);
 
-            if(meuGrafico.data.labels.length > 10) {
+            // Mantém apenas os últimos 15 pontos no gráfico
+            if (meuGrafico.data.labels.length > 15) {
                 meuGrafico.data.labels.shift();
-                meuGrafico.data.datasets[0].data.shift();
+                meuGrafico.data.datasets.data.shift();
             }
-            meuGrafico.update();
-        }, 3000);
+
+            meuGrafico.update('none'); // Atualiza o gráfico
+        }, 2000); // Atualiza a cada 2 segundos
     </script>
 </body>
 </html>
