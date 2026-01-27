@@ -1,47 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gráfico Macro - Direção de Fatores</title>
-    <!-- Carregar a biblioteca Chart.js via CDN -->
-    <script src="https://cdn.jsdelivr.net"></script>
-</head>
-<body>
-    <div style="width: 600px; margin: auto;">
-        <canvas id="macroChart"></canvas>
-    </div>
+<!-- 1. Biblioteca (Coloca no head ou antes do fim do body) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script>
+<!-- 2. Espaço do gráfico (Define largura para não ficar invisível) -->
+<div style="position: relative; height:400px; width:100%;">
+    <canvas id="macroChart"></canvas>
+</div>
+
+<!-- 3. O Script (Sempre no fim do body) -->
+<script>
+    window.onload = function() {
         const ctx = document.getElementById('macroChart').getContext('2d');
-        const macroChart = new Chart(ctx, {
-            type: 'bar', // Tipo de gráfico: barras
+        new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Político', 'Económico', 'Social', 'Tecnológico', 'Ecológico', 'Legal'],
+                labels: ['Político', 'Económico', 'Social', 'Tecnológico'],
                 datasets: [{
-                    label: 'Impacto (Direção e Intensidade)',
-                    data: [-2, 3, 1, 5, -1, 2], // Valores negativos = ameaças, positivos = oportunidades
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.6)', // Cor para fatores negativos
-                        'rgba(75, 192, 192, 0.6)'  // Cor para fatores positivos
-                    ],
-                    borderColor: 'rgba(0, 0, 0, 0.1)',
-                    borderWidth: 1
+                    label: 'Direção do Impacto',
+                    data: [-3, 2, 4, -1],
+                    backgroundColor: ['red', 'green', 'green', 'red']
                 }]
             },
-            options: {
-                indexAxis: 'y', // Transforma em barras horizontais
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        suggestedMin: -5,
-                        suggestedMax: 5
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Análise de Fatores Macro (PESTEL)' }
-                }
-            }
+            options: { indexAxis: 'y', responsive: true }
         });
-    </script>
-</body>
-</html>
+    };
+</script>
