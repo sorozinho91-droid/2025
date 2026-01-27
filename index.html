@@ -1,61 +1,18 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { background: #121212; color: #00ff88; font-family: 'Courier New', monospace; margin: 0; padding: 20px; overflow-x: auto; white-space: nowrap; }
-        .titulo { color: #fff; margin-bottom: 10px; font-size: 1.2rem; text-align: center; }
-        #relogio { font-size: 2rem; margin-bottom: 20px; text-align: center; text-shadow: 0 0 10px #00ff88; }
-        /* O container agora permite rolagem horizontal */
-        .container { display: flex; align-items: flex-end; height: 300px; gap: 4px; border-bottom: 2px solid #333; padding: 10px 0; width: fit-content; min-width: 100%; }
-        .barra { background: #00ff88; transition: height 0.5s ease; min-width: 25px; position: relative; margin: 0 2px; }
-        .label { position: absolute; bottom: -25px; font-size: 9px; color: #888; width: 100%; text-align: center; transform: rotate(45deg); transform-origin: top center; }
-    </style>
-</head>
-<body>
-
-    <div class="titulo">MINI ÍNDICE (WIN) - HISTÓRICO DE VOLATILIDADE</div>
-    <div id="relogio">00:00:00</div>
-
-    <div style="overflow-x: auto;"> <!-- Wrapper para permitir a rolagem -->
-        <div class="container" id="grafico">
-            <!-- Barras vão acumular aqui -->
-        </div>
-    </div>
-
-    <script>
-        // 1. Relógio de Brasília
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('relogio').innerText = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // 2. Gráfico de Barras Manual (Acumulando Histórico)
-        const grafico = document.getElementById('grafico');
-
-        function adicionarBarra() {
-            const altura = Math.floor(Math.random() * 80) + 20;
-            const novaBarra = document.createElement('div');
-            novaBarra.className = 'barra';
-            novaBarra.style.height = altura + '%';
-            
-            const label = document.createElement('div');
-            label.className = 'label';
-            const agora = new Date();
-            label.innerText = agora.getHours() + ':' + agora.getMinutes() + ':' + agora.getSeconds();
-            novaBarra.appendChild(label);
-
-            grafico.appendChild(novaBarra);
-            
-            // Rola automaticamente para a direita para ver as barras mais recentes
-            grafico.scrollLeft = grafico.scrollWidth;
-        }
-
-        // Atualiza a cada 3 segundos
-        setInterval(adicionarBarra, 3000);
-        adicionarBarra(); // Adiciona a primeira barra
-    </script>
-</body>
-</html>
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com" async>
+  {
+  "symbol": "CAPITALCOM:DXY",
+  "width": 350,
+  "height": 220,
+  "locale": "br",
+  "dateRange": "12M",
+  "colorTheme": "light",
+  "isTransparent": false,
+  "autosize": false,
+  "largeChartUrl": ""
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
