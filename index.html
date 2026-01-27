@@ -1,49 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gráfico Financeiro e Relógio - Tempo Real</title>
-    <script src="https://cdn.jsdelivr.net"></script>
-    <style>
-        body { font-family: sans-serif; }
-        .container { max-width: 800px; margin: 20px auto; }
-        #clock { font-size: 2em; text-align: center; margin-bottom: 20px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="clock"></div>
-        <canvas id="financeChart"></canvas>
-    </div>
+    <!-- ... Resto do HTML e Script do Relógio ... -->
 
     <script>
-        // --- 1. Lógica do Relógio de Brasília ---
+        // --- 1. Lógica do Relógio de Brasília (mantida) ---
         function updateClock() {
-            // "America/Sao_Paulo" é o IANA Time Zone Identifier para Brasília
             const now = new Date();
             const options = { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                timeZone: 'America/Sao_Paulo',
-                hour12: false
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                timeZone: 'America/Sao_Paulo', hour12: false
             };
             const timeString = now.toLocaleTimeString('pt-BR', options);
             document.getElementById('clock').textContent = 'Hora de Brasília: ' + timeString + ' GMT-3';
         }
-        
-        // Atualiza o relógio a cada segundo
         setInterval(updateClock, 1000);
-        updateClock(); // Chama imediatamente para evitar atraso inicial
+        updateClock(); 
 
-        // --- 2. Lógica do Gráfico Dinâmico (Simulação) ---
+        // --- 2. Lógica do Gráfico Dinâmico e Aparecimento Imediato ---
         const ctx = document.getElementById('financeChart').getContext('2d');
         const myChart = new Chart(ctx, {
-            type: 'line', // Usar linha para dados em tempo real
+            type: 'line', 
             data: {
-                labels: [], // Horários
+                // Adiciona alguns pontos de dados iniciais para que o gráfico não comece vazio
+                labels: ['01:08:50', '01:08:55', '01:09:00'], 
                 datasets: [{
                     label: 'Pontuação Mini Índice (Simulação)',
-                    data: [],
+                    data: [120100, 120150, 120050], // Valores de exemplo
                     borderColor: 'rgba(75, 192, 192, 1)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     fill: true
@@ -55,25 +35,24 @@
             }
         });
 
+        // Função para adicionar novos dados (mantida)
         function addData(chart, label, newData) {
             chart.data.labels.push(label);
             chart.data.datasets.forEach((dataset) => {
                 dataset.data.push(newData);
             });
-            // Mantém apenas os últimos 15 pontos de dados para não sobrecarregar
             if (chart.data.labels.length > 15) {
                 chart.data.labels.shift();
                 chart.data.datasets.forEach((dataset) => dataset.data.shift());
             }
-            chart.update(); // Atualiza o gráfico com os novos dados
+            chart.update(); 
         }
 
-        // Simula a chegada de novos dados a cada 2 segundos (num mundo real viria de uma API)
+        // Simula a chegada de novos dados a cada 2 segundos (mantida)
         setInterval(() => {
             const now = new Date();
             const timeLabel = now.toLocaleTimeString('pt-BR', { hour12: false, timeZone: 'America/Sao_Paulo' });
-            // Simula um valor aleatório para o índice entre 100000 e 130000
-            const newValue = Math.random() * 30000 + 100000; 
+            const newValue = Math.random() * 300 + 120000; // Simula valor mais realista perto de 120000 pontos
             addData(myChart, timeLabel, newValue);
         }, 2000);
     </script>
