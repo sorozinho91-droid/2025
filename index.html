@@ -1,21 +1,19 @@
 <!-- TradingView Widget BEGIN -->
-<div class="tradingview-widget-container">
-  <div class="tradingview-widget-container__widget"></div>
+<div class="tradingview-widget-container" style="height:600px;width:100%;">
+  <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%;"></div>
   <script type="text/javascript" src="https://s3.tradingview.com" async>
   {
-  "symbols": [
-    { "proName": "BMFBOVESPA:VALE3", "title": "Vale ON" },
-    { "proName": "BMFBOVESPA:PETR4", "title": "Petrobras PN" },
-    { "proName": "BMFBOVESPA:ITUB4", "title": "Itaú Unibanco" },
-    { "proName": "BMFBOVESPA:BBDC4", "title": "Bradesco" },
-    { "proName": "BMFBOVESPA:BBAS3", "title": "Banco do Brasil" },
-    { "proName": "AMEX:EWZ", "title": "EWZ (ETF Brasil)" }
-  ],
-  "showSymbolLogo": true,
-  "colorTheme": "light",
-  "isTransparent": false,
-  "displayMode": "adaptive",
-  "locale": "br"
+  "autosize": true,
+  "symbol": "BMFBOVESPA:VALE3",
+  "interval": "D",
+  "timezone": "America/Sao_Paulo",
+  "theme": "light",
+  "style": "1",
+  "locale": "br",
+  "enable_publishing": false,
+  "allow_symbol_change": true,
+  "calendar": false,
+  "support_host": "https://www.tradingview.com"
 }
   </script>
 </div>
