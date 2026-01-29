@@ -2,63 +2,27 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Comparativo Risco vs Segurança - Realtime</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Comparativo Real-Time</title>
     <style>
-        body { background-color: #000; margin: 0; padding: 10px; color: white; font-family: sans-serif; }
-        .header { text-align: center; padding: 10px; background: #131722; border-radius: 8px 8px 0 0; border: 1px solid #333; }
-        #chart-container { height: 85vh; border: 1px solid #333; border-top: none; }
+        body { margin: 0; padding: 0; background-color: #131722; overflow: hidden; }
+        .chart-wrapper { width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0; color: #2962FF;">📊 Risco (S&P 500) vs. Segurança (Ouro)</h2>
-    <p style="margin:5px 0 0; font-size: 0.9em; color: #888;">Comparação percentual em tempo real (Intraday)</p>
+<div class="chart-wrapper">
+    <!-- Widget Widget do TradingView com Comparação Ativa -->
+    <iframe 
+        src="https://s.tradingview.com" 
+        width="100%" 
+        height="100%" 
+        frameborder="0" 
+        allowtransparency="true" 
+        scrolling="no" 
+        allowfullscreen>
+    </iframe>
 </div>
-
-<div id="chart-container">
-    <!-- TradingView Widget BEGIN -->
-    <div class="tradingview-widget-container" style="height:100%;width:100%">
-        <div id="tradingview_logic" style="height:100%;width:100%"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com"></script>
-        <script type="text/javascript">
-        new TradingView.widget({
-          "autosize": true,
-          "symbol": "SPY", // Ativo Principal (Risco)
-          "interval": "5", // Gráfico de 5 minutos para histórico detalhado do dia
-          "timezone": "America/Sao_Paulo",
-          "theme": "dark",
-          "style": "2", // Estilo de Linha
-          "locale": "br",
-          "toolbar_bg": "#f1f3f6",
-          "enable_publishing": false,
-          "hide_top_toolbar": false,
-          "hide_legend": false,
-          "save_image": false,
-          "container_id": "tradingview_logic",
-          "studies": [
-            "Compare@tv-basicstudies" // Ativa a função de comparação
-          ],
-          "overrides": {
-            "mainSeriesProperties.style": 2
-          },
-          // Adiciona o Ouro (Segurança) como linha comparativa automática
-          "details": true,
-          "hotlist": true,
-          "calendar": true,
-          "show_popup_button": true,
-          "popup_width": "1000",
-          "popup_height": "650"
-        });
-        </script>
-    </div>
-    <!-- TradingView Widget END -->
-</div>
-
-<script>
-    // Instrução: No gráfico, clique no botão "+" ou "Comparar" 
-    // e digite "GOLD" para sobrepor a segunda linha se não carregar automaticamente.
-</script>
 
 </body>
 </html>
