@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Macro Tendência Dashboard Simulado</title>
-    <!-- Inclui a biblioteca Chart.js -->
+    <!-- Inclui a biblioteca Chart.js no HEAD para carregar primeiro -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         .dashboard-container { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
@@ -99,10 +99,8 @@
 
             // 2. Simula novos dados para o gráfico de histórico (linha)
             const lastPrice = historyChart.data.datasets.data[historyChart.data.datasets.data.length - 1];
-            // Gera um novo preço ligeiramente diferente (+/- 0.01)
             const newPrice = lastPrice + (Math.random() - 0.5) * 0.02; 
 
-            // Adiciona o novo ponto e remove o mais antigo para manter o gráfico dinâmico
             historyChart.data.labels.push(new Date().toLocaleTimeString());
             historyChart.data.datasets.data.push(parseFloat(newPrice.toFixed(3)));
             historyChart.data.labels.shift();
