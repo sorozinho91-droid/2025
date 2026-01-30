@@ -2,108 +2,72 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macro Tendência - Foco em Gráficos</title>
-    <!-- Importando Chart.js para os gráficos funcionarem -->
+    <title>Macro Tendência - Versão Estável</title>
+    <!-- Link oficial e atualizado do Chart.js via JSDelivr -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .dashboard-container { max-width: 1000px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { font-size: 1.1rem; margin-top: 0; color: #555; }
-        #last-updated { font-weight: bold; color: #007bff; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .chart-box { height: 300px; position: relative; }
+        h1 { color: #1a73e8; font-size: 1.5rem; text-align: center; }
+        .status { text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="dashboard-container">
-    <div class="header">
-        <h1>📊 Macro Tendência Dólar</h1>
-        <div>Atualização: <span id="last-updated">--:--:--</span></div>
-    </div>
+<div class="container">
+    <h1>📈 Painel de Tendências Global</h1>
+    <div class="status">Atualização em tempo real: <span id="timer">Iniciando...</span></div>
 
-    <!-- Gráfico de Rosca: Força Atual -->
     <div class="card">
-        <h2>📈 Força da Tendência Atual (Relativo %)</h2>
-        <div class="chart-container">
-            <canvas id="donutChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Gráfico de Linha: Histórico -->
-    <div class="card">
-        <h2>🌍 Histórico da Tendência Global (Tempo Real)</h2>
-        <div class="chart-container">
-            <canvas id="lineChart"></canvas>
+        <div class="chart-box">
+            <canvas id="mainChart"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    // Inicialização do Gráfico de Rosca (Donut)
-    const donutCtx = document.getElementById('donutChart').getContext('2d');
-    const donutChart = new Chart(donutCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Alta', 'Neutra', 'Baixa'],
-            datasets: [{
-                data: [33, 33, 34],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-                hoverOffset: 4,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } }
+    // 1. Verificar se o Chart.js foi carregado com sucesso
+    if (typeof Chart === 'undefined') {
+        document.body.innerHTML = "<h2 style='color:red; text-align:center; margin-top:50px;'>Erro: Não foi possível carregar a biblioteca de gráficos. Verifique sua conexão com a internet.</h2>";
+    } else {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        
+        // 2. Criar o gráfico
+        const trendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(10).fill(''),
+                datasets: [{
+                    label: 'Força da Tendência',
+                    data: [50, 52, 48, 55, 60, 58, 62, 65, 63, 68],
+                    borderColor: '#1a73e8',
+                    backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { min: 0, max: 100 } }
+            }
+        });
+
+        // 3. Função de atualização segura
+        function refresh() {
+            document.getElementById('timer').textContent = new Date().toLocaleTimeString();
+            
+            // Simular novo dado
+            const newValue = Math.floor(Math.random() * 40) + 30; // valor entre 30 e 70
+            trendChart.data.datasets[0].data.push(newValue);
+            trendChart.data.datasets[0].data.shift();
+            trendChart.update('none'); // 'none' desativa animações bruscas na atualização
         }
-    });
 
-    // Inicialização do Gráfico de Linha (Histórico)
-    const lineCtx = document.getElementById('lineChart').getContext('2d');
-    const lineChart = new Chart(lineCtx, {
-        type: 'line',
-        data: {
-            labels: Array(10).fill(''),
-            datasets: [{
-                label: 'Índice de Força',
-                data: Array(10).fill(50),
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            scales: { y: { min: 0, max: 100 } }
-        }
-    });
-
-    // Função para atualizar os gráficos com dados simulados
-    function updateDashboard() {
-        const now = new Date().toLocaleTimeString();
-        document.getElementById('last-updated').textContent = now;
-
-        // Atualiza Donut com valores aleatórios
-        const v1 = Math.random() * 50;
-        const v2 = Math.random() * 30;
-        const v3 = 100 - v1 - v2;
-        donutChart.data.datasets[0].data = [v1, v2, v3];
-        donutChart.update();
-
-        // Atualiza Linha (Efeito de deslocamento)
-        lineChart.data.datasets[0].data.push(Math.random() * 100);
-        lineChart.data.datasets[0].data.shift();
-        lineChart.update();
+        setInterval(refresh, 3000);
     }
-
-    // Atualiza a cada 3 segundos
-    setInterval(updateDashboard, 3000);
-    updateDashboard(); // Primeira execução
 </script>
-
 </body>
 </html>
