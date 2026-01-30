@@ -1,105 +1,145 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Terminal de Decisão - Modo Nativo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macro Tendência Dashboard Dinâmico CSS/JS</title>
     <style>
-        :root { --fundo: #0b0e11; --card: #1e2329; --verde: #00ff88; --vermelho: #ff3b5c; --texto: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--fundo); color: var(--texto); margin: 0; padding: 15px; overflow: hidden; }
-        .container { max-width: 900px; margin: auto; }
+        body { font-family: sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; }
+        .dashboard-container { padding: 20px; max-width: 1200px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .chart-placeholder { height: 150px; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; }
+        .full-width-chart { margin-top: 20px; height: 250px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 15px; }
+        #last-updated { font-weight: bold; color: #007bff; }
         
-        .header { display: flex; justify-content: space-between; border-bottom: 1px solid #2d333b; padding: 10px; }
-        .status { color: var(--verde); font-size: 0.8rem; font-weight: bold; }
-
-        .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-top: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #2d333b; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        
-        /* Estilo de Decisão */
-        .sinal-grande { font-size: 3rem; font-weight: 900; margin: 5px 0; transition: all 0.3s; }
-        .forca-texto { font-size: 1.2rem; color: #848e9c; }
-
-        /* Gráfico SVG Nativo (Não precisa de biblioteca externa) */
-        .chart-container { height: 200px; width: 100%; background: #161a1e; border-radius: 8px; position: relative; overflow: hidden; }
-        polyline { fill: none; stroke-width: 3; stroke-linecap: round; transition: all 0.5s ease; }
-        .grid-line { stroke: #2d333b; stroke-width: 1; }
+        /* Estilo para barras de progresso simples */
+        .progress-bar { width: 100%; background-color: #eee; border-radius: 4px; overflow: hidden; height: 20px; margin-bottom: 5px; }
+        .progress { height: 100%; text-align: right; color: white; padding-right: 5px; font-size: 12px; line-height: 20px; transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="dashboard-container">
     <div class="header">
-        <h2 style="margin:0; font-size: 1rem;">📊 TERMINAL OFFLINE (NATIVO)</h2>
-        <div class="status">● SISTEMA PROTEGIDO</div>
+        <h1>📊 Macro Tendência (Dinâmico JS)</h1>
+        <div>Histórico | Online | Sair</div>
     </div>
+    <p>Última atualização automática: <span id="last-updated">Inicializando...</span></p>
 
-    <div class="main-grid">
-        <!-- PAINEL DE DECISÃO -->
+    <div class="card-grid">
+        <!-- Força da Tendência - Dólar -->
         <div class="card">
-            <div style="color: #848e9c; font-size: 0.7rem; text-transform: uppercase;">Ação Recomendada</div>
-            <div id="sinal" class="sinal-grande">NEUTRO</div>
-            <div class="forca-texto">Força: <span id="valor">50</span>%</div>
-        </div>
-
-        <!-- GRÁFICO DE FLUXO (SVG) -->
-        <div class="card">
-            <div style="text-align: left; color: #848e9c; font-size: 0.7rem; margin-bottom: 10px;">FLUXO DE VOLATILIDADE</div>
+            <h2>📈 Força da Tendência - Dólar</h2>
             <div class="chart-container">
-                <svg id="svg-chart" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none">
-                    <!-- Linhas de Grade -->
-                    <line x1="0" y1="50" x2="400" y2="50" class="grid-line" />
-                    <line x1="0" y1="100" x2="400" y2="100" class="grid-line" />
-                    <line x1="0" y1="150" x2="400" y2="150" class="grid-line" />
-                    <!-- Linha do Gráfico -->
-                    <polyline id="trend-line" points="" stroke="#00ff88" />
-                </svg>
+                <div class="progress-bar"><div id="trend-alta" class="progress" style="background-color: #28a745;"></div></div>
+                <div class="progress-bar"><div id="trend-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="trend-baixa" class="progress" style="background-color: #dc3545;"></div></div>
             </div>
         </div>
+
+        <!-- Métricas de Risco -->
+        <div class="card">
+            <h2>⚠️ Métricas de Risco</h2>
+             <div class="chart-container">
+                <div class="progress-bar"><div id="risk-alta" class="progress" style="background-color: #dc3545;"></div></div>
+                <div class="progress-bar"><div id="risk-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="risk-baixa" class="progress" style="background-color: #28a745;"></div></div>
+            </div>
+        </div>
+
+        <!-- Métricas de Segurança -->
+        <div class="card">
+            <h2>🔒 Métricas de Segurança</h2>
+             <div class="chart-container">
+                <div class="progress-bar"><div id="security-alta" class="progress" style="background-color: #28a745;"></div></div>
+                <div class="progress-bar"><div id="security-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="security-baixa" class="progress" style="background-color: #dc3545;"></div></div>
+            </div>
+        </div>
+
+        <!-- Distribuição de Risco (Simulado com texto) -->
+        <div class="card">
+            <h2>Distribuição de Risco</h2>
+            <div class="chart-placeholder">Simulação Gráfico de Pizza (CSS Puro)</div>
+        </div>
+
+        <!-- Distribuição de Segurança (Simulado com texto) -->
+        <div class="card">
+            <h2>Distribuição de Segurança</h2>
+            <div class="chart-placeholder">Simulação Gráfico de Pizza (CSS Puro)</div>
+        </div>
+        
+        <!-- Resumo do Período -->
+        <div class="card">
+            <h2>Resumo do Período</h2>
+            <p><small>Este indicador tem caráter exclusivamente informativo e não constitui recomendação de compra ou venda de ativos financeiros. As decisões tomadas com base nas informações fornecidas são de inteira responsabilidade do usuário.</small></p>
+        </div>
+    </div>
+    
+    <!-- Gráfico de Linhas Full Width (Simulado com texto) -->
+    <div class="full-width-chart">
+        <h2>Força da Tendência do Dólar no Mundo (Histórico Simulado)</h2>
+        <div class="chart-placeholder" style="height: 180px;">Simulação Gráfico de Linha (CSS Puro)</div>
     </div>
 </div>
 
 <script>
-    const sinal = document.getElementById('sinal');
-    const valor = document.getElementById('valor');
-    const polyline = document.getElementById('trend-line');
-    
-    let dados = Array(21).fill(100); // Começa no meio (Y=100)
-
-    function atualizar() {
-        // 1. Gera novo dado (0 a 200 para o SVG)
-        const novaForça = Math.floor(Math.random() * 101); // 0 a 100
-        const yBase = 200 - (novaForça * 2); // Converte para coordenadas SVG (200 é o fundo)
-        
-        dados.push(yBase);
-        dados.shift();
-
-        // 2. Atualiza Decisão Visual
-        valor.innerText = novaForça;
-        if (novaForça >= 70) {
-            sinal.innerText = "COMPRA";
-            sinal.style.color = "var(--verde)";
-            polyline.setAttribute('stroke', "var(--verde)");
-        } else if (novaForça <= 30) {
-            sinal.innerText = "VENDA";
-            sinal.style.color = "var(--vermelho)";
-            polyline.setAttribute('stroke', "var(--vermelho)");
-        } else {
-            sinal.innerText = "NEUTRO";
-            sinal.style.color = "#848e9c";
-            polyline.setAttribute('stroke', "#007bff");
-        }
-
-        // 3. Desenha a linha no SVG
-        // X vai de 0 a 400 em passos de 20
-        let points = "";
-        for (let i = 0; i < dados.length; i++) {
-            points += `${i * 20},${dados[i]} `;
-        }
-        polyline.setAttribute('points', points);
+    // Função utilitária para obter um número aleatório entre min e max
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
     }
 
-    // Atualiza a cada 2 segundos
-    setInterval(atualizar, 2000);
-    atualizar();
+    // Função para atualizar as barras de progresso com novos dados aleatórios
+    function updateData() {
+        // Atualiza a hora da última atualização
+        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+
+        // Simulação de dados para Força da Tendência (Média: Baixa domina)
+        let trendAlta = getRandomArbitrary(5, 15);
+        let trendNeutra = getRandomArbitrary(15, 30);
+        let trendBaixa = 100 - trendAlta - trendNeutra; // Garante que a soma seja 100%
+
+        document.getElementById('trend-alta').style.width = trendAlta.toFixed(1) + '%';
+        document.getElementById('trend-alta').textContent = trendAlta.toFixed(1) + '% Alta';
+        document.getElementById('trend-neutra').style.width = trendNeutra.toFixed(1) + '%';
+        document.getElementById('trend-neutra').textContent = trendNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('trend-baixa').style.width = trendBaixa.toFixed(1) + '%';
+        document.getElementById('trend-baixa').textContent = trendBaixa.toFixed(1) + '% Baixa';
+        
+        // Simulação de dados para Métricas de Risco (Média: Alta domina)
+        let riskAlta = getRandomArbitrary(60, 80);
+        let riskNeutra = getRandomArbitrary(10, 25);
+        let riskBaixa = 100 - riskAlta - riskNeutra;
+
+        document.getElementById('risk-alta').style.width = riskAlta.toFixed(1) + '%';
+        document.getElementById('risk-alta').textContent = riskAlta.toFixed(1) + '% Alta';
+        document.getElementById('risk-neutra').style.width = riskNeutra.toFixed(1) + '%';
+        document.getElementById('risk-neutra').textContent = riskNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('risk-baixa').style.width = riskBaixa.toFixed(1) + '%';
+        document.getElementById('risk-baixa').textContent = riskBaixa.toFixed(1) + '% Baixa';
+
+
+         // Simulação de dados para Métricas de Segurança (Média: Baixa domina)
+        let securityAlta = getRandomArbitrary(5, 15);
+        let securityNeutra = getRandomArbitrary(20, 35);
+        let securityBaixa = 100 - securityAlta - securityNeutra;
+
+        document.getElementById('security-alta').style.width = securityAlta.toFixed(1) + '%';
+        document.getElementById('security-alta').textContent = securityAlta.toFixed(1) + '% Alta';
+        document.getElementById('security-neutra').style.width = securityNeutra.toFixed(1) + '%';
+        document.getElementById('security-neutra').textContent = securityNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('security-baixa').style.width = securityBaixa.toFixed(1) + '%';
+        document.getElementById('security-baixa').textContent = securityBaixa.toFixed(1) + '% Baixa';
+
+    }
+
+    // Inicia a primeira atualização e configura o intervalo para atualizações futuras
+    document.addEventListener('DOMContentLoaded', (event) => {
+        updateData(); // Roda uma vez imediatamente
+        setInterval(updateData, 3000); // Roda a cada 3 segundos
+    });
 </script>
 
 </body>
