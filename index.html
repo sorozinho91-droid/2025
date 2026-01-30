@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macro Tendência Dashboard Simulado CSS</title>
+    <title>Macro Tendência Dashboard Dinâmico CSS/JS</title>
     <style>
         body { font-family: sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; }
         .dashboard-container { padding: 20px; max-width: 1200px; margin: auto; }
@@ -16,14 +16,14 @@
         
         /* Estilo para barras de progresso simples */
         .progress-bar { width: 100%; background-color: #eee; border-radius: 4px; overflow: hidden; height: 20px; margin-bottom: 5px; }
-        .progress { height: 100%; text-align: right; color: white; padding-right: 5px; font-size: 12px; line-height: 20px; }
+        .progress { height: 100%; text-align: right; color: white; padding-right: 5px; font-size: 12px; line-height: 20px; transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
     <div class="header">
-        <h1>📊 Macro Tendência (Simulado CSS)</h1>
+        <h1>📊 Macro Tendência (Dinâmico JS)</h1>
         <div>Histórico | Online | Sair</div>
     </div>
     <p>Última atualização automática: <span id="last-updated">Inicializando...</span></p>
@@ -33,9 +33,9 @@
         <div class="card">
             <h2>📈 Força da Tendência - Dólar</h2>
             <div class="chart-container">
-                <div class="progress-bar"><div class="progress" style="width: 8.7%; background-color: #28a745;">8.7% Alta</div></div>
-                <div class="progress-bar"><div class="progress" style="width: 21.2%; background-color: #ffc107;">21.2% Neutra</div></div>
-                <div class="progress-bar"><div class="progress" style="width: 69.7%; background-color: #dc3545;">69.7% Baixa</div></div>
+                <div class="progress-bar"><div id="trend-alta" class="progress" style="background-color: #28a745;"></div></div>
+                <div class="progress-bar"><div id="trend-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="trend-baixa" class="progress" style="background-color: #dc3545;"></div></div>
             </div>
         </div>
 
@@ -43,9 +43,9 @@
         <div class="card">
             <h2>⚠️ Métricas de Risco</h2>
              <div class="chart-container">
-                <div class="progress-bar"><div class="progress" style="width: 72.7%; background-color: #dc3545;">72.7% Alta</div></div>
-                <div class="progress-bar"><div class="progress" style="width: 18.2%; background-color: #ffc107;">18.2% Neutra</div></div>
-                <div class="progress-bar"><div class="progress" style="width: 9.1%; background-color: #28a745;">9.1% Baixa</div></div>
+                <div class="progress-bar"><div id="risk-alta" class="progress" style="background-color: #dc3545;"></div></div>
+                <div class="progress-bar"><div id="risk-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="risk-baixa" class="progress" style="background-color: #28a745;"></div></div>
             </div>
         </div>
 
@@ -53,9 +53,9 @@
         <div class="card">
             <h2>🔒 Métricas de Segurança</h2>
              <div class="chart-container">
-                <div class="progress-bar"><div class="progress" style="width: 9.1%; background-color: #28a745;">9.1% Alta</div></div>
-                <div class="progress-bar"><div class="progress" style="width: 27.3%; background-color: #ffc107;">27.3% Neutra</div></div>
-                <div class="progress-bar"><div class="progress" style="width: 63.6%; background-color: #dc3545;">63.6% Baixa</div></div>
+                <div class="progress-bar"><div id="security-alta" class="progress" style="background-color: #28a745;"></div></div>
+                <div class="progress-bar"><div id="security-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="security-baixa" class="progress" style="background-color: #dc3545;"></div></div>
             </div>
         </div>
 
@@ -86,14 +86,60 @@
 </div>
 
 <script>
-    // Lógica de Simulação Automática (setInterval)
-    function simulateRealTimeData() {
-        // Atualiza a hora da última atualização a cada segundo
-        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+    // Função utilitária para obter um número aleatório entre min e max
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
     }
 
-    // Inicia a simulação automática a cada 1000 milissegundos (1 segundo)
-    setInterval(simulateRealTimeData, 1000); 
+    // Função para atualizar as barras de progresso com novos dados aleatórios
+    function updateData() {
+        // Atualiza a hora da última atualização
+        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+
+        // Simulação de dados para Força da Tendência (Média: Baixa domina)
+        let trendAlta = getRandomArbitrary(5, 15);
+        let trendNeutra = getRandomArbitrary(15, 30);
+        let trendBaixa = 100 - trendAlta - trendNeutra; // Garante que a soma seja 100%
+
+        document.getElementById('trend-alta').style.width = trendAlta.toFixed(1) + '%';
+        document.getElementById('trend-alta').textContent = trendAlta.toFixed(1) + '% Alta';
+        document.getElementById('trend-neutra').style.width = trendNeutra.toFixed(1) + '%';
+        document.getElementById('trend-neutra').textContent = trendNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('trend-baixa').style.width = trendBaixa.toFixed(1) + '%';
+        document.getElementById('trend-baixa').textContent = trendBaixa.toFixed(1) + '% Baixa';
+        
+        // Simulação de dados para Métricas de Risco (Média: Alta domina)
+        let riskAlta = getRandomArbitrary(60, 80);
+        let riskNeutra = getRandomArbitrary(10, 25);
+        let riskBaixa = 100 - riskAlta - riskNeutra;
+
+        document.getElementById('risk-alta').style.width = riskAlta.toFixed(1) + '%';
+        document.getElementById('risk-alta').textContent = riskAlta.toFixed(1) + '% Alta';
+        document.getElementById('risk-neutra').style.width = riskNeutra.toFixed(1) + '%';
+        document.getElementById('risk-neutra').textContent = riskNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('risk-baixa').style.width = riskBaixa.toFixed(1) + '%';
+        document.getElementById('risk-baixa').textContent = riskBaixa.toFixed(1) + '% Baixa';
+
+
+         // Simulação de dados para Métricas de Segurança (Média: Baixa domina)
+        let securityAlta = getRandomArbitrary(5, 15);
+        let securityNeutra = getRandomArbitrary(20, 35);
+        let securityBaixa = 100 - securityAlta - securityNeutra;
+
+        document.getElementById('security-alta').style.width = securityAlta.toFixed(1) + '%';
+        document.getElementById('security-alta').textContent = securityAlta.toFixed(1) + '% Alta';
+        document.getElementById('security-neutra').style.width = securityNeutra.toFixed(1) + '%';
+        document.getElementById('security-neutra').textContent = securityNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('security-baixa').style.width = securityBaixa.toFixed(1) + '%';
+        document.getElementById('security-baixa').textContent = securityBaixa.toFixed(1) + '% Baixa';
+
+    }
+
+    // Inicia a primeira atualização e configura o intervalo para atualizações futuras
+    document.addEventListener('DOMContentLoaded', (event) => {
+        updateData(); // Roda uma vez imediatamente
+        setInterval(updateData, 3000); // Roda a cada 3 segundos
+    });
 </script>
 
 </body>
