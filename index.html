@@ -2,101 +2,105 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>Terminal de Decisão - Estável</title>
-    <!-- Tentativa 1: Link CDNJS (Altamente estável) -->
-    <script src="https://cdnjs.cloudflare.com"></script>
+    <title>Terminal de Decisão - Modo Nativo</title>
     <style>
-        :root { --fundo: #080a0c; --card: #12161c; --verde: #00ff88; --vermelho: #ff3b5c; --texto: #ffffff; }
-        body { font-family: 'Inter', sans-serif; background: var(--fundo); color: var(--texto); margin: 0; padding: 15px; }
+        :root { --fundo: #0b0e11; --card: #1e2329; --verde: #00ff88; --vermelho: #ff3b5c; --texto: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fundo); color: var(--texto); margin: 0; padding: 15px; overflow: hidden; }
         .container { max-width: 900px; margin: auto; }
-        .header { display: flex; justify-content: space-between; border-bottom: 1px solid #2d333b; padding-bottom: 10px; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #555; }
+        
+        .header { display: flex; justify-content: space-between; border-bottom: 1px solid #2d333b; padding: 10px; }
+        .status { color: var(--verde); font-size: 0.8rem; font-weight: bold; }
+
         .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-top: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #2d333b; text-align: center; }
-        .sinal-grande { font-size: 2.5rem; font-weight: 900; margin: 10px 0; }
-        .chart-wrap { height: 250px; position: relative; width: 100%; }
-        .aviso-erro { color: var(--vermelho); font-weight: bold; padding: 20px; text-align: center; display: none; }
+        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #2d333b; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        
+        /* Estilo de Decisão */
+        .sinal-grande { font-size: 3rem; font-weight: 900; margin: 5px 0; transition: all 0.3s; }
+        .forca-texto { font-size: 1.2rem; color: #848e9c; }
+
+        /* Gráfico SVG Nativo (Não precisa de biblioteca externa) */
+        .chart-container { height: 200px; width: 100%; background: #161a1e; border-radius: 8px; position: relative; overflow: hidden; }
+        polyline { fill: none; stroke-width: 3; stroke-linecap: round; transition: all 0.5s ease; }
+        .grid-line { stroke: #2d333b; stroke-width: 1; }
     </style>
 </head>
 <body>
 
-<div id="erro-msg" class="aviso-erro">⚠️ ERRO: O navegador bloqueou o motor de gráficos. Desative o AdBlock e recarregue.</div>
-
-<div class="container" id="conteudo">
+<div class="container">
     <div class="header">
-        <h2 style="margin:0; font-size: 1.2rem;">📊 MACRO RADAR</h2>
-        <div><span id="ponto" class="status-dot"></span> <small id="msg">A ligar...</small></div>
+        <h2 style="margin:0; font-size: 1rem;">📊 TERMINAL OFFLINE (NATIVO)</h2>
+        <div class="status">● SISTEMA PROTEGIDO</div>
     </div>
 
     <div class="main-grid">
+        <!-- PAINEL DE DECISÃO -->
         <div class="card">
-            <div style="color: #8b949e; font-size: 0.7rem; text-transform: uppercase;">Decisão</div>
-            <div id="sinal" class="sinal-grande">---</div>
-            <div style="font-size: 1.2rem; color: #8b949e;">Força: <span id="valor">0</span>%</div>
+            <div style="color: #848e9c; font-size: 0.7rem; text-transform: uppercase;">Ação Recomendada</div>
+            <div id="sinal" class="sinal-grande">NEUTRO</div>
+            <div class="forca-texto">Força: <span id="valor">50</span>%</div>
         </div>
 
+        <!-- GRÁFICO DE FLUXO (SVG) -->
         <div class="card">
-            <div style="text-align: left; color: #8b949e; font-size: 0.7rem; margin-bottom: 10px;">FLUXO DE TENDÊNCIA</div>
-            <div class="chart-wrap">
-                <canvas id="grafico"></canvas>
+            <div style="text-align: left; color: #848e9c; font-size: 0.7rem; margin-bottom: 10px;">FLUXO DE VOLATILIDADE</div>
+            <div class="chart-container">
+                <svg id="svg-chart" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none">
+                    <!-- Linhas de Grade -->
+                    <line x1="0" y1="50" x2="400" y2="50" class="grid-line" />
+                    <line x1="0" y1="100" x2="400" y2="100" class="grid-line" />
+                    <line x1="0" y1="150" x2="400" y2="150" class="grid-line" />
+                    <!-- Linha do Gráfico -->
+                    <polyline id="trend-line" points="" stroke="#00ff88" />
+                </svg>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    window.onload = function() {
-        const ponto = document.getElementById('ponto');
-        const msg = document.getElementById('msg');
+    const sinal = document.getElementById('sinal');
+    const valor = document.getElementById('valor');
+    const polyline = document.getElementById('trend-line');
+    
+    let dados = Array(21).fill(100); // Começa no meio (Y=100)
 
-        if (typeof Chart === 'undefined') {
-            document.getElementById('erro-msg').style.display = 'block';
-            document.getElementById('conteudo').style.opacity = '0.3';
-            ponto.style.background = 'var(--vermelho)';
-            msg.innerText = "Falha no motor";
-            return;
+    function atualizar() {
+        // 1. Gera novo dado (0 a 200 para o SVG)
+        const novaForça = Math.floor(Math.random() * 101); // 0 a 100
+        const yBase = 200 - (novaForça * 2); // Converte para coordenadas SVG (200 é o fundo)
+        
+        dados.push(yBase);
+        dados.shift();
+
+        // 2. Atualiza Decisão Visual
+        valor.innerText = novaForça;
+        if (novaForça >= 70) {
+            sinal.innerText = "COMPRA";
+            sinal.style.color = "var(--verde)";
+            polyline.setAttribute('stroke', "var(--verde)");
+        } else if (novaForça <= 30) {
+            sinal.innerText = "VENDA";
+            sinal.style.color = "var(--vermelho)";
+            polyline.setAttribute('stroke', "var(--vermelho)");
+        } else {
+            sinal.innerText = "NEUTRO";
+            sinal.style.color = "#848e9c";
+            polyline.setAttribute('stroke', "#007bff");
         }
 
-        ponto.style.background = 'var(--verde)';
-        msg.innerText = "SISTEMA ATIVO";
+        // 3. Desenha a linha no SVG
+        // X vai de 0 a 400 em passos de 20
+        let points = "";
+        for (let i = 0; i < dados.length; i++) {
+            points += `${i * 20},${dados[i]} `;
+        }
+        polyline.setAttribute('points', points);
+    }
 
-        const ctx = document.getElementById('grafico').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Array(20).fill(''),
-                datasets: [{
-                    data: Array(20).fill(50),
-                    borderColor: '#00ff88',
-                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                    fill: true, tension: 0.4, pointRadius: 0
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { color: '#2d333b' } }, x: { display: false } }, plugins: { legend: { display: false } } }
-        });
-
-        setInterval(() => {
-            const val = Math.floor(Math.random() * 101);
-            const sinal = document.getElementById('sinal');
-            
-            if (val >= 70) {
-                sinal.innerText = "COMPRA";
-                sinal.style.color = "var(--verde)";
-            } else if (val <= 30) {
-                sinal.innerText = "VENDA";
-                sinal.style.color = "var(--vermelho)";
-            } else {
-                sinal.innerText = "NEUTRO";
-                sinal.style.color = "#8b949e";
-            }
-
-            document.getElementById('valor').innerText = val;
-            chart.data.datasets[0].data.push(val);
-            chart.data.datasets[0].data.shift();
-            chart.data.datasets[0].borderColor = sinal.style.color;
-            chart.update('none');
-        }, 2500);
-    };
+    // Atualiza a cada 2 segundos
+    setInterval(atualizar, 2000);
+    atualizar();
 </script>
+
 </body>
 </html>
