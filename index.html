@@ -3,142 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Macro Tendência - V2</title>
+    <title>Macro Tendência Dashboard Dinâmico CSS/JS</title>
+    
+    <!-- FIX: Adicionado link ESTÁVEL e ATUALIZADO para Chart.js no HEAD -->
     <script src="https://cdn.jsdelivr.net"></script>
+
     <style>
-        :root {
-            --bg: #0f172a; --card: #1e293b; --accent: #38bdf8;
-            --bull: #22c55e; --bear: #ef4444; --neutral: #94a3b8;
-        }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: white; margin: 0; padding: 20px; }
-        .dashboard-container { max-width: 1200px; margin: auto; }
-        
-        /* Header Estilo Terminal */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 2px solid var(--card); }
-        .live-tag { background: var(--bear); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; animation: pulse 2s infinite; }
-        
-        .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px; }
-        
-        .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-        
-        /* Indicador de Decisão */
-        .decision-box { text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .signal-text { font-size: 2.5rem; font-weight: 800; margin: 10px 0; text-transform: uppercase; }
-        .score-circle { font-size: 1.2rem; color: var(--accent); }
-
-        .chart-container { height: 300px; width: 100%; margin-top: 15px; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        body { font-family: sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; }
+        .dashboard-container { padding: 20px; max-width: 1200px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 200px; }
+        #last-updated { font-weight: bold; color: #007bff; }
+        .chart-wrapper { position: relative; height: 150px; width: 100%; }
+        .full-width-chart { margin-top: 20px; height: 300px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 15px; }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
     <div class="header">
-        <div>
-            <h1 style="margin:0; font-size: 1.5rem;">📊 Terminal de Tendência Global</h1>
-            <small id="last-updated" style="color: var(--neutral)">Sincronizando...</small>
-        </div>
-        <div class="live-tag">LIVE MARKET</div>
+        <h1>📊 Macro Tendência</h1>
+        <div>Histórico | Online | Sair</div>
     </div>
+    <p>Última atualização automática: <span id="last-updated">Inicializando...</span></p>
 
-    <div class="main-grid">
-        <!-- Lado Esquerdo: Sinal de Decisão -->
-        <div class="card decision-box">
-            <h2 style="color: var(--neutral); font-size: 0.9rem;">SENTIMENTO DO MOMENTO</h2>
-            <div id="signal" class="signal-text">ANALISANDO</div>
-            <div class="score-circle">Força: <span id="power-val">0</span>%</div>
-            <div style="height: 150px; margin-top: 20px;">
-                <canvas id="gaugeChart"></canvas>
+    <div class="card-grid">
+        <!-- Força da Tendência - Dólar (Agora é um gráfico real) -->
+        <div class="card">
+            <h2>📈 Força da Tendência - Dólar</h2>
+            <div class="chart-wrapper">
+                <canvas id="trendChart"></canvas>
             </div>
         </div>
 
-        <!-- Lado Direito: Histórico de Força -->
+        <!-- Métricas de Risco (Gráfico de Rosca) -->
         <div class="card">
-            <h2 style="color: var(--neutral); font-size: 0.9rem;">VOLATILIDADE DA TENDÊNCIA (5M)</h2>
-            <div class="chart-container">
-                <canvas id="mainChart"></canvas>
+            <h2>⚠️ Risco x Segurança</h2>
+             <div class="chart-wrapper">
+                <canvas id="riskChart"></canvas>
             </div>
+        </div>
+
+         <!-- Resumo do Período (Texto mantido) -->
+        <div class="card">
+            <h2>Resumo do Período</h2>
+            <p><small>Este indicador tem caráter exclusivamente informativo e não constitui recomendação de compra ou venda de ativos financeiros. As decisões tomadas com base nas informações fornecidas são de inteira responsabilidade do usuário.</small></p>
+        </div>
+    </div>
+    
+    <!-- Gráfico de Linhas Full Width (Gráfico real) -->
+    <div class="full-width-chart">
+        <h2>Força da Tendência do Dólar no Mundo (Histórico)</h2>
+        <div style="height: 250px; position: relative;">
+            <canvas id="lineChart"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    // Configuração do Gráfico de Linha (Histórico)
-    const ctxMain = document.getElementById('mainChart').getContext('2d');
-    const mainChart = new Chart(ctxMain, {
-        type: 'line',
-        data: {
-            labels: Array(20).fill(''),
-            datasets: [{
-                label: 'Índice de Força',
-                data: Array(20).fill(50),
-                borderColor: '#38bdf8',
-                backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            scales: { y: { grid: { color: '#334155' }, border: {display: false} }, x: { display: false } },
-            plugins: { legend: { display: false } }
-        }
-    });
+    // Todo o código JS agora está abaixo do link do script CDN para evitar o erro.
 
-    // Gráfico de Gauge (Semi-Círculo)
-    const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
-    const gaugeChart = new Chart(ctxGauge, {
-        type: 'doughnut',
-        data: {
-            datasets: [{
-                data: [50, 50],
-                backgroundColor: ['#38bdf8', '#334155'],
-                borderWidth: 0,
-                circumference: 180,
-                rotation: 270
-            }]
-        },
-        options: { cutout: '80%', plugins: { tooltip: {enabled: false} } }
-    });
-
-    function update() {
-        const val = Math.floor(Math.random() * 100);
-        const signalEl = document.getElementById('signal');
-        const powerEl = document.getElementById('power-val');
-        
-        // Lógica de Decisão Visual
-        if(val > 65) {
-            signalEl.innerText = "COMPRA";
-            signalEl.style.color = "#22c55e";
-            gaugeChart.data.datasets[0].backgroundColor[0] = "#22c55e";
-        } else if (val < 35) {
-            signalEl.innerText = "VENDA";
-            signalEl.style.color = "#ef4444";
-            gaugeChart.data.datasets[0].backgroundColor[0] = "#ef4444";
-        } else {
-            signalEl.innerText = "NEUTRO";
-            signalEl.style.color = "#94a3b8";
-            gaugeChart.data.datasets[0].backgroundColor[0] = "#38bdf8";
-        }
-
-        powerEl.innerText = val;
-        document.getElementById('last-updated').innerText = "Último tick: " + new Date().toLocaleTimeString();
-
-        // Atualiza Gauge
-        gaugeChart.data.datasets[0].data = [val, 100 - val];
-        gaugeChart.update();
-
-        // Atualiza Histórico
-        mainChart.data.datasets[0].data.push(val);
-        mainChart.data.datasets[0].data.shift();
-        mainChart.update();
+    // Função utilitária para obter um número aleatório
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
     }
 
-    setInterval(update, 3000);
-    update();
+    // --- Configuração dos Gráficos ---
+
+    // 1. Gráfico de Tendência (Barra)
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const trendChart = new Chart(trendCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Alta', 'Neutra', 'Baixa'],
+            datasets: [{
+                data:,
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+            }]
+        },
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    // 2. Gráfico de Risco (Rosca)
+     const riskCtx = document.getElementById('riskChart').getContext('2d');
+    const riskChart = new Chart(riskCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Risco Alto', 'Risco Baixo'],
+            datasets: [{
+                data:,
+                backgroundColor: ['#dc3545', '#28a745']
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+
+    // 3. Gráfico de Linha (Histórico)
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    const lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: Array(15).fill(''),
+            datasets: [{
+                label: 'Índice Força',
+                data: Array(15).fill(50),
+                borderColor: '#007bff',
+                tension: 0.4
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+
+    // Função para atualizar os gráficos com novos dados aleatórios
+    function updateData() {
+        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+
+        // Atualiza Tendência
+        trendChart.data.datasets[0].data = [getRandomArbitrary(5, 40), getRandomArbitrary(15, 30), getRandomArbitrary(20, 50)];
+        trendChart.update();
+
+        // Atualiza Risco
+        const risk = getRandomArbitrary(30, 80);
+        riskChart.data.datasets[0].data = [risk, 100 - risk];
+        riskChart.update();
+
+        // Atualiza Linha (efeito scroll)
+        lineChart.data.datasets[0].data.push(getRandomArbitrary(10, 90));
+        lineChart.data.datasets[0].data.shift();
+        lineChart.update();
+    }
+
+    // Inicia a primeira atualização e configura o intervalo para atualizações futuras
+    document.addEventListener('DOMContentLoaded', (event) => {
+        updateData(); // Roda uma vez imediatamente
+        setInterval(updateData, 3000); // Roda a cada 3 segundos
+    });
 </script>
+
 </body>
 </html>
