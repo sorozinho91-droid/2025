@@ -1,70 +1,33 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macro Tendência Dashboard</title>
-    <style>
-        .dashboard-container { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
-        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .chart-placeholder { height: 200px; background-color: #eee; display: flex; align-items: center; justify-content: center; border-radius: 5px; margin-top: 10px; }
-        .full-width-chart { margin-top: 20px; height: 300px; background-color: #eee; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
-    </style>
-</head>
-<body>
+<script>
+    // Substitua 'ws://localhost:8080' pelo endereço do seu servidor WebSocket real
+    const socket = new WebSocket('ws://localhost:8080');
 
-<div class="dashboard-container">
-    <div class="header">
-        <h1>📊 Macro Tendência</h1>
-        <div>Histórico | Online | Sair</div>
-    </div>
-    <p>Última atualização: 17:05</p>
+    socket.addEventListener('open', (event) => {
+        console.log('Conexão WebSocket estabelecida!', event);
+        // Exemplo: Enviar um pedido de dados específico ao servidor, se necessário
+        // socket.send(JSON.stringify({ type: "subscribe", symbol: "USD" })); 
+    });
 
-    <div class="card-grid">
-        <!-- Força da Tendência - Dólar -->
-        <div class="card">
-            <h2>📈 Força da Tendência - Dólar</h2>
-            <div class="chart-placeholder">Gráfico de Barras (8.7% Alta, 21.2% Neutra, 69.7% Baixa)</div>
-        </div>
+    socket.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Dados em tempo real recebidos:', data);
+        // Chame suas funções para atualizar os gráficos aqui
+        // Exemplo: updateDollarChart(data.price); 
+    });
 
-        <!-- Métricas de Risco -->
-        <div class="card">
-            <h2>⚠️ Métricas de Risco</h2>
-            <div class="chart-placeholder">Gráfico de Barras (72.7% Alta)</div>
-        </div>
+    socket.addEventListener('close', (event) => {
+        console.log('Conexão WebSocket fechada:', event);
+        // Lidar com a reconexão, se necessário
+    });
 
-        <!-- Métricas de Segurança -->
-        <div class="card">
-            <h2>🔒 Métricas de Segurança</h2>
-            <div class="chart-placeholder">Gráfico de Barras (63.6% Baixa)</div>
-        </div>
+    socket.addEventListener('error', (error) => {
+        console.error('Erro no WebSocket:', error);
+    });
 
-        <!-- Distribuição de Risco -->
-        <div class="card">
-            <h2>Distribuição de Risco</h2>
-            <div class="chart-placeholder">Gráfico de Pizza</div>
-        </div>
-
-        <!-- Distribuição de Segurança -->
-        <div class="card">
-            <h2>Distribuição de Segurança</h2>
-            <div class="chart-placeholder">Gráfico de Pizza</div>
-        </div>
-        
-        <!-- Resumo do Período -->
-        <div class="card">
-            <h2>Resumo do Período</h2>
-            <p><small>Este indicador tem caráter exclusivamente informativo...</small></p>
-        </div>
-    </div>
-    
-    <!-- Gráfico de Linhas Full Width -->
-    <div class="full-width-chart">
-        <h2>Força da Tendência do Dólar no Mundo (Gráfico de Linhas)</h2>
-    </div>
-</div>
-
-</body>
-</html>
+    // Função de exemplo para atualizar um gráfico (você precisará adaptar isso)
+    function updateDollarChart(newPrice) {
+        // Lógica para encontrar o elemento do gráfico e atualizá-lo com newPrice
+        console.log("Atualizando preço do dólar para: " + newPrice);
+        // Se estiver usando Chart.js, aqui você atualizaria o dataset e chamaria chart.update()
+    }
+</script>
