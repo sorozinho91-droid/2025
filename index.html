@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macro Tendência Dashboard</title>
+    <title>Macro Tendência Dashboard Simulado</title>
     <!-- Inclui a biblioteca Chart.js -->
     <script src="https://cdn.jsdelivr.net"></script>
-    <!-- Inclui o plugin financeiro do Chart.js para gráficos de candlestick/OHLC (opcional, para o gráfico de linha inferior) -->
-    <!-- <script src="https://cdn.jsdelivr.net"></script> -->
     <style>
         .dashboard-container { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
@@ -22,10 +20,10 @@
 
 <div class="dashboard-container">
     <div class="header">
-        <h1>📊 Macro Tendência</h1>
+        <h1>📊 Macro Tendência (Simulado)</h1>
         <div>Histórico | Online | Sair</div>
     </div>
-    <p>Última atualização: <span id="last-updated">Conectando...</span></p>
+    <p>Última atualização automática: <span id="last-updated">Inicializando...</span></p>
 
     <div class="card-grid">
         <!-- Força da Tendência - Dólar -->
@@ -67,7 +65,7 @@
     
     <!-- Gráfico de Linhas Full Width -->
     <div class="full-width-chart-container">
-        <h2>Força da Tendência do Dólar no Mundo (Histórico)</h2>
+        <h2>Força da Tendência do Dólar no Mundo (Histórico Simulado)</h2>
         <canvas id="historyChart"></canvas>
     </div>
 </div>
@@ -81,60 +79,40 @@
     const securityPieChartCtx = document.getElementById('securityPieChart').getContext('2d');
     const historyChartCtx = document.getElementById('historyChart').getContext('2d');
 
-    const trendChart = new Chart(trendChartCtx, { type: 'bar', data: { labels: ['Alta', 'Neutra', 'Baixa'], datasets: [{ label: '% de Ativos', data: [0, 0, 0], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
-    const riskChart = new Chart(riskChartCtx, { type: 'bar', data: { labels: ['Alta', 'Neutra', 'Baixa'], datasets: [{ label: '% de Risco', data: [0, 0, 0], backgroundColor: ['#dc3545', '#ffc107', '#28a745'] }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
-    const securityChart = new Chart(securityChartCtx, { type: 'bar', data: { labels: ['Alta', 'Neutra', 'Baixa'], datasets: [{ label: '% de Segurança', data: [0, 0, 0], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
+    // Inicialização com dados de exemplo baseados na imagem
+    const trendChart = new Chart(trendChartCtx, { type: 'bar', data: { labels: ['Alta (8.7%)', 'Neutra (21.2%)', 'Baixa (69.7%)'], datasets: [{ label: '% de Ativos', data: [8.7, 21.2, 69.7], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
+    const riskChart = new Chart(riskChartCtx, { type: 'bar', data: { labels: ['Alta (72.7%)', 'Neutra (18.2%)', 'Baixa (9.1%)'], datasets: [{ label: '% de Risco', data: [72.7, 18.2, 9.1], backgroundColor: ['#dc3545', '#ffc107', '#28a745'] }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
+    const securityChart = new Chart(securityChartCtx, { type: 'bar', data: { labels: ['Alta (9.1%)', 'Neutra (27.3%)', 'Baixa (63.6%)'], datasets: [{ label: '% de Segurança', data: [9.1, 27.3, 63.6], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
     
     const riskPieChart = new Chart(riskPieChartCtx, { type: 'pie', data: { labels: ['Alta (16)', 'Neutro (4)', 'Baixa (2)'], datasets: [{ data: [16, 4, 2], backgroundColor: ['#dc3545', '#ffc107', '#28a745'] }] } });
     const securityPieChart = new Chart(securityPieChartCtx, { type: 'pie', data: { labels: ['Alta (1)', 'Neutro (3)', 'Baixa (7)'], datasets: [{ data: [1, 3, 7], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }] } });
 
-    const historyChart = new Chart(historyChartCtx, { type: 'line', data: { labels: [], datasets: [{ label: 'Preço USD/BRL', borderColor: '#007bff', data: [], fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
+    const historyChart = new Chart(historyChartCtx, { type: 'line', data: { labels: ['T-5s', 'T-4s', 'T-3s', 'T-2s', 'T-1s', 'Agora'], datasets: [{ label: 'Preço USD/BRL Simulado', borderColor: '#007bff', data: [5.10, 5.12, 5.11, 5.15, 5.14, 5.16], fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
 
-    // --- 2. Lógica de Conexão em Tempo Real (WebSockets) ---
-    // Você PRECISARÁ de um servidor backend rodando e enviando dados para esta URL
-    const socket = new WebSocket('ws://localhost:8080'); // Mude para o endereço do seu servidor!
-
-    socket.addEventListener('open', (event) => {
-        console.log('Conexão WebSocket estabelecida com sucesso!');
-        document.getElementById('last-updated').textContent = 'Conectado e aguardando dados...';
-    });
-
-    socket.addEventListener('message', (event) => {
-        // Assume-se que o servidor envia um objeto JSON com os novos dados
-        const data = JSON.parse(event.data); 
-        console.log('Dados em tempo real recebidos:', data);
-
-        // Atualiza a hora da última atualização
+    // --- 2. Lógica de Simulação Automática (setInterval) ---
+    function simulateRealTimeData() {
+        // 1. Atualiza a hora da última atualização
         document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
 
-        // Exemplo de como você atualizaria um gráfico (Trend Chart)
-        if (data.trendData) {
-            trendChart.data.datasets[0].data = [data.trendData.alta, data.trendData.neutra, data.trendData.baixa];
-            trendChart.update();
-        }
+        // 2. Simula novos dados para o gráfico de histórico (linha)
+        const lastPrice = historyChart.data.datasets[0].data[historyChart.data.datasets[0].data.length - 1];
+        // Gera um novo preço ligeiramente diferente (+/- 0.01)
+        const newPrice = lastPrice + (Math.random() - 0.5) * 0.02; 
 
-        // Exemplo de como você adicionaria um novo ponto ao gráfico de histórico (Linha)
-        if (data.historyPoint) {
-            historyChart.data.labels.push(new Date().toLocaleTimeString());
-            historyChart.data.datasets[0].data.push(data.historyPoint.price);
-            // Limita o número de pontos visíveis no gráfico
-            if (historyChart.data.labels.length > 50) {
-                historyChart.data.labels.shift();
-                historyChart.data.datasets[0].data.shift();
-            }
-            historyChart.update();
-        }
-    });
+        // Adiciona o novo ponto e remove o mais antigo para manter o gráfico dinâmico
+        historyChart.data.labels.push(new Date().toLocaleTimeString());
+        historyChart.data.datasets[0].data.push(parseFloat(newPrice.toFixed(3)));
+        historyChart.data.labels.shift();
+        historyChart.data.datasets[0].data.shift();
+        historyChart.update();
+        
+        // Note: Os outros gráficos de barra e pizza na imagem original são estáticos e 
+        // representam um resumo do período. Eles geralmente não mudam a cada segundo.
+        // Se você quiser que eles mudem, precisaria de uma lógica de simulação mais complexa.
+    }
 
-    socket.addEventListener('error', (error) => {
-        console.error('Erro no WebSocket:', error);
-        document.getElementById('last-updated').textContent = 'Erro na conexão';
-    });
-
-    socket.addEventListener('close', (event) => {
-        console.log('Conexão WebSocket fechada. Código:', event.code);
-        document.getElementById('last-updated').textContent = 'Desconectado';
-    });
+    // Inicia a simulação automática a cada 3000 milissegundos (3 segundos)
+    setInterval(simulateRealTimeData, 3000); 
 
 </script>
 
