@@ -1,27 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfico Comparativo Real-Time</title>
+    <title>Macro Tendência Dashboard</title>
     <style>
-        body { margin: 0; padding: 0; background-color: #131722; overflow: hidden; }
-        .chart-wrapper { width: 100vw; height: 100vh; }
+        .dashboard-container { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .chart-placeholder { height: 200px; background-color: #eee; display: flex; align-items: center; justify-content: center; border-radius: 5px; margin-top: 10px; }
+        .full-width-chart { margin-top: 20px; height: 300px; background-color: #eee; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div class="chart-wrapper">
-    <!-- Widget Widget do TradingView com Comparação Ativa -->
-    <iframe 
-        src="https://s.tradingview.com" 
-        width="100%" 
-        height="100%" 
-        frameborder="0" 
-        allowtransparency="true" 
-        scrolling="no" 
-        allowfullscreen>
-    </iframe>
+<div class="dashboard-container">
+    <div class="header">
+        <h1>📊 Macro Tendência</h1>
+        <div>Histórico | Online | Sair</div>
+    </div>
+    <p>Última atualização: 17:05</p>
+
+    <div class="card-grid">
+        <!-- Força da Tendência - Dólar -->
+        <div class="card">
+            <h2>📈 Força da Tendência - Dólar</h2>
+            <div class="chart-placeholder">Gráfico de Barras (8.7% Alta, 21.2% Neutra, 69.7% Baixa)</div>
+        </div>
+
+        <!-- Métricas de Risco -->
+        <div class="card">
+            <h2>⚠️ Métricas de Risco</h2>
+            <div class="chart-placeholder">Gráfico de Barras (72.7% Alta)</div>
+        </div>
+
+        <!-- Métricas de Segurança -->
+        <div class="card">
+            <h2>🔒 Métricas de Segurança</h2>
+            <div class="chart-placeholder">Gráfico de Barras (63.6% Baixa)</div>
+        </div>
+
+        <!-- Distribuição de Risco -->
+        <div class="card">
+            <h2>Distribuição de Risco</h2>
+            <div class="chart-placeholder">Gráfico de Pizza</div>
+        </div>
+
+        <!-- Distribuição de Segurança -->
+        <div class="card">
+            <h2>Distribuição de Segurança</h2>
+            <div class="chart-placeholder">Gráfico de Pizza</div>
+        </div>
+        
+        <!-- Resumo do Período -->
+        <div class="card">
+            <h2>Resumo do Período</h2>
+            <p><small>Este indicador tem caráter exclusivamente informativo...</small></p>
+        </div>
+    </div>
+    
+    <!-- Gráfico de Linhas Full Width -->
+    <div class="full-width-chart">
+        <h2>Força da Tendência do Dólar no Mundo (Gráfico de Linhas)</h2>
+    </div>
 </div>
 
 </body>
