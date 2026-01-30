@@ -2,121 +2,144 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Macro Tendência Pro - Real-Time</title>
-    <!-- Importando Chart.js via CDN -->
-    <script src="https://cdn.jsdelivr.net"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macro Tendência Dashboard Dinâmico CSS/JS</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #fff; margin: 0; padding: 20px; }
-        .dashboard-container { max-width: 1200px; margin: auto; }
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        .full-width-chart { margin-top: 20px; background: #1e1e1e; padding: 20px; border-radius: 12px; height: 350px; }
-        h1, h2 { margin-top: 0; font-size: 1.2rem; color: #bbb; }
-        #last-updated { color: #00d1b2; font-weight: bold; }
-        canvas { max-width: 100%; }
+        body { font-family: sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; }
+        .dashboard-container { padding: 20px; max-width: 1200px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .chart-placeholder { height: 150px; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; }
+        .full-width-chart { margin-top: 20px; height: 250px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 15px; }
+        #last-updated { font-weight: bold; color: #007bff; }
+        
+        /* Estilo para barras de progresso simples */
+        .progress-bar { width: 100%; background-color: #eee; border-radius: 4px; overflow: hidden; height: 20px; margin-bottom: 5px; }
+        .progress { height: 100%; text-align: right; color: white; padding-right: 5px; font-size: 12px; line-height: 20px; transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
     <div class="header">
-        <h1>📊 Macro Tendência Dashboard <small id="last-updated"></small></h1>
+        <h1>📊 Macro Tendência (Dinâmico JS)</h1>
+        <div>Histórico | Online | Sair</div>
     </div>
+    <p>Última atualização automática: <span id="last-updated">Inicializando...</span></p>
 
     <div class="card-grid">
-        <!-- Gráfico de Pizza: Distribuição de Risco -->
+        <!-- Força da Tendência - Dólar -->
         <div class="card">
-            <h2>Risco do Mercado</h2>
-            <canvas id="riskChart"></canvas>
+            <h2>📈 Força da Tendência - Dólar</h2>
+            <div class="chart-container">
+                <div class="progress-bar"><div id="trend-alta" class="progress" style="background-color: #28a745;"></div></div>
+                <div class="progress-bar"><div id="trend-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="trend-baixa" class="progress" style="background-color: #dc3545;"></div></div>
+            </div>
         </div>
 
-        <!-- Gráfico de Rosca: Segurança -->
+        <!-- Métricas de Risco -->
         <div class="card">
-            <h2>Métricas de Segurança</h2>
-            <canvas id="securityChart"></canvas>
+            <h2>⚠️ Métricas de Risco</h2>
+             <div class="chart-container">
+                <div class="progress-bar"><div id="risk-alta" class="progress" style="background-color: #dc3545;"></div></div>
+                <div class="progress-bar"><div id="risk-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="risk-baixa" class="progress" style="background-color: #28a745;"></div></div>
+            </div>
         </div>
 
-        <!-- Barras: Força da Tendência -->
+        <!-- Métricas de Segurança -->
         <div class="card">
-            <h2>Força da Tendência (Dólar)</h2>
-            <canvas id="trendChart"></canvas>
+            <h2>🔒 Métricas de Segurança</h2>
+             <div class="chart-container">
+                <div class="progress-bar"><div id="security-alta" class="progress" style="background-color: #28a745;"></div></div>
+                <div class="progress-bar"><div id="security-neutra" class="progress" style="background-color: #ffc107;"></div></div>
+                <div class="progress-bar"><div id="security-baixa" class="progress" style="background-color: #dc3545;"></div></div>
+            </div>
+        </div>
+
+        <!-- Distribuição de Risco (Simulado com texto) -->
+        <div class="card">
+            <h2>Distribuição de Risco</h2>
+            <div class="chart-placeholder">Simulação Gráfico de Pizza (CSS Puro)</div>
+        </div>
+
+        <!-- Distribuição de Segurança (Simulado com texto) -->
+        <div class="card">
+            <h2>Distribuição de Segurança</h2>
+            <div class="chart-placeholder">Simulação Gráfico de Pizza (CSS Puro)</div>
+        </div>
+        
+        <!-- Resumo do Período -->
+        <div class="card">
+            <h2>Resumo do Período</h2>
+            <p><small>Este indicador tem caráter exclusivamente informativo e não constitui recomendação de compra ou venda de ativos financeiros. As decisões tomadas com base nas informações fornecidas são de inteira responsabilidade do usuário.</small></p>
         </div>
     </div>
     
+    <!-- Gráfico de Linhas Full Width (Simulado com texto) -->
     <div class="full-width-chart">
-        <h2>Histórico da Tendência Global</h2>
-        <canvas id="lineChart"></canvas>
+        <h2>Força da Tendência do Dólar no Mundo (Histórico Simulado)</h2>
+        <div class="chart-placeholder" style="height: 180px;">Simulação Gráfico de Linha (CSS Puro)</div>
     </div>
 </div>
 
 <script>
-    // Configurações Globais dos Gráficos
-    const ctxRisk = document.getElementById('riskChart').getContext('2d');
-    const ctxSec = document.getElementById('securityChart').getContext('2d');
-    const ctxTrend = document.getElementById('trendChart').getContext('2d');
-    const ctxLine = document.getElementById('lineChart').getContext('2d');
-
-    // 1. Gráfico de Risco (Pizza)
-    const riskChart = new Chart(ctxRisk, {
-        type: 'pie',
-        data: {
-            labels: ['Alta', 'Neutra', 'Baixa'],
-            datasets: [{ data: [60, 25, 15], backgroundColor: ['#ff4757', '#ffa502', '#2ed573'] }]
-        },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    });
-
-    // 2. Gráfico de Segurança (Doughnut)
-    const securityChart = new Chart(ctxSec, {
-        type: 'doughnut',
-        data: {
-            labels: ['Seguro', 'Moderado', 'Instável'],
-            datasets: [{ data: [10, 30, 60], backgroundColor: ['#2ed573', '#ffa502', '#ff4757'] }]
-        },
-        options: { cutout: '70%' }
-    });
-
-    // 3. Gráfico de Tendência (Barra)
-    const trendChart = new Chart(ctxTrend, {
-        type: 'bar',
-        data: {
-            labels: ['Dólar', 'Euro', 'Ouro'],
-            datasets: [{ label: '% Força', data: [12, 45, 80], backgroundColor: '#00d1b2' }]
-        }
-    });
-
-    // 4. Gráfico de Linha (Histórico)
-    const lineChart = new Chart(ctxLine, {
-        type: 'line',
-        data: {
-            labels: ['10:00', '10:05', '10:10', '10:15', '10:20'],
-            datasets: [{
-                label: 'Índice Global',
-                data: [65, 59, 80, 81, 56],
-                borderColor: '#00d1b2',
-                tension: 0.4,
-                fill: true,
-                backgroundColor: 'rgba(0, 209, 178, 0.1)'
-            }]
-        },
-        options: { maintainAspectRatio: false }
-    });
-
-    // Função para simular atualização em tempo real
-    function updateDashboard() {
-        const now = new Date().toLocaleTimeString();
-        document.getElementById('last-updated').textContent = `• Atualizado: ${now}`;
-
-        // Atualiza dados aleatórios
-        riskChart.data.datasets[0].data = [Math.random()*100, Math.random()*50, Math.random()*20];
-        riskChart.update();
-
-        lineChart.data.datasets[0].data.push(Math.random() * 100);
-        lineChart.data.datasets[0].data.shift();
-        lineChart.update();
+    // Função utilitária para obter um número aleatório entre min e max
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
     }
 
-    setInterval(updateDashboard, 3000);
+    // Função para atualizar as barras de progresso com novos dados aleatórios
+    function updateData() {
+        // Atualiza a hora da última atualização
+        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+
+        // Simulação de dados para Força da Tendência (Média: Baixa domina)
+        let trendAlta = getRandomArbitrary(5, 15);
+        let trendNeutra = getRandomArbitrary(15, 30);
+        let trendBaixa = 100 - trendAlta - trendNeutra; // Garante que a soma seja 100%
+
+        document.getElementById('trend-alta').style.width = trendAlta.toFixed(1) + '%';
+        document.getElementById('trend-alta').textContent = trendAlta.toFixed(1) + '% Alta';
+        document.getElementById('trend-neutra').style.width = trendNeutra.toFixed(1) + '%';
+        document.getElementById('trend-neutra').textContent = trendNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('trend-baixa').style.width = trendBaixa.toFixed(1) + '%';
+        document.getElementById('trend-baixa').textContent = trendBaixa.toFixed(1) + '% Baixa';
+        
+        // Simulação de dados para Métricas de Risco (Média: Alta domina)
+        let riskAlta = getRandomArbitrary(60, 80);
+        let riskNeutra = getRandomArbitrary(10, 25);
+        let riskBaixa = 100 - riskAlta - riskNeutra;
+
+        document.getElementById('risk-alta').style.width = riskAlta.toFixed(1) + '%';
+        document.getElementById('risk-alta').textContent = riskAlta.toFixed(1) + '% Alta';
+        document.getElementById('risk-neutra').style.width = riskNeutra.toFixed(1) + '%';
+        document.getElementById('risk-neutra').textContent = riskNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('risk-baixa').style.width = riskBaixa.toFixed(1) + '%';
+        document.getElementById('risk-baixa').textContent = riskBaixa.toFixed(1) + '% Baixa';
+
+
+         // Simulação de dados para Métricas de Segurança (Média: Baixa domina)
+        let securityAlta = getRandomArbitrary(5, 15);
+        let securityNeutra = getRandomArbitrary(20, 35);
+        let securityBaixa = 100 - securityAlta - securityNeutra;
+
+        document.getElementById('security-alta').style.width = securityAlta.toFixed(1) + '%';
+        document.getElementById('security-alta').textContent = securityAlta.toFixed(1) + '% Alta';
+        document.getElementById('security-neutra').style.width = securityNeutra.toFixed(1) + '%';
+        document.getElementById('security-neutra').textContent = securityNeutra.toFixed(1) + '% Neutra';
+        document.getElementById('security-baixa').style.width = securityBaixa.toFixed(1) + '%';
+        document.getElementById('security-baixa').textContent = securityBaixa.toFixed(1) + '% Baixa';
+
+    }
+
+    // Inicia a primeira atualização e configura o intervalo para atualizações futuras
+    document.addEventListener('DOMContentLoaded', (event) => {
+        updateData(); // Roda uma vez imediatamente
+        setInterval(updateData, 3000); // Roda a cada 3 segundos
+    });
 </script>
 
 </body>
