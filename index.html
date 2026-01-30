@@ -2,84 +2,81 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal de Decisão Macro</title>
-    <!-- Carregando a biblioteca via CDN estável (UMD) -->
+    <title>Terminal de Decisão Macro - V3</title>
+    <!-- Carregamento robusto da biblioteca -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root {
-            --bg-color: #0b0e11;
-            --card-bg: #1e2329;
-            --text-main: #eaecef;
-            --accent: #f0b90b;
-            --up: #2ebd85;
-            --down: #f6465d;
-        }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; }
-        .dashboard-container { max-width: 1200px; margin: auto; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #2f3336; }
-        .decision-badge { padding: 8px 16px; border-radius: 4px; font-weight: bold; text-transform: uppercase; font-size: 1.2rem; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-top: 15px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid #2b3139; }
-        
-        .status-value { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
-        #last-updated { color: var(--accent); }
+        :root { --bg: #0b0e11; --card: #1e2329; --text: #eaecef; --buy: #2ebd85; --sell: #f6465d; --neutral: #94a3b8; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2b3139; padding-bottom: 15px; }
+        .signal-badge { padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 1.4rem; border: 1px solid #444; }
+        .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px; }
+        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #2b3139; }
+        .power-value { font-size: 3.5rem; font-weight: bold; text-align: center; margin: 10px 0; }
+        .chart-box { height: 280px; position: relative; }
     </style>
 </head>
 <body>
 
-<div class="dashboard-container">
+<div class="container">
     <div class="header">
-        <h1>📊 MACRO SENTIMENT</h1>
-        <div id="decision-signal" class="decision-badge">Analisando...</div>
+        <h1>📊 MACRO TERMINAL</h1>
+        <div id="signal" class="signal-badge" style="color: var(--neutral)">AGUARDANDO...</div>
     </div>
-    <p>Sincronização: <span id="last-updated">Iniciando...</span></p>
 
-    <div class="grid">
-        <!-- Card de Decisão Imediata -->
+    <div class="main-grid">
+        <!-- MÉTRICA DE DECISÃO -->
         <div class="card">
-            <h2>Força Relativa (RSI)</h2>
-            <div id="power-value" class="status-value">0%</div>
-            <div class="chart-container" style="height: 180px;">
+            <h3 style="margin:0; color: var(--neutral)">FORÇA DO ÍNDICE</h3>
+            <div id="power" class="power-value">0%</div>
+            <div style="height: 180px;">
                 <canvas id="gaugeChart"></canvas>
             </div>
-            <p><small>Zonas: >70 Compra Forte | <30 Venda Forte</small></p>
+            <p style="text-align:center; font-size: 0.8rem; color: #666;">ALVO: >70 COMPRA | <30 VENDA</p>
         </div>
 
-        <!-- Card de Histórico de Tendência -->
+        <!-- GRÁFICO DE FLUXO -->
         <div class="card">
-            <h2>Fluxo de Tendência (Dólar Global)</h2>
-            <div class="chart-container">
-                <canvas id="mainLineChart"></canvas>
+            <h3 style="margin:0; color: var(--neutral)">FLUXO DE TENDÊNCIA (TEMPO REAL)</h3>
+            <div class="chart-box">
+                <canvas id="historyChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // GARANTIA: O código só executa após a biblioteca carregar
+    // Garantir que o script só rode após o Chart.js carregar
     window.onload = function() {
-        if (typeof Chart === 'undefined') {
-            alert("Erro ao carregar gráficos. Verifique sua conexão.");
-            return;
-        }
-
-        const ctxLine = document.getElementById('mainLineChart').getContext('2d');
         const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
+        const ctxHistory = document.getElementById('historyChart').getContext('2d');
 
-        // Gráfico de Linha (Histórico)
-        const lineChart = new Chart(ctxLine, {
+        // Gráfico de Velocímetro (Gauge)
+        const gaugeChart = new Chart(ctxGauge, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [50, 50], // Valores iniciais corrigidos
+                    backgroundColor: ['#2ebd85', '#2b3139'],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270
+                }]
+            },
+            options: { cutout: '85%', plugins: { tooltip: {enabled: false} } }
+        });
+
+        // Gráfico de Histórico
+        const historyChart = new Chart(ctxHistory, {
             type: 'line',
             data: {
                 labels: Array(20).fill(''),
                 datasets: [{
-                    label: 'Índice de Força',
-                    data: Array(20).fill(50),
-                    borderColor: '#f0b90b',
-                    backgroundColor: 'rgba(240, 185, 11, 0.1)',
+                    label: 'Força',
+                    data: Array(20).fill(50), // Dados iniciais preenchidos
+                    borderColor: '#2ebd85',
+                    backgroundColor: 'rgba(46, 189, 133, 0.1)',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 0
@@ -88,62 +85,51 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { min: 0, max: 100, grid: { color: '#2b3139' } }, x: { display: false } }
+                scales: { 
+                    y: { min: 0, max: 100, grid: { color: '#2b3139' } },
+                    x: { display: false }
+                }
             }
         });
 
-        // Gráfico de Gauge (Velocímetro de Força)
-        const gaugeChart = new Chart(ctxGauge, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data:,
-                    backgroundColor: ['#2ebd85', '#2b3139'],
-                    borderWidth: 0,
-                    circumference: 180,
-                    rotation: 270
-                }]
-            },
-            options: { cutout: '80%', plugins: { tooltip: {enabled: false} } }
-        });
-
-        function updateData() {
+        function update() {
             const val = Math.floor(Math.random() * 101);
-            const signal = document.getElementById('decision-signal');
-            const powerText = document.getElementById('power-value');
-            
-            // Lógica Visual para Decisão
+            const signal = document.getElementById('signal');
+            const power = document.getElementById('power');
+
+            // Lógica de Decisão Visual
             if (val >= 70) {
-                signal.innerText = "Compra Forte";
-                signal.style.backgroundColor = 'rgba(46, 189, 133, 0.2)';
-                signal.style.color = '#2ebd85';
-                powerText.style.color = '#2ebd85';
+                signal.innerText = "SINAL: COMPRA";
+                signal.style.borderColor = 'var(--buy)';
+                signal.style.color = 'var(--buy)';
+                historyChart.data.datasets[0].borderColor = 'var(--buy)';
             } else if (val <= 30) {
-                signal.innerText = "Venda Forte";
-                signal.style.backgroundColor = 'rgba(246, 70, 93, 0.2)';
-                signal.style.color = '#f6465d';
-                powerText.style.color = '#f6465d';
+                signal.innerText = "SINAL: VENDA";
+                signal.style.borderColor = 'var(--sell)';
+                signal.style.color = 'var(--sell)';
+                historyChart.data.datasets[0].borderColor = 'var(--sell)';
             } else {
-                signal.innerText = "Neutro";
-                signal.style.backgroundColor = '#2b3139';
-                signal.style.color = '#eaecef';
-                powerText.style.color = '#eaecef';
+                signal.innerText = "SINAL: NEUTRO";
+                signal.style.borderColor = '#444';
+                signal.style.color = 'var(--neutral)';
+                historyChart.data.datasets[0].borderColor = '#2ebd85';
             }
 
-            powerText.innerText = val + "%";
-            document.getElementById('last-updated').innerText = new Date().toLocaleTimeString();
+            power.innerText = val + "%";
+            power.style.color = signal.style.color;
 
-            // Atualiza Gráficos
-            gaugeChart.data.datasets.data = [val, 100 - val];
+            // Atualização dos Gráficos
+            gaugeChart.data.datasets[0].data = [val, 100 - val];
+            gaugeChart.data.datasets[0].backgroundColor[0] = signal.style.color;
             gaugeChart.update('none');
 
-            lineChart.data.datasets.data.push(val);
-            lineChart.data.datasets.data.shift();
-            lineChart.update('none');
+            historyChart.data.datasets[0].data.push(val);
+            historyChart.data.datasets[0].data.shift();
+            historyChart.update('none');
         }
 
-        setInterval(updateData, 3000);
-        updateData();
+        setInterval(update, 2500);
+        update(); // Primeira execução imediata
     };
 </script>
 </body>
