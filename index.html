@@ -3,74 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Day Trade - Fase 1</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 10px; }
-        .dashboard-card { 
+        .painel-trade { 
             max-width: 450px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            margin: 20px auto; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            border: 1px solid #d1d4dc;
+            border-radius: 10px;
             overflow: hidden;
-            border: 1px solid #e0e3eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .header { 
-            background: #131722; 
-            color: white; 
-            padding: 15px; 
+        .painel-header {
+            background: #131722;
+            color: white;
+            padding: 15px;
             text-align: center;
         }
-        .header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0; font-size: 12px; opacity: 0.8; }
-        
-        /* Widget Container */
-        .widget-area { padding: 5px; }
-
-        .summary-box { 
-            padding: 15px; 
-            background: #fffbe6; 
-            border-top: 1px solid #ffe58f;
-            font-size: 14px;
-            color: #856404;
-        }
-        .summary-box strong { color: #533f03; display: block; margin-bottom: 5px; }
-        
-        .footer { 
-            padding: 10px; 
-            font-size: 11px; 
-            text-align: center; 
-            color: #787b86; 
-            background: #f8f9fa;
+        .painel-header h2 { margin: 0; font-size: 16px; text-transform: uppercase; }
+        .resumo-vies {
+            padding: 15px;
+            background: #fffdf0;
+            border-top: 1px solid #e0e3eb;
+            font-size: 13px;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
-<div class="dashboard-card">
-    <div class="header">
+<div class="painel-trade">
+    <div class="painel-header">
         <h2>🌍 FASE 1: CENÁRIO GLOBAL</h2>
-        <p>Cotações em Tempo Real - Investing/TradingView</p>
     </div>
 
-    <div class="widget-area">
-        <!-- Iframe Robusto do TradingView -->
-        <iframe 
-            src="https://www.tradingview-widget.com" 
-            style="width: 100%; height: 400px; border: none;" 
-            scrolling="no">
-        </iframe>
+    <!-- Início do Widget TradingView -->
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com" async>
+        {
+          "colorTheme": "light",
+          "dateRange": "12M",
+          "showChart": false,
+          "locale": "br",
+          "width": "100%",
+          "height": "400",
+          "largeChartUrl": "",
+          "isTransparent": true,
+          "showSymbolLogo": true,
+          "tabs": [
+            {
+              "title": "Mercado Real-Time",
+              "symbols": [
+                { "proName": "CME_MINI:ES1!", "title": "S&P 500 Fut" },
+                { "proName": "CME_MINI:NQ1!", "title": "Nasdaq Fut" },
+                { "proName": "CAPITALCOM:DXY", "title": "DXY (Dólar)" },
+                { "proName": "AMEX:EWZ", "title": "EWZ (Brasil NY)" },
+                { "proName": "ICE:B1!", "title": "Petróleo Brent" },
+                { "proName": "COMEX:GC1!", "title": "Ouro" }
+              ]
+            }
+          ]
+        }
+        </script>
     </div>
+    <!-- Fim do Widget -->
 
-    <div class="summary-box">
-        <strong>💡 RESUMO DE VIÉS (BATA O OLHO):</strong>
-        • Mundo 🟢 + Commodities 🟢 + DXY 🔴 = 🚀 COMPRA<br>
-        • Mundo 🔴 + Commodities 🔴 + DXY 📈 = 📉 VENDA<br>
-        • Misto + Sem Notícias = ↔️ LATERALIDADE
-    </div>
-
-    <div class="footer">
-        Dados atualizados em tempo real via TradingView.
+    <div class="resumo-vies">
+        <strong>💡 RESUMO DE VIÉS:</strong><br>
+        🟢 Mundo + Commodities + DXY 🔴 = <b>COMPRA 🚀</b><br>
+        🔴 Mundo + Commodities + DXY 📈 = <b>VENDA 📉</b><br>
+        ⚪ Misto + Sem Notícias = <b>LATERALIDADE ↔️</b>
     </div>
 </div>
 
