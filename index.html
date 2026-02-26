@@ -1,28 +1,44 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        .container { max-width: 450px; margin: 10px auto; font-family: sans-serif; border: 1px solid #d1d4dc; border-radius: 8px; overflow: hidden; }
-        .header { background: #131722; color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 14px; }
-        .vies { background: #fffbe6; padding: 12px; font-size: 13px; border-top: 1px solid #d1d4dc; line-height: 1.5; }
-    </style>
-</head>
-<body>
+<!-- Painel Day Trade - Fase 1 -->
+<div class="tradingview-widget-container" style="max-width: 450px; margin: 20px auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border: 1px solid #d1d4dc; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+  
+  <div style="background: #131722; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 16px;">
+    🌍 FASE 1: CENÁRIO GLOBAL
+  </div>
 
-<div class="container">
-    <div class="header">🌍 FASE 1: CENÁRIO GLOBAL</div>
-    
-    <!-- Widget Simples (Tipo Lista) - Mais leve e difícil de bloquear -->
-    <iframe scrolling="no" allowtransparency="true" frameborder="0" src="https://www.tradingview-widget.com" style="width: 100%; height: 400px;"></iframe>
+  <div class="tradingview-widget-container__widget"></div>
+  
+  <!-- O segredo está neste script abaixo, que autoriza a conexão -->
+  <script type="text/javascript" src="https://s3.tradingview.com" async>
+  {
+    "colorTheme": "light",
+    "dateRange": "12M",
+    "showChart": false,
+    "locale": "br",
+    "width": "100%",
+    "height": "400",
+    "largeChartUrl": "",
+    "isTransparent": true,
+    "showSymbolLogo": true,
+    "tabs": [
+      {
+        "title": "Monitor Real-Time",
+        "symbols": [
+          { "proName": "CME_MINI:ES1!", "title": "S&P 500 Fut" },
+          { "proName": "CME_MINI:NQ1!", "title": "Nasdaq Fut" },
+          { "proName": "CAPITALCOM:DXY", "title": "DXY (Dólar)" },
+          { "proName": "AMEX:EWZ", "title": "EWZ (Brasil NY)" },
+          { "proName": "ICE:B1!", "title": "Petróleo Brent" },
+          { "proName": "SGX:FE1!", "title": "Minério de Ferro" }
+        ]
+      }
+    ]
+  }
+  </script>
 
-    <div class="vies">
-        <strong>💡 RESUMO DE VIÉS:</strong><br>
-        🟢 Mundo + Commodities + DXY 🔴 = 🚀 COMPRA<br>
-        🔴 Mundo + Commodities + DXY 📈 = 📉 VENDA<br>
-        ⚪ Misto + Sem Notícias = ↔️ LATERALIDADE
-    </div>
+  <div style="padding: 15px; background: #fffdf0; border-top: 1px solid #e0e3eb; font-size: 13px; line-height: 1.6; color: #333;">
+    <strong>💡 RESUMO DE VIÉS:</strong><br>
+    🟢 Mundo + Commodities + DXY 🔴 = <b>COMPRA 🚀</b><br>
+    🔴 Mundo + Commodities + DXY 📈 = <b>VENDA 📉</b><br>
+    ⚪ Misto + Sem Notícias = <b>LATERALIDADE ↔️</b>
+  </div>
 </div>
-
-</body>
-</html>
