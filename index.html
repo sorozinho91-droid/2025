@@ -1,67 +1,30 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel de Mercado - Fase 1</title>
-    <style>
-        .dashboard-container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #f9f9f9; }
-        .header { border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 5px; }
-        .section-title { font-weight: bold; color: #444; margin-top: 15px; display: block; }
-        .item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
-        .up { color: #0f9d58; font-weight: bold; } /* Verde Google */
-        .down { color: #db4437; font-weight: bold; } /* Vermelho Google */
-        .neutral { color: #f4b400; font-weight: bold; } /* Amarelo */
-        .summary-box { margin-top: 20px; padding: 10px; border-radius: 5px; background: #fff; border-left: 5px solid #f4b400; }
-        .footer { font-size: 11px; color: #777; margin-top: 15px; }
-    </style>
-</head>
-<body>
-
-<div class="dashboard-container">
-    <div class="header">
-        <h2 style="margin:0;">🌍 FASE 1: CENÁRIO GLOBAL</h2>
-        <small>Ref: 26 de Fevereiro de 2026</small>
-    </div>
-
-    <div class="item">
-        <span>S&P 500 Futuro</span>
-        <span class="neutral">~6.902 pts (Neutro)</span>
-    </div>
-
-    <div class="item">
-        <span>NASDAQ 100 Futuro</span>
-        <span class="down">24.923 pts (Baixa)</span>
-    </div>
-
-    <div class="item">
-        <span>DXY (Dólar Global)</span>
-        <span class="neutral">97.97 (+0,05%)</span>
-    </div>
-
-    <div class="item">
-        <span>EWZ (Brazil NY)</span>
-        <span class="down">39.10 (-1,24%)</span>
-    </div>
-
-    <span class="section-title">COMMODITIES:</span>
-    <div class="item">
-        <span>Petróleo Brent</span>
-        <span class="up">US$ 71,99 (Alta)</span>
-    </div>
-    <div class="item">
-        <span>Minério de Ferro</span>
-        <span class="down">US$ 99,66 (Baixa)</span>
-    </div>
-
-    <div class="summary-box">
-        <strong>💡 RESUMO DE VIÉS:</strong><br>
-        CENÁRIO C: Mundo Misto/Baixa + DXY Estável = <strong>LATERALIDADE / PRESSÃO VENDEDORA ↔️📉</strong>
-    </div>
-
-    <div class="footer">
-        Fontes: Investing.com / TradingView / Yahoo Finance. Dados de 26/02/2026.
-    </div>
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com" async>
+  {
+  "colorTheme": "light",
+  "dateRange": "12M",
+  "showChart": false,
+  "locale": "br",
+  "width": "400",
+  "height": "450",
+  "largeChartUrl": "",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "tabs": [
+    {
+      "title": "Fase 1: Global",
+      "symbols": [
+        { "proName": "CME_MINI:ES1!", "title": "S&P 500 Futuro" },
+        { "proName": "CME_MINI:NQ1!", "title": "Nasdaq Futuro" },
+        { "proName": "CAPITALCOM:DXY", "title": "DXY (Dólar)" },
+        { "proName": "AMEX:EWZ", "title": "EWZ (Brasil)" },
+        { "proName": "ICE:B1!", "title": "Petróleo Brent" }
+      ]
+    }
+  ]
+}
+  </script>
 </div>
-
-</body>
-</html>
+<!-- TradingView Widget END -->
