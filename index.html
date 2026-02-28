@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Intelligence Report Brasil - Auditoria 2026</title>
+    <title>Intelligence Report Brasil - Auditoria Completa</title>
     <script src="https://cdnjs.cloudflare.com"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
@@ -11,31 +11,38 @@
         .btn-pdf { background: var(--accent); color: #fff; border: none; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
         #relatorio { background: var(--bg); color: var(--text); padding: 35px; width: 1100px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 30px; }
-        .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .grid-main { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
         .header-secao { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; margin-bottom: 15px; }
         
+        /* Estilos dos Novos Pilares Adicionados */
+        .pilar-item { margin-bottom: 20px; }
+        .pilar-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
+        .barra-ext { height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
+        .barra-fill { height: 100%; transition: width 2s; border-radius: 10px; }
+        .pilar-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.4; }
+
         /* Tabela de Metas */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        th { text-align: left; color: #94a3b8; padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.1); }
-        td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .status-pill { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
+        th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .status-pill { padding: 3px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
         .st-ok { background: rgba(34, 197, 94, 0.2); color: var(--work); }
         .st-warn { background: rgba(234, 179, 8, 0.2); color: var(--growth); }
         .st-crit { background: rgba(239, 68, 68, 0.2); color: var(--credit); }
 
         .chart-container { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .val-large { font-size: 1.5rem; font-weight: 800; margin-top: 5px; }
+        .val-large { font-size: 1.3rem; font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR RELATÓRIO DE AUDITORIA (PDF)</button>
+    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR RELATÓRIO ESTRUTURAL COMPLETO (PDF)</button>
 
     <div id="relatorio">
         <div class="header">
             <div>
                 <div style="font-size: 1.8rem; font-weight: 900;">Intelligence Report Brasil</div>
-                <div style="color: var(--accent); font-size: 0.85rem; font-weight: bold;">AUDITORIA DE METAS - FEVEREIRO 2026</div>
+                <div style="color: var(--accent); font-size: 0.85rem; font-weight: bold;">ANÁLISE MACRO E MERCADO DE CAPITAIS</div>
             </div>
             <div style="text-align: right;">
                 <div id="clock" style="font-size: 1.4rem; font-weight: 800; color: var(--accent);">14:51:31</div>
@@ -44,107 +51,95 @@
         </div>
 
         <div class="grid-main">
-            <!-- Coluna 1: Tabela de Metas Oficiais -->
+            <!-- Coluna 1: Pilares Solicitados -->
             <div>
-                <div class="header-secao">Conformidade com Metas de Governo</div>
+                <div class="header-secao">Pilares de Sustentação Econômica</div>
+                
+                <!-- Mercado de Trabalho -->
+                <div class="pilar-item">
+                    <div class="pilar-header"><span>Mercado de Trabalho e Renda</span> <span style="color:var(--work)">80%</span></div>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 80%; background: var(--work)"></div></div>
+                    <div class="pilar-desc">Desemprego em 5,2%. O pleno emprego sustenta a demanda das famílias.</div>
+                </div>
+
+                <!-- Inflação -->
+                <div class="pilar-item">
+                    <div class="pilar-header"><span>Estabilidade (Inflação IPCA-15)</span> <span style="color:var(--inflation)">60%</span></div>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 60%; background: var(--inflation)"></div></div>
+                    <div class="pilar-desc">Alta de 0,84% em Fev. A meta de 3,91% para 2026 segue como âncora.</div>
+                </div>
+
+                <!-- PIB -->
+                <div class="pilar-item">
+                    <div class="pilar-header"><span>Atividade Econômica (PIB)</span> <span style="color:var(--growth)">40%</span></div>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 40%; background: var(--growth)"></div></div>
+                    <div class="pilar-desc">Crescimento de 1,82% previsto. A indústria opera abaixo da capacidade nominal.</div>
+                </div>
+
+                <!-- Selic -->
+                <div class="pilar-item">
+                    <div class="pilar-header"><span>Custo de Capital (Selic 15%)</span> <span style="color:var(--credit)">100%</span></div>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 100%; background: var(--credit)"></div></div>
+                    <div class="pilar-desc">O maior entrave ao investimento. Expectativa de queda para 12,13% até Dez/26.</div>
+                </div>
+
+                <div class="header-secao" style="margin-top:30px;">Conformidade de Metas</div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Indicador</th>
-                            <th>Valor Atual</th>
-                            <th>Meta/Teto</th>
-                            <th>Status</th>
-                        </tr>
+                        <tr><th>Indicador</th><th>Valor</th><th>Meta</th><th>Status</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Inflação (IPCA)</td>
-                            <td id="tab-ipca">3,91%</td>
-                            <td>3,00% (+/- 1,5%)</td>
-                            <td><span class="status-pill st-ok">DENTRO DA META</span></td>
-                        </tr>
-                        <tr>
-                            <td>Selic Meta</td>
-                            <td id="tab-selic">15,00%</td>
-                            <td>Teto: 15,50%</td>
-                            <td><span class="status-pill st-warn">ATENÇÃO ALTA</span></td>
-                        </tr>
-                        <tr>
-                            <td>Dólar (Câmbio)</td>
-                            <td id="tab-dolar">R$ 5,12</td>
-                            <td>Teto: R$ 5,40</td>
-                            <td><span class="status-pill st-ok">ESTÁVEL</span></td>
-                        </tr>
-                        <tr>
-                            <td>PIB (Cresc.)</td>
-                            <td>1,82%</td>
-                            <td>Piso: 1,50%</td>
-                            <td><span class="status-pill st-warn">RITMO LENTO</span></td>
-                        </tr>
+                        <tr><td>Inflação</td><td>3,91%</td><td>3,0% +/- 1,5</td><td><span class="status-pill st-ok">OK</span></td></tr>
+                        <tr><td>Selic</td><td>15,00%</td><td>Teto 15,5%</td><td><span class="status-pill st-warn">ATENÇÃO</span></td></tr>
                     </tbody>
                 </table>
-                <div style="margin-top: 25px;">
-                    <div class="header-secao">Resumo Executivo</div>
-                    <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
-                        O Brasil encerra fevereiro de 2026 com a **Inflação sob controle**, operando dentro do intervalo de tolerância da meta. No entanto, o **Custo de Capital (Selic)** atinge níveis críticos de restrição, atuando como o principal limitador para a expansão industrial e o crescimento do PIB [1.1, 1.2].
-                    </p>
-                </div>
             </div>
 
-            <!-- Coluna 2: Monitor Visual -->
+            <!-- Coluna 2: Monitor Visual (Preservado) -->
             <div class="chart-container">
-                <div class="header-secao">Sentimento e Risco de Mercado</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                <div class="header-secao">Sentimento e Risco</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
-                        <canvas id="gaugeConf" height="140"></canvas>
-                        <center><span style="font-size:0.7rem; color:#94a3b8;">Confiança: 93,2 pts</span></center>
+                        <canvas id="gaugeConf" height="120"></canvas>
+                        <center><span style="font-size:0.65rem; color:#94a3b8;">Confiança: 93,2 pts</span></center>
                     </div>
                     <div>
-                        <canvas id="polarIbov" height="140"></canvas>
-                        <center><span style="font-size:0.7rem; color:#94a3b8;">Setores Ibovespa</span></center>
+                        <canvas id="polarIbov" height="120"></canvas>
+                        <center><span style="font-size:0.65rem; color:#94a3b8;">Setores Bolsa</span></center>
                     </div>
                 </div>
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <div class="header-secao">Destaque de Hoje</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; justify-content: space-between;">
                         <div>
                             <div class="val-large" id="live-selic" style="color: var(--credit);">15,00%</div>
-                            <span style="font-size: 0.7rem; color: #94a3b8;">SELic ATUAL</span>
+                            <span style="font-size: 0.65rem; color: #94a3b8;">SELIC HOJE</span>
                         </div>
                         <div style="text-align: right;">
                             <div class="val-large" id="live-dolar" style="color: var(--growth);">R$ 5,12</div>
-                            <span style="font-size: 0.7rem; color: #94a3b8;">DÓLAR COMERCIAL</span>
+                            <span style="font-size: 0.65rem; color: #94a3b8;">DÓLAR COMERCIAL</span>
                         </div>
                     </div>
+                </div>
+                <div style="margin-top: 20px; font-size: 0.75rem; color: #94a3b8; line-height: 1.4;">
+                    <strong style="color: var(--accent);">Síntese:</strong> O Ibovespa segue pressionado pela Selic, mas encontra suporte no fluxo de IDP, sinalizando resiliência institucional [1.1].
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-    // 1. Relógio em Tempo Real
-    setInterval(() => {
-        const agora = new Date();
-        document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
-    }, 1000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-    // 2. Busca de Dados Oficiais (API Banco Central)
     async function fetchBacen() {
         try {
-            const resDolar = await fetch('https://economia.awesomeapi.com.br').then(r => r.json());
-            const dolarVal = parseFloat(resDolar.USDBRL.bid).toFixed(2);
-            document.getElementById('live-dolar').innerText = 'R$ ' + dolarVal;
-            document.getElementById('tab-dolar').innerText = 'R$ ' + dolarVal;
-            
-            const resSelic = await fetch('https://api.bcb.gov.br').then(r => r.json());
-            const selicVal = parseFloat(resSelic.valor).toFixed(2);
-            document.getElementById('live-selic').innerText = selicVal + '%';
-            document.getElementById('tab-selic').innerText = selicVal + '%';
-        } catch (e) { console.warn("Usando dados de referência."); }
+            const rD = await fetch('https://economia.awesomeapi.com.br').then(r => r.json());
+            document.getElementById('live-dolar').innerText = 'R$ ' + parseFloat(rD.USDBRL.bid).toFixed(2);
+            const rS = await fetch('https://api.bcb.gov.br').then(r => r.json());
+            document.getElementById('live-selic').innerText = parseFloat(rS.valor).toFixed(2) + '%';
+        } catch (e) { console.warn("Modo Fallback."); }
     }
     fetchBacen();
 
-    // 3. Gráficos
     new Chart(document.getElementById('gaugeConf'), {
         type: 'doughnut',
         data: { datasets: [{ data: [93.2, 6.8], backgroundColor: ['#6366f1', 'rgba(255,255,255,0.05)'], borderWidth: 0, circumference: 180, rotation: 270 }] },
@@ -162,7 +157,7 @@
 
     function gerarPDF() {
         html2pdf().set({
-            margin: 5, filename: `Auditoria_Macro_Brasil_${new Date().getTime()}.pdf`,
+            margin: 5, filename: `Intelligence_Report_2026.pdf`,
             html2canvas: { scale: 2, backgroundColor: '#0f172a' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         }).from(document.getElementById('relatorio')).save();
