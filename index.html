@@ -2,122 +2,140 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Econômico Completo 2026</title>
+    <title>Monitor Premium: Mercado e Consumo 2026</title>
     <script src="https://cdnjs.cloudflare.com"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --work: #22c55e; --inflation: #3b82f6; --growth: #eab308; --credit: #ef4444; --text: #f8fafc; --accent: #6366f1; }
+        :root { --bg: #0f172a; --card: #1e293b; --work: #22c55e; --inflation: #3b82f6; --growth: #eab308; --credit: #ef4444; --accent: #6366f1; --text: #f8fafc; }
         body { font-family: 'Inter', sans-serif; background: #cbd5e1; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .btn-pdf { background: var(--accent); color: #fff; border: none; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); transition: 0.3s; }
-        #relatorio { background: var(--bg); color: var(--text); padding: 30px; width: 950px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; }
-        #clock { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
-        .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .secao { margin-bottom: 22px; }
-        .header-secao { font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .barra-ext { height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 8px 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        #relatorio { background: var(--bg); color: var(--text); padding: 35px; width: 1100px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 30px; }
+        .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .secao { margin-bottom: 24px; }
+        .header-secao { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; }
+        .barra-ext { height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 10px 0; overflow: hidden; }
         .barra-fill { height: 100%; transition: width 2s; border-radius: 10px; }
-        .val-text { font-size: 1.1rem; font-weight: 800; margin-right: 10px; }
-        .desc-text { font-size: 0.8rem; color: #cbd5e1; line-height: 1.4; display: block; }
-        .chart-box { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .val-text { font-size: 1.2rem; font-weight: 800; }
+        .desc-small { font-size: 0.75rem; color: #94a3b8; line-height: 1.4; display: block; }
+        .chart-container { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR ANÁLISE COMPLETA (PDF)</button>
+    <button class="btn-pdf" onclick="gerarPDF()">📄 BAIXAR RELATÓRIO DE MERCADO E CONFIANÇA (PDF)</button>
 
     <div id="relatorio">
         <div class="header">
             <div>
-                <div style="font-size: 1.5rem; font-weight: 800;">Dashboard de Sustentação Econômica</div>
-                <div style="color: var(--accent); font-size: 0.8rem; font-weight: bold;">CENÁRIO CONSOLIDADO - FEV/2026</div>
+                <div style="font-size: 1.8rem; font-weight: 900;">Intelligence Report Brasil</div>
+                <div style="color: var(--accent); font-size: 0.85rem; font-weight: bold;">FEVEREIRO 2026 - ANÁLISE MACRO E MERCADO DE CAPITAIS</div>
             </div>
             <div style="text-align: right;">
-                <div id="clock">00:00:00</div>
+                <div id="clock" style="font-size: 1.4rem; font-weight: 800; color: var(--accent);">00:00:00</div>
                 <div id="date" style="font-size: 0.8rem; color: #94a3b8;">--</div>
             </div>
         </div>
 
         <div class="grid-main">
-            <!-- Pilares de Análise -->
+            <!-- Coluna 1: Pilares Econômicos -->
             <div>
                 <div class="secao">
-                    <div class="header-secao">Mercado de Trabalho (Sustentação)</div>
+                    <div class="header-secao">Mercado de Trabalho e Renda</div>
                     <span class="val-text" style="color: var(--work)">80%</span>
                     <div class="barra-ext"><div class="barra-fill" style="width: 80%; background: var(--work)"></div></div>
-                    <span class="desc-text">Desemprego em 5,2% e rendimento real em níveis recordes mantêm o consumo resiliente.</span>
+                    <span class="desc-small">Desemprego em 5,2%. O pleno emprego sustenta a demanda das famílias.</span>
                 </div>
 
                 <div class="secao">
-                    <div class="header-secao">Estabilidade Monetária (Inflação)</div>
+                    <div class="header-secao">Estabilidade (Inflação IPCA-15)</div>
                     <span class="val-text" style="color: var(--inflation)">60%</span>
                     <div class="barra-ext"><div class="barra-fill" style="width: 60%; background: var(--inflation)"></div></div>
-                    <span class="desc-text">IPCA-15 de fevereiro em 0,84%. Projeção anual de 3,91% converge para a meta.</span>
+                    <span class="desc-small">Alta de 0,84% em Fev. A meta de 3,91% para 2026 segue como âncora.</span>
                 </div>
 
                 <div class="secao">
-                    <div class="header-secao">Atividade Econômica (Crescimento)</div>
+                    <div class="header-secao">Atividade Econômica (PIB)</div>
                     <span class="val-text" style="color: var(--growth)">40%</span>
                     <div class="barra-ext"><div class="barra-fill" style="width: 40%; background: var(--growth)"></div></div>
-                    <span class="desc-text">PIB projetado em 1,82%. Ritmo industrial de 1,1% afetado pelo custo do capital.</span>
+                    <span class="desc-small">Crescimento de 1,82% previsto. A indústria opera abaixo da capacidade nominal.</span>
                 </div>
 
                 <div class="secao">
-                    <div class="header-secao">Custo do Crédito (Obstáculo)</div>
+                    <div class="header-secao">Custo de Capital (Selic 15%)</div>
                     <span class="val-text" style="color: var(--credit)">100%</span>
                     <div class="barra-ext"><div class="barra-fill" style="width: 100%; background: var(--credit)"></div></div>
-                    <span class="desc-text">Selic mantida em 15% ao ano. Principal entrave para expansão e novos investimentos.</span>
+                    <span class="desc-small">O maior entrave ao investimento. Expectativa de queda para 12,13% até Dez/26.</span>
                 </div>
             </div>
 
-            <!-- Visualização de Tendência -->
-            <div class="chart-box">
-                <div class="header-secao" style="margin-bottom: 15px;">Tendência da Inflação (Últimos 6 meses)</div>
-                <canvas id="trendChart"></canvas>
-                <div style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                    <strong style="color: #fff;">Conclusão:</strong> O Brasil vive um equilíbrio delicado. A saúde do emprego sustenta a economia, mas a Selic elevada atua como "freio de mão" para garantir a convergência da inflação.
+            <!-- Coluna 2: Confiança e Bolsa -->
+            <div class="chart-container">
+                <div class="header-secao">Monitor de Sentimento e Risco</div>
+                <div class="grid-charts">
+                    <div>
+                        <canvas id="gaugeChart" height="150"></canvas>
+                        <center><span class="desc-small" style="margin-top:10px;">Confiança do Consumidor</span></center>
+                    </div>
+                    <div>
+                        <canvas id="ibovChart" height="150"></canvas>
+                        <center><span class="desc-small" style="margin-top:10px;">Volatilidade Ibovespa</span></center>
+                    </div>
+                </div>
+                <div style="margin-top: 30px; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    <strong style="color: var(--accent);">Síntese de Mercado:</strong> 
+                    A confiança recuou para **93,2 pontos** em Fev/26 devido ao endividamento. O Ibovespa segue pressionado pela Selic, mas encontra suporte no fluxo de IDP (Investimento Direto), sinalizando resiliência institucional [1.1, 1.2].
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-    // Relógio
+    // Relógio e Data
     setInterval(() => {
         const agora = new Date();
         document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
         document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
     }, 1000);
 
-    // Gráfico de Tendência (Exemplo com dados reais IPCA-15 recentes)
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
+    // Gráfico 1: Confiança do Consumidor (Doughnut Estilo Gauge)
+    new Chart(document.getElementById('gaugeChart'), {
+        type: 'doughnut',
         data: {
-            labels: ['Set', 'Out', 'Nov', 'Dez', 'Jan/26', 'Fev/26'],
+            labels: ['Confiança', 'Incerteza'],
             datasets: [{
-                label: 'IPCA (%)',
-                data: [0.48, 0.52, 0.45, 0.56, 0.33, 0.84],
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3
+                data: [93.2, 6.8],
+                backgroundColor: ['#6366f1', 'rgba(255,255,255,0.05)'],
+                borderWidth: 0,
+                circumference: 180,
+                rotation: 270
             }]
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-            }
+        options: { plugins: { legend: { display: false } }, cutout: '80%' }
+    });
+
+    // Gráfico 2: Ibovespa (Radar/Polar para representar força de setores)
+    new Chart(document.getElementById('ibovChart'), {
+        type: 'polarArea',
+        data: {
+            labels: ['Bancos', 'Commodities', 'Varejo', 'Energia'],
+            datasets: [{
+                data: [85, 70, 40, 90],
+                backgroundColor: ['rgba(34, 197, 94, 0.4)', 'rgba(59, 130, 246, 0.4)', 'rgba(239, 68, 68, 0.4)', 'rgba(234, 179, 8, 0.4)'],
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)'
+            }]
+        },
+        options: { 
+            scales: { r: { display: false } },
+            plugins: { legend: { display: false } }
         }
     });
 
     function gerarPDF() {
         html2pdf().set({
-            margin: 10, filename: 'Analise_Economica_Completa_2026.pdf',
+            margin: 5, filename: 'Relatorio_Premium_Econ_2026.pdf',
             html2canvas: { scale: 2, backgroundColor: '#0f172a' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         }).from(document.getElementById('relatorio')).save();
