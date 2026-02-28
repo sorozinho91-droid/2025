@@ -2,116 +2,127 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Visualização do Cenário (Dashboard)</title>
+    <title>Relatório Econômico Automático</title>
+    <!-- Biblioteca para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #fff; color: #000; line-height: 1.4; padding: 20px; }
-        .container { max-width: 850px; }
-        .titulo { font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; }
-        .secao { margin-bottom: 12px; }
-        .header-secao { font-weight: bold; font-size: 0.85rem; margin-bottom: 3px; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 40px; }
         
-        /* Container da Barra */
-        .barra-container {
-            display: inline-flex;
-            align-items: center;
-            width: 100%;
+        /* Estilo do Botão */
+        .btn-pdf {
+            background: #000; color: #fff; border: none; padding: 10px 20px;
+            cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 4px;
         }
+        .btn-pdf:hover { background: #333; }
 
-        /* Estilo da Barra (Hachurada como na imagem) */
+        /* Área do Relatório (Identica à imagem) */
+        #relatorio { background: #fff; padding: 30px; width: 850px; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        
+        .titulo { font-weight: bold; font-size: 1rem; margin-bottom: 15px; }
+        .secao { margin-bottom: 14px; }
+        .header-secao { font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
+        
+        .barra-container { display: flex; align-items: center; width: 100%; }
+
+        /* Efeito de hachura/pontilhado da imagem */
         .barra-externa {
-            width: 180px;
-            height: 16px;
-            border: 1px solid #000;
-            display: flex;
-            margin-right: 10px;
-            background-image: radial-gradient(#000 0.5px, transparent 0.5px);
-            background-size: 3px 3px; /* Cria o efeito de pontos/hachura */
+            width: 180px; height: 18px; border: 1px solid #000;
+            display: flex; margin-right: 12px;
+            background-image: radial-gradient(#000 0.6px, transparent 0.6px);
+            background-size: 3px 3px;
         }
 
-        .barra-preenchida {
-            background: #000; /* Parte preta sólida */
-            height: 100%;
-            transition: width 2s ease-in-out;
-        }
+        .barra-preenchida { background: #000; height: 100%; transition: width 1.5s ease-in-out; }
 
-        .texto-valor { font-weight: bold; font-size: 0.85rem; min-width: 45px; }
-        .descricao { font-size: 0.85rem; margin-left: 5px; }
-        .conclusao { margin-top: 20px; font-size: 0.85rem; border-top: 1px solid #eee; padding-top: 10px; }
+        .texto-valor { font-weight: bold; font-size: 0.9rem; min-width: 50px; }
+        .descricao { font-size: 0.9rem; }
+        .conclusao { margin-top: 25px; font-size: 0.9rem; border-top: 1px solid #ddd; padding-top: 15px; line-height: 1.5; }
         .bold { font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="titulo">visualização do Cenário (Dashboard)</div>
+    <div style="text-align: center;">
+        <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR PARA PDF</button>
+    </div>
 
-    <!-- Mercado de Trabalho -->
-    <div class="secao">
-        <div class="header-secao">Mercado de Trabalho e Renda (Pilar de Sustentação):</div>
-        <div class="barra-container">
-            <div class="barra-externa"><div id="bar-trabalho" class="barra-preenchida" style="width: 80%"></div></div>
-            <span class="texto-valor" id="val-trabalho">80%</span>
-            <span class="descricao">- O desemprego em 5,2% e o rendimento real recorde são os motores que impedem uma crise maior.</span>
+    <div id="relatorio">
+        <div class="titulo">visualização do Cenário (Dashboard)</div>
+
+        <div class="secao">
+            <div class="header-secao">Mercado de Trabalho e Renda (Pilar de Sustentação):</div>
+            <div class="barra-container">
+                <div class="barra-externa"><div id="bar-1" class="barra-preenchida" style="width: 80%"></div></div>
+                <span id="txt-1" class="texto-valor">80%</span>
+                <span class="descricao">- O desemprego em 5,2% e o rendimento real recorde são os motores que impedem uma crise maior.</span>
+            </div>
+        </div>
+
+        <div class="secao">
+            <div class="header-secao">Controle da Inflação (Estabilidade):</div>
+            <div class="barra-container">
+                <div class="barra-externa"><div id="bar-2" class="barra-preenchida" style="width: 60%"></div></div>
+                <span id="txt-2" class="texto-valor">60%</span>
+                <span class="descricao">- O IPCA está sob controle, mas o IPCA-15 de fevereiro (0,84%) ainda exige atenção.</span>
+            </div>
+        </div>
+
+        <div class="secao">
+            <div class="header-secao">Atividade Econômica (Ritmo de Crescimento):</div>
+            <div class="barra-container">
+                <div class="barra-externa"><div id="bar-3" class="barra-preenchida" style="width: 40%"></div></div>
+                <span id="txt-3" class="texto-valor">40%</span>
+                <span class="descricao">- PIB e Indústria crescem em ritmo lento devido ao custo do dinheiro.</span>
+            </div>
+        </div>
+
+        <div class="secao">
+            <div class="header-secao">Custo do Crédito (Principal Obstáculo):</div>
+            <div class="barra-container">
+                <div class="barra-externa"><div id="bar-4" class="barra-preenchida" style="width: 100%"></div></div>
+                <span id="txt-4" class="texto-valor">100%</span>
+                <span class="descricao">- A Selic em 15% é o maior desafio para novos investimentos e expansão das empresas.</span>
+            </div>
+        </div>
+
+        <div class="conclusao">
+            <span class="bold">Conclusão:</span> O gráfico da economia brasileira hoje aponta para um <span class="bold">equilíbrio delicado</span>. O país tem "saúde" no emprego e renda, mas está com o "freio de mão" (Selic) puxado para garantir que a inflação não suba.
         </div>
     </div>
-
-    <!-- Inflação -->
-    <div class="secao">
-        <div class="header-secao">Controle da Inflação (Estabilidade):</div>
-        <div class="barra-container">
-            <div class="barra-externa"><div id="bar-inflacao" class="barra-preenchida" style="width: 60%"></div></div>
-            <span class="texto-valor" id="val-inflacao">60%</span>
-            <span class="descricao">- O IPCA está sob controle, mas o IPCA-15 de fevereiro (0,84%) ainda exige atenção.</span>
-        </div>
-    </div>
-
-    <!-- Atividade Econômica -->
-    <div class="secao">
-        <div class="header-secao">Atividade Econômica (Ritmo de Crescimento):</div>
-        <div class="barra-container">
-            <div class="barra-externa"><div id="bar-pib" class="barra-preenchida" style="width: 40%"></div></div>
-            <span class="texto-valor" id="val-pib">40%</span>
-            <span class="descricao">- PIB e Indústria crescem em ritmo lento devido ao custo do dinheiro.</span>
-        </div>
-    </div>
-
-    <!-- Custo do Crédito -->
-    <div class="secao">
-        <div class="header-secao">Custo do Crédito (Principal Obstáculo):</div>
-        <div class="barra-container">
-            <div class="barra-externa"><div id="bar-selic" class="barra-preenchida" style="width: 100%"></div></div>
-            <span class="texto-valor" id="val-selic">100%</span>
-            <span class="descricao">- A Selic em 15% é o maior desafio para novos investimentos e expansão das empresas.</span>
-        </div>
-    </div>
-
-    <div class="conclusao">
-        <span class="bold">Conclusão:</span> O gráfico da economia brasileira hoje aponta para um <span class="bold">equilíbrio delicado</span>. O país tem "saúde" no emprego e renda, mas está com o "freio de mão" (Selic) puxado para garantir que a inflação não suba.
-    </div>
-</div>
 
 <script>
-    // Função para simular atualização em tempo real (oscilação leve)
-    function atualizarSimulacao() {
-        const indicadores = [
-            { id: 'bar-trabalho', txt: 'val-trabalho', base: 80 },
-            { id: 'bar-inflacao', txt: 'val-inflacao', base: 60 },
-            { id: 'bar-pib', txt: 'val-pib', base: 40 },
-            { id: 'bar-selic', txt: 'val-selic', base: 100 }
+    // 1. Função de Atualização Automática (Simulação Real-Time)
+    function autoUpdate() {
+        const configs = [
+            { bar: 'bar-1', txt: 'txt-1', base: 80, range: 3 },
+            { bar: 'bar-2', txt: 'txt-2', base: 60, range: 5 },
+            { bar: 'bar-3', txt: 'txt-3', base: 40, range: 2 },
+            { bar: 'bar-4', txt: 'txt-4', base: 100, range: 0 } // Selic fixa em 100%
         ];
 
-        indicadores.forEach(ind => {
-            // Se for 100% (Selic), mantemos fixo para representar o "obstáculo máximo"
-            let variacao = ind.base === 100 ? 0 : (Math.random() * 4 - 2); 
-            let novoValor = Math.min(100, Math.max(0, ind.base + variacao));
-            
-            document.getElementById(ind.id).style.width = novoValor + '%';
-            document.getElementById(ind.txt).innerText = Math.round(novoValor) + '%';
+        configs.forEach(c => {
+            let oscilacao = (Math.random() * (c.range * 2)) - c.range;
+            let final = Math.min(100, Math.max(0, c.base + oscilacao));
+            document.getElementById(c.bar).style.width = final + '%';
+            document.getElementById(c.txt).innerText = Math.round(final) + '%';
         });
     }
 
-    // Atualiza a cada 4 segundos
-    setInterval(atualizarSimulacao, 4000);
+    // Atualiza a cada 3 segundos
+    setInterval(autoUpdate, 3000);
+
+    // 2. Função para Gerar o PDF
+    function gerarPDF() {
+        const elemento = document.getElementById('relatorio');
+        const opcoes = {
+            margin: 10,
+            filename: 'Cenario_Economico_Brasil_2026.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        html2pdf().set(opcoes).from(elemento).save();
+    }
 </script>
 
 </body>
