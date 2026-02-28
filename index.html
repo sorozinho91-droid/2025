@@ -2,34 +2,35 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Monitor Econômico com Histórico</title>
+    <title>Dashboard Econômico Completo 2026</title>
     <script src="https://cdnjs.cloudflare.com"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --work: #22c55e; --inflation: #3b82f6; --growth: #eab308; --credit: #ef4444; --text: #f8fafc; --accent: #6366f1; }
         body { font-family: 'Inter', sans-serif; background: #cbd5e1; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .btn-pdf { background: var(--accent); color: #fff; border: none; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-        #relatorio { background: var(--bg); color: var(--text); padding: 30px; width: 900px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .btn-pdf { background: var(--accent); color: #fff; border: none; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); transition: 0.3s; }
+        #relatorio { background: var(--bg); color: var(--text); padding: 30px; width: 950px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; }
         #clock { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
-        .grid-main { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
-        .secao { margin-bottom: 20px; }
-        .header-secao { font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
-        .barra-ext { height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .secao { margin-bottom: 22px; }
+        .header-secao { font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .barra-ext { height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 8px 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
         .barra-fill { height: 100%; transition: width 2s; border-radius: 10px; }
         .val-text { font-size: 1.1rem; font-weight: 800; margin-right: 10px; }
+        .desc-text { font-size: 0.8rem; color: #cbd5e1; line-height: 1.4; display: block; }
         .chart-box { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
-    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR RELATÓRIO COMPLETO (PDF)</button>
+    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR ANÁLISE COMPLETA (PDF)</button>
 
     <div id="relatorio">
         <div class="header">
             <div>
-                <div style="font-size: 1.5rem; font-weight: 800;">Análise de Tendência</div>
-                <div style="color: var(--accent); font-size: 0.8rem;">DADOS OFICIAIS BANCO CENTRAL</div>
+                <div style="font-size: 1.5rem; font-weight: 800;">Dashboard de Sustentação Econômica</div>
+                <div style="color: var(--accent); font-size: 0.8rem; font-weight: bold;">CENÁRIO CONSOLIDADO - FEV/2026</div>
             </div>
             <div style="text-align: right;">
                 <div id="clock">00:00:00</div>
@@ -38,99 +39,86 @@
         </div>
 
         <div class="grid-main">
-            <!-- Coluna de Indicadores Atuais -->
+            <!-- Pilares de Análise -->
             <div>
                 <div class="secao">
-                    <div class="header-secao">Selic (Custo do Crédito)</div>
-                    <span id="txt-selic" class="val-text" style="color: var(--credit)">--%</span>
-                    <div class="barra-ext"><div id="bar-selic" class="barra-fill" style="background: var(--credit)"></div></div>
+                    <div class="header-secao">Mercado de Trabalho (Sustentação)</div>
+                    <span class="val-text" style="color: var(--work)">80%</span>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 80%; background: var(--work)"></div></div>
+                    <span class="desc-text">Desemprego em 5,2% e rendimento real em níveis recordes mantêm o consumo resiliente.</span>
                 </div>
+
                 <div class="secao">
-                    <div class="header-secao">Inflação (IPCA 12m)</div>
-                    <span id="txt-ipca" class="val-text" style="color: var(--inflation)">--%</span>
-                    <div class="barra-ext"><div id="bar-ipca" class="barra-fill" style="background: var(--inflation)"></div></div>
+                    <div class="header-secao">Estabilidade Monetária (Inflação)</div>
+                    <span class="val-text" style="color: var(--inflation)">60%</span>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 60%; background: var(--inflation)"></div></div>
+                    <span class="desc-text">IPCA-15 de fevereiro em 0,84%. Projeção anual de 3,91% converge para a meta.</span>
                 </div>
+
                 <div class="secao">
-                    <div class="header-secao">Dólar (Câmbio PTAX)</div>
-                    <span id="txt-dolar" class="val-text" style="color: var(--growth)">R$ --</span>
-                    <div class="barra-ext"><div id="bar-dolar" class="barra-fill" style="background: var(--growth)"></div></div>
+                    <div class="header-secao">Atividade Econômica (Crescimento)</div>
+                    <span class="val-text" style="color: var(--growth)">40%</span>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 40%; background: var(--growth)"></div></div>
+                    <span class="desc-text">PIB projetado em 1,82%. Ritmo industrial de 1,1% afetado pelo custo do capital.</span>
+                </div>
+
+                <div class="secao">
+                    <div class="header-secao">Custo do Crédito (Obstáculo)</div>
+                    <span class="val-text" style="color: var(--credit)">100%</span>
+                    <div class="barra-ext"><div class="barra-fill" style="width: 100%; background: var(--credit)"></div></div>
+                    <span class="desc-text">Selic mantida em 15% ao ano. Principal entrave para expansão e novos investimentos.</span>
                 </div>
             </div>
 
-            <!-- Coluna do Gráfico Histórico -->
+            <!-- Visualização de Tendência -->
             <div class="chart-box">
-                <div class="header-secao" style="margin-bottom: 15px;">Histórico de Variação (Últimos Meses)</div>
-                <canvas id="historyChart" height="180"></canvas>
+                <div class="header-secao" style="margin-bottom: 15px;">Tendência da Inflação (Últimos 6 meses)</div>
+                <canvas id="trendChart"></canvas>
+                <div style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                    <strong style="color: #fff;">Conclusão:</strong> O Brasil vive um equilíbrio delicado. A saúde do emprego sustenta a economia, mas a Selic elevada atua como "freio de mão" para garantir a convergência da inflação.
+                </div>
             </div>
         </div>
     </div>
 
 <script>
-    // 1. Relógio
+    // Relógio
     setInterval(() => {
         const agora = new Date();
         document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
-        document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+        document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
     }, 1000);
 
-    // 2. Busca de Dados e Histórico
-    async function init() {
-        try {
-            // Busca Selic Atual (432) e Histórico do IPCA (433) para o gráfico
-            const [resSelic, resIpcaHist] = await Promise.all([
-                fetch('https://api.bcb.gov.br').then(r => r.json()),
-                fetch('https://api.bcb.gov.br').then(r => r.json())
-            ]);
-
-            const selic = parseFloat(resSelic[0].valor);
-            document.getElementById('txt-selic').innerText = selic.toFixed(2) + '%';
-            document.getElementById('bar-selic').style.width = (selic * 5) + '%';
-
-            // Configuração do Gráfico de Histórico (IPCA)
-            const labels = resIpcaHist.map(item => item.data.substring(3)); // Pega MM/AAAA
-            const values = resIpcaHist.map(item => parseFloat(item.valor));
-
-            new Chart(document.getElementById('historyChart'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Inflação Mensal (%)',
-                        data: values,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                    }
-                }
-            });
-
-            // Preenchimento de IPCA e Dólar (Valores de Fevereiro/2026 para manter contexto)
-            document.getElementById('txt-ipca').innerText = '3.91%';
-            document.getElementById('bar-ipca').style.width = '39%';
-            document.getElementById('txt-dolar').innerText = 'R$ 5.12';
-            document.getElementById('bar-dolar').style.width = '75%';
-
-        } catch (e) { console.error("Erro na API Bacen", e); }
-    }
-
-    init();
+    // Gráfico de Tendência (Exemplo com dados reais IPCA-15 recentes)
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Set', 'Out', 'Nov', 'Dez', 'Jan/26', 'Fev/26'],
+            datasets: [{
+                label: 'IPCA (%)',
+                data: [0.48, 0.52, 0.45, 0.56, 0.33, 0.84],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+        }
+    });
 
     function gerarPDF() {
         html2pdf().set({
-            margin: 10, filename: 'Relatorio_Tendencia_Brasil.pdf',
-            html2canvas: { scale: 3, backgroundColor: '#0f172a' },
+            margin: 10, filename: 'Analise_Economica_Completa_2026.pdf',
+            html2canvas: { scale: 2, backgroundColor: '#0f172a' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         }).from(document.getElementById('relatorio')).save();
     }
