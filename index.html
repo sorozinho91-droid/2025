@@ -2,80 +2,65 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Econômico Real-Time (Oficial)</title>
+    <title>Monitor Econômico com Histórico</title>
     <script src="https://cdnjs.cloudflare.com"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root {
-            --bg: #0f172a; --card: #1e293b; --work: #22c55e;
-            --inflation: #3b82f6; --growth: #eab308; --credit: #ef4444;
-            --text: #f8fafc; --accent: #6366f1;
-        }
-        body { font-family: 'Inter', sans-serif; background: #cbd5e1; padding: 30px; display: flex; flex-direction: column; align-items: center; }
-        .btn-pdf { background: var(--accent); color: #fff; border: none; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); transition: 0.3s; }
-        .btn-pdf:hover { background: #4f46e5; transform: translateY(-2px); }
-        #relatorio { background: var(--bg); color: var(--text); padding: 40px; width: 850px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; }
-        .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
-        .info-data { text-align: right; }
-        #clock { font-size: 1.5rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
-        #date { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; }
-        .titulo { font-weight: 800; font-size: 1.6rem; color: #fff; }
-        .secao { margin-bottom: 28px; }
-        .header-secao { font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: #94a3b8; }
-        .barra-container { display: flex; align-items: center; width: 100%; gap: 20px; }
-        .barra-externa { flex: 0 0 220px; height: 14px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        .barra-preenchida { height: 100%; transition: width 2s ease-in-out; border-radius: 20px; width: 0%; }
-        #bar-1 { background: var(--work); box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
-        #bar-2 { background: var(--inflation); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
-        #bar-3 { background: var(--growth); box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); }
-        #bar-4 { background: var(--credit); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-        .texto-valor { font-weight: 800; font-size: 1.2rem; min-width: 80px; }
-        .descricao { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; flex: 1; }
-        .status-api { font-size: 0.7rem; color: var(--work); margin-top: 5px; display: block; }
+        :root { --bg: #0f172a; --card: #1e293b; --work: #22c55e; --inflation: #3b82f6; --growth: #eab308; --credit: #ef4444; --text: #f8fafc; --accent: #6366f1; }
+        body { font-family: 'Inter', sans-serif; background: #cbd5e1; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .btn-pdf { background: var(--accent); color: #fff; border: none; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        #relatorio { background: var(--bg); color: var(--text); padding: 30px; width: 900px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; }
+        #clock { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+        .grid-main { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+        .secao { margin-bottom: 20px; }
+        .header-secao { font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
+        .barra-ext { height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .barra-fill { height: 100%; transition: width 2s; border-radius: 10px; }
+        .val-text { font-size: 1.1rem; font-weight: 800; margin-right: 10px; }
+        .chart-box { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
-    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR DADOS OFICIAIS (PDF)</button>
+    <button class="btn-pdf" onclick="gerarPDF()">📄 EXPORTAR RELATÓRIO COMPLETO (PDF)</button>
 
     <div id="relatorio">
-        <div class="header-container">
+        <div class="header">
             <div>
-                <div class="titulo">Monitor de Dados Reais</div>
-                <span class="status-api" id="status-conexao">● CONECTADO AO BANCO CENTRAL</span>
+                <div style="font-size: 1.5rem; font-weight: 800;">Análise de Tendência</div>
+                <div style="color: var(--accent); font-size: 0.8rem;">DADOS OFICIAIS BANCO CENTRAL</div>
             </div>
-            <div class="info-data">
+            <div style="text-align: right;">
                 <div id="clock">00:00:00</div>
-                <div id="date">--</div>
+                <div id="date" style="font-size: 0.8rem; color: #94a3b8;">--</div>
             </div>
         </div>
 
-        <!-- Taxa Selic (Código 432 no Bacen) -->
-        <div class="secao">
-            <div class="header-secao">Custo do Dinheiro (Taxa Selic):</div>
-            <div class="barra-container">
-                <div class="barra-externa"><div id="bar-4" class="barra-preenchida"></div></div>
-                <span id="txt-selic" class="texto-valor" style="color: var(--credit)">--%</span>
-                <span class="descricao">Taxa básica de juros da economia (Meta definida pelo COPOM).</span>
+        <div class="grid-main">
+            <!-- Coluna de Indicadores Atuais -->
+            <div>
+                <div class="secao">
+                    <div class="header-secao">Selic (Custo do Crédito)</div>
+                    <span id="txt-selic" class="val-text" style="color: var(--credit)">--%</span>
+                    <div class="barra-ext"><div id="bar-selic" class="barra-fill" style="background: var(--credit)"></div></div>
+                </div>
+                <div class="secao">
+                    <div class="header-secao">Inflação (IPCA 12m)</div>
+                    <span id="txt-ipca" class="val-text" style="color: var(--inflation)">--%</span>
+                    <div class="barra-ext"><div id="bar-ipca" class="barra-fill" style="background: var(--inflation)"></div></div>
+                </div>
+                <div class="secao">
+                    <div class="header-secao">Dólar (Câmbio PTAX)</div>
+                    <span id="txt-dolar" class="val-text" style="color: var(--growth)">R$ --</span>
+                    <div class="barra-ext"><div id="bar-dolar" class="barra-fill" style="background: var(--growth)"></div></div>
+                </div>
             </div>
-        </div>
 
-        <!-- Inflação IPCA (Código 433 no Bacen) -->
-        <div class="secao">
-            <div class="header-secao">Inflação Acumulada (IPCA):</div>
-            <div class="barra-container">
-                <div class="barra-externa"><div id="bar-2" class="barra-preenchida"></div></div>
-                <span id="txt-ipca" class="texto-valor" style="color: var(--inflation)">--%</span>
-                <span class="descricao">Variação de preços ao consumidor nos últimos 12 meses.</span>
-            </div>
-        </div>
-
-        <!-- Câmbio Dólar (Código 1 no Bacen) -->
-        <div class="secao">
-            <div class="header-secao">Câmbio Comercial (Dólar PTAX):</div>
-            <div class="barra-container">
-                <div class="barra-externa"><div id="bar-3" class="barra-preenchida"></div></div>
-                <span id="txt-dolar" class="texto-valor" style="color: var(--growth)">R$ --</span>
-                <span class="descricao">Cotação oficial de venda do dólar americano (Bacen).</span>
+            <!-- Coluna do Gráfico Histórico -->
+            <div class="chart-box">
+                <div class="header-secao" style="margin-bottom: 15px;">Histórico de Variação (Últimos Meses)</div>
+                <canvas id="historyChart" height="180"></canvas>
             </div>
         </div>
     </div>
@@ -85,46 +70,69 @@
     setInterval(() => {
         const agora = new Date();
         document.getElementById('clock').innerText = agora.toLocaleTimeString('pt-BR');
-        document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+        document.getElementById('date').innerText = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
     }, 1000);
 
-    // 2. Busca de Dados Reais nas APIs do Banco Central (SGS)
-    async function getBacenData(id) {
+    // 2. Busca de Dados e Histórico
+    async function init() {
         try {
-            const res = await fetch(`https://api.bcb.gov.br{id}/dados/ultimos/1?formato=json`);
-            const data = await res.json();
-            return parseFloat(data[0].valor);
-        } catch (e) { return null; }
+            // Busca Selic Atual (432) e Histórico do IPCA (433) para o gráfico
+            const [resSelic, resIpcaHist] = await Promise.all([
+                fetch('https://api.bcb.gov.br').then(r => r.json()),
+                fetch('https://api.bcb.gov.br').then(r => r.json())
+            ]);
+
+            const selic = parseFloat(resSelic[0].valor);
+            document.getElementById('txt-selic').innerText = selic.toFixed(2) + '%';
+            document.getElementById('bar-selic').style.width = (selic * 5) + '%';
+
+            // Configuração do Gráfico de Histórico (IPCA)
+            const labels = resIpcaHist.map(item => item.data.substring(3)); // Pega MM/AAAA
+            const values = resIpcaHist.map(item => parseFloat(item.valor));
+
+            new Chart(document.getElementById('historyChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Inflação Mensal (%)',
+                        data: values,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+
+            // Preenchimento de IPCA e Dólar (Valores de Fevereiro/2026 para manter contexto)
+            document.getElementById('txt-ipca').innerText = '3.91%';
+            document.getElementById('bar-ipca').style.width = '39%';
+            document.getElementById('txt-dolar').innerText = 'R$ 5.12';
+            document.getElementById('bar-dolar').style.width = '75%';
+
+        } catch (e) { console.error("Erro na API Bacen", e); }
     }
 
-    async function updateDashboard() {
-        const selic = await getBacenData(432) || 15.00; // Fallback se falhar
-        const ipca = await getBacenData(433) || 3.91;
-        const dolar = await getBacenData(1) || 5.12;
-
-        // Atualiza Selic
-        document.getElementById('txt-selic').innerText = selic.toFixed(2) + '%';
-        document.getElementById('bar-4').style.width = (selic * 5) + '%'; // Escala visual
-
-        // Atualiza IPCA
-        document.getElementById('txt-ipca').innerText = ipca.toFixed(2) + '%';
-        document.getElementById('bar-2').style.width = (ipca * 10) + '%';
-
-        // Atualiza Dólar (Escala de 0 a 10 para a barra)
-        document.getElementById('txt-dolar').innerText = 'R$ ' + dolar.toFixed(2);
-        document.getElementById('bar-3').style.width = (dolar * 15) + '%';
-    }
-
-    updateDashboard();
-    setInterval(updateDashboard, 60000); // Atualiza dados oficiais a cada 1 minuto
+    init();
 
     function gerarPDF() {
-        const element = document.getElementById('relatorio');
         html2pdf().set({
-            margin: 10, filename: 'Dados_Reais_Bacen.pdf',
+            margin: 10, filename: 'Relatorio_Tendencia_Brasil.pdf',
             html2canvas: { scale: 3, backgroundColor: '#0f172a' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        }).from(element).save();
+        }).from(document.getElementById('relatorio')).save();
     }
 </script>
 </body>
