@@ -2,154 +2,97 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Econômico Brasil 2026</title>
+    <title>Simulador Econômico Brasil - Real Time</title>
     <style>
-        :root {
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --success: #27ae60;
-            --warning: #f1c40f;
-            --danger: #e74c3c;
-            --info: #3498db;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .dashboard {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 600px;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .indicator-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .label-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .progress-bar {
-            background-color: #ecf0f1;
-            border-radius: 10px;
-            height: 12px;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 1s ease-in-out;
-        }
-
-        .description {
-            font-size: 0.8rem;
-            margin-top: 0.4rem;
-            color: #666;
-            line-height: 1.4;
-        }
-
-        /* Cores e Larguras Específicas */
-        .work { width: 80%; background-color: var(--success); }
-        .inflation { width: 60%; background-color: var(--info); }
-        .growth { width: 40%; background-color: var(--warning); }
-        .credit { width: 100%; background-color: var(--danger); }
-
-        .footer {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: #fdf2f2;
-            border-left: 4px solid var(--danger);
-            font-size: 0.85rem;
-            font-style: italic;
-        }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --up: #4ade80; --down: #f87171; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px; margin: 0; }
+        .container { width: 100%; max-width: 800px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .status-live { background: var(--up); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; animation: blink 1.5s infinite; }
+        
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid #334155; position: relative; overflow: hidden; }
+        .label { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .value { font-size: 2.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .trend { font-size: 0.9rem; margin-top: 8px; display: flex; align-items: center; }
+        
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .positive { color: var(--up); }
+        .negative { color: var(--down); }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <h1>Indicadores Econômicos Brasil - Fev/2026</h1>
-
-    <!-- Mercado de Trabalho -->
-    <div class="indicator-group">
-        <div class="label-container">
-            <span>Mercado de Trabalho e Renda</span>
-            <span>80%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill work"></div>
-        </div>
-        <p class="description">Pilar de sustentação. Desemprego em 5,2% e rendimento real recorde impedem uma crise maior.</p>
+<div class="container">
+    <div class="header">
+        <span class="status-live">● LIVE MARKET</span>
+        <h1>Painel de Indicadores Brasil</h1>
+        <p style="color: #94a3b8;">Simulação de volatilidade baseada no cenário de Fevereiro/2026</p>
     </div>
 
-    <!-- Inflação -->
-    <div class="indicator-group">
-        <div class="label-container">
-            <span>Controle da Inflação (Estabilidade)</span>
-            <span>60%</span>
+    <div class="grid">
+        <div class="card">
+            <span class="label">Taxa Selic</span>
+            <div id="selic-val" class="value">15.00%</div>
+            <div id="selic-trend" class="trend">Aguardando...</div>
         </div>
-        <div class="progress-bar">
-            <div class="progress-fill inflation"></div>
+        <div class="card">
+            <span class="label">Dólar Comercial</span>
+            <div id="dolar-val" class="value">R$ 5.12</div>
+            <div id="dolar-trend" class="trend">Aguardando...</div>
         </div>
-        <p class="description">IPCA sob controle (3,91% proj.), mas IPCA-15 de fevereiro (0,84%) ainda exige cautela.</p>
-    </div>
-
-    <!-- Atividade Econômica -->
-    <div class="indicator-group">
-        <div class="label-container">
-            <span>Atividade Econômica (Crescimento)</span>
-            <span>40%</span>
+        <div class="card">
+            <span class="label">IPCA (Projeção)</span>
+            <div id="ipca-val" class="value">3.91%</div>
+            <div id="ipca-trend" class="trend">Aguardando...</div>
         </div>
-        <div class="progress-bar">
-            <div class="progress-fill growth"></div>
+        <div class="card">
+            <span class="label">Ibovespa (Pontos)</span>
+            <div id="ibov-val" class="value">128.450</div>
+            <div id="ibov-trend" class="trend">Aguardando...</div>
         </div>
-        <p class="description">PIB e Indústria em ritmo lento devido ao alto custo do capital.</p>
-    </div>
-
-    <!-- Crédito -->
-    <div class="indicator-group">
-        <div class="label-container">
-            <span>Custo do Crédito (Obstáculo)</span>
-            <span>100%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill credit"></div>
-        </div>
-        <p class="description">Principal desafio. Selic em 15% freia investimentos e expansão empresarial.</p>
-    </div>
-
-    <div class="footer">
-        <strong>Conclusão:</strong> Equilíbrio delicado. Economia com "saúde" social, mas com o "freio de mão" monetário puxado.
     </div>
 </div>
+
+<script>
+    // Configurações iniciais baseadas no seu resumo
+    const dados = {
+        selic: { val: 15.00, min: 14.75, max: 15.25, dec: 2, unit: '%' },
+        dolar: { val: 5.12, min: 5.05, max: 5.30, dec: 2, unit: 'R$ ' },
+        ipca: { val: 3.91, min: 3.80, max: 4.10, dec: 2, unit: '%' },
+        ibov: { val: 128450, min: 127000, max: 130000, dec: 0, unit: '' }
+    };
+
+    function atualizar() {
+        for (let key in dados) {
+            const config = dados[key];
+            const variacao = (Math.random() - 0.5) * (config.val * 0.005); // oscilação de 0.5%
+            const novoValor = Math.max(config.min, Math.min(config.max, config.val + variacao));
+            
+            const diff = novoValor - config.val;
+            const elementVal = document.getElementById(`${key}-val`);
+            const elementTrend = document.getElementById(`${key}-trend`);
+
+            // Atualiza Texto
+            if (key === 'dolar') elementVal.innerText = `R$ ${novoValor.toFixed(2)}`;
+            else if (key === 'ibov') elementVal.innerText = Math.floor(novoValor).toLocaleString('pt-BR');
+            else elementVal.innerText = `${novoValor.toFixed(2)}%`;
+
+            // Atualiza Tendência Visual
+            if (diff > 0) {
+                elementTrend.innerHTML = `<span class="positive">▲ +${Math.abs(diff).toFixed(3)}</span>`;
+            } else {
+                elementTrend.innerHTML = `<span class="negative">▼ -${Math.abs(diff).toFixed(3)}</span>`;
+            }
+
+            config.val = novoValor; // Salva o novo valor para a próxima rodada
+        }
+    }
+
+    // Inicia a atualização a cada 3 segundos
+    setInterval(atualizar, 3000);
+    atualizar(); // Primeira execução imediata
+</script>
 
 </body>
 </html>
