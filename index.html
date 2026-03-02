@@ -1,90 +1,90 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-import StatCard from "../components/dashboard/StatCard";
-import TaskList from "../components/dashboard/TaskList";
-import AddTaskModal from "../components/dashboard/AddTaskModal";
-import ActivityChart from "../components/dashboard/ActivityChart";
-import { CheckCircle2, Clock, AlertCircle, ListTodo, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 
-export default function Dashboard() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-
-  const fetchTasks = async () => {
-    const data = await base44.entities.Task.list("-created_date", 50);
-    setTasks(data);
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchTasks(); }, []);
-
-  const handleCreate = async (form) => {
-    await base44.entities.Task.create(form);
-    setShowModal(false);
-    fetchTasks();
-  };
-
-  const handleStatusChange = async (task, newStatus) => {
-    await base44.entities.Task.update(task.id, { status: newStatus });
-    fetchTasks();
-  };
-
-  const total = tasks.length;
-  const concluidas = tasks.filter(t => t.status === "concluído").length;
-  const emProgresso = tasks.filter(t => t.status === "em_progresso").length;
-  const pendentes = tasks.filter(t => t.status === "pendente").length;
-
-  return (
-    <div className="min-h-screen bg-[#f8f8fb] font-sans">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-5 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Painel</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Visão geral das suas tarefas</p>
-        </div>
-        <Button
-          onClick={() => setShowModal(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Nova Tarefa
-        </Button>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col gap-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard title="Total" value={total} icon={ListTodo} color="bg-indigo-500" trend="Todas as tarefas" />
-          <StatCard title="Pendentes" value={pendentes} icon={AlertCircle} color="bg-amber-400" trend="Aguardando início" />
-          <StatCard title="Em Progresso" value={emProgresso} icon={Clock} color="bg-blue-500" trend="Em andamento" />
-          <StatCard title="Concluídas" value={concluidas} icon={CheckCircle2} color="bg-emerald-500" trend="Finalizadas" />
-        </div>
-
-        {/* Chart + Tasks */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
-            <ActivityChart />
-          </div>
-
-          <div className="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-700">Tarefas Recentes</h3>
-              <span className="text-xs text-gray-400">{total} tarefas</span>
-            </div>
-            {loading ? (
-              <div className="flex items-center justify-center py-12 text-gray-400 text-sm">
-                Carregando...
-              </div>
-            ) : (
-              <TaskList tasks={tasks} onStatusChange={handleStatusChange} />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {showModal && <AddTaskModal onClose={() => setShowModal(false)} onSave={handleCreate} />}
+const HTML_CODE = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Econômico Brasil</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #cbd5e1; padding: 24px 16px; min-height: 100vh; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .header { background: #0f172a; border-radius: 20px; padding: 24px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .header h1 { font-size: 22px; font-weight: 900; color: #f8fafc; }
+  .header p { font-size: 12px; color: #6366f1; font-weight: 700; margin-top: 4px; }
+  .header-right { text-align: right; }
+  .clock { font-size: 22px; font-weight: 900; color: #6366f1; }
+  .date { font-size: 11px; color: #64748b; }
+  .update-info { font-size: 10px; color: #475569; margin-top: 2px; }
+  .btn-refresh { margin-top: 6px; font-size: 10px; color: #6366f1; background: transparent; border: 1px solid rgba(99,102,241,0.3); border-radius: 6px; padding: 2px 10px; cursor: pointer; font-weight: 700; }
+  .btn-refresh:hover { background: rgba(99,102,241,0.1); }
+  .loading { background: #1e293b; border-radius: 16px; padding: 32px; text-align: center; color: #64748b; font-size: 14px; margin-bottom: 24px; }
+  .loading .emoji { font-size: 28px; margin-bottom: 8px; }
+  .panel { background: #0f172a; border-radius: 20px; padding: 28px 28px 4px; }
+  .section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .section-bar { width: 4px; height: 20px; border-radius: 4px; }
+  .section-title { font-size: 13px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .card { background: #1e293b; border-radius: 12px; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .card-label { font-weight: 800; font-size: 13px; color: #f1f5f9; }
+  .card-fonte { margin-left: 8px; font-size: 9px; color: #64748b; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+  .badge-up { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .badge-down { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-wait { color: #94a3b8; font-size: 10px; }
+  .card-value { font-size: 22px; font-weight: 900; }
+  .card-value-empty { color: #334155; font-size: 14px; }
+  .card-ref { font-size: 10px; color: #475569; font-style: italic; }
+  .card-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
+  .footer { text-align: center; font-size: 10px; color: #334155; padding-bottom: 16px; }
+  @media (max-width: 600px) { .header { flex-direction: column; align-items: flex-start; } .header-right { text-align: left; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>Painel Econômico Brasil</h1>
+      <p>INDICADORES MACROECONÔMICOS EM TEMPO REAL</p>
     </div>
-  );
-}
+    <div class="header-right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="date" id="date"></div>
+      <div class="update-info" id="update-info"></div>
+      <button class="btn-refresh" onclick="fetchData()">↻ Atualizar agora</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="emoji">⏳</div>
+    Buscando indicadores atualizados...
+  </div>
+
+  <div class="panel" id="panel" style="display:none">
+    <div class="section" id="sec-inflacao">
+      <div class="section-header">
+        <div class="section-bar" style="background:#3b82f6"></div>
+        <span class="section-title">Inflação</span>
+      </div>
+      <div class="cards-grid" id="cards-inflacao"></div>
+    </div>
+    <div class="section" id="sec-atividade">
+      <div class="section-header">
+        <div class="section-bar" style="background:#22c55e"></div>
+        <span class="section-title">Atividade Econômica</span>
+      </div>
+      <div class="cards-grid" id="cards-atividade"></div>
+    </div>
+    <div class="section" id="sec-trabalho">
+      <div class="section-header">
+        <div class="section-bar" style="background:#f59e0b"></div>
+        <span class="section-title">Mercado de Trabalho</span>
+      </div>
+      <div class="cards-grid" id="cards-trabalho"></div>
+    </div>
+    <div class="section" id="sec-confianca">
+      <div class="section-header">
+ 
