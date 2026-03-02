@@ -1,90 +1,295 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 
-const HTML_CODE = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Econômico Brasil</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', -apple-system, sans-serif; background: #cbd5e1; padding: 24px 16px; min-height: 100vh; }
-  .container { max-width: 1100px; margin: 0 auto; }
-  .header { background: #0f172a; border-radius: 20px; padding: 24px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-  .header h1 { font-size: 22px; font-weight: 900; color: #f8fafc; }
-  .header p { font-size: 12px; color: #6366f1; font-weight: 700; margin-top: 4px; }
-  .header-right { text-align: right; }
-  .clock { font-size: 22px; font-weight: 900; color: #6366f1; }
-  .date { font-size: 11px; color: #64748b; }
-  .update-info { font-size: 10px; color: #475569; margin-top: 2px; }
-  .btn-refresh { margin-top: 6px; font-size: 10px; color: #6366f1; background: transparent; border: 1px solid rgba(99,102,241,0.3); border-radius: 6px; padding: 2px 10px; cursor: pointer; font-weight: 700; }
-  .btn-refresh:hover { background: rgba(99,102,241,0.1); }
-  .loading { background: #1e293b; border-radius: 16px; padding: 32px; text-align: center; color: #64748b; font-size: 14px; margin-bottom: 24px; }
-  .loading .emoji { font-size: 28px; margin-bottom: 8px; }
-  .panel { background: #0f172a; border-radius: 20px; padding: 28px 28px 4px; }
-  .section { margin-bottom: 32px; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .section-bar { width: 4px; height: 20px; border-radius: 4px; }
-  .section-title { font-size: 13px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .card { background: #1e293b; border-radius: 12px; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px; }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .card-label { font-weight: 800; font-size: 13px; color: #f1f5f9; }
-  .card-fonte { margin-left: 8px; font-size: 9px; color: #64748b; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
-  .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
-  .badge-up { background: rgba(34,197,94,0.15); color: #22c55e; }
-  .badge-down { background: rgba(239,68,68,0.15); color: #ef4444; }
-  .badge-wait { color: #94a3b8; font-size: 10px; }
-  .card-value { font-size: 22px; font-weight: 900; }
-  .card-value-empty { color: #334155; font-size: 14px; }
-  .card-ref { font-size: 10px; color: #475569; font-style: italic; }
-  .card-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
-  .footer { text-align: center; font-size: 10px; color: #334155; padding-bottom: 16px; }
-  @media (max-width: 600px) { .header { flex-direction: column; align-items: flex-start; } .header-right { text-align: left; } }
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="header">
-    <div>
-      <h1>Painel Econômico Brasil</h1>
-      <p>INDICADORES MACROECONÔMICOS EM TEMPO REAL</p>
-    </div>
-    <div class="header-right">
-      <div class="clock" id="clock">--:--:--</div>
-      <div class="date" id="date"></div>
-      <div class="update-info" id="update-info"></div>
-      <button class="btn-refresh" onclick="fetchData()">↻ Atualizar agora</button>
-    </div>
-  </div>
+const INDICADORES = {
+  inflacao: [
+    { key: "ipca", label: "IPCA", desc: "Inflação oficial do Brasil (IBGE)", fonte: "IBGE", valor: null, variacao: null },
+    { key: "inpc", label: "INPC", desc: "Inflação para famílias de baixa renda", fonte: "IBGE", valor: null, variacao: null },
+    { key: "igpm", label: "IGP-M", desc: "Inflação usada no reajuste de aluguéis (FGV)", fonte: "FGV", valor: null, variacao: null },
+    { key: "igpdi", label: "IGP-DI", desc: "Índice de Preços ao atacado, varejo e construção", fonte: "FGV", valor: null, variacao: null },
+    { key: "ipcfipe", label: "IPC-Fipe", desc: "Inflação no município de São Paulo", fonte: "Fipe", valor: null, variacao: null },
+    { key: "fgvibre", label: "FGV IBRE", desc: "Indicadores macroeconômicos da FGV", fonte: "FGV", valor: null, variacao: null },
+  ],
+  atividade: [
+    { key: "pib", label: "PIB", desc: "Principal termômetro do crescimento econômico", fonte: "IBGE", valor: null, variacao: null },
+    { key: "prodindustrial", label: "Produção Industrial", desc: "Volume físico fabricado pelas indústrias", fonte: "IBGE", valor: null, variacao: null },
+    { key: "servicos", label: "Volume de Serviços", desc: "Desempenho do setor de serviços", fonte: "IBGE", valor: null, variacao: null },
+    { key: "varejo", label: "Vendas no Varejo", desc: "Consumo direto das famílias e comércio", fonte: "IBGE", valor: null, variacao: null },
+  ],
+  trabalho: [
+    { key: "desemprego", label: "Taxa de Desocupação", desc: "Percentual da população sem trabalho ativo", fonte: "IBGE/PNAD", valor: null, variacao: null },
+    { key: "caged", label: "Caged", desc: "Saldo de empregos formais (CLT)", fonte: "MTE", valor: null, variacao: null },
+    { key: "rendimento", label: "Rendimento Real Médio", desc: "Salário médio ajustado pela inflação", fonte: "IBGE", valor: null, variacao: null },
+  ],
+  confianca: [
+    { key: "confconsum", label: "Confiança do Consumidor", desc: "Otimismo das famílias em relação à economia", fonte: "FGV", valor: null, variacao: null },
+    { key: "confempres", label: "Confiança Empresarial", desc: "Otimismo dos empresários; antecipa investimentos", fonte: "FGV", valor: null, variacao: null },
+    { key: "selic", label: "Selic", desc: "Taxa básica de juros da economia (Copom)", fonte: "BCB", valor: null, variacao: null },
+  ],
+};
 
-  <div class="loading" id="loading">
-    <div class="emoji">⏳</div>
-    Buscando indicadores atualizados...
-  </div>
+const SECTION_META = {
+  inflacao: { title: "Inflação", color: "#3b82f6", bg: "rgba(59,130,246,0.08)" },
+  atividade: { title: "Atividade Econômica", color: "#22c55e", bg: "rgba(34,197,94,0.08)" },
+  trabalho: { title: "Mercado de Trabalho", color: "#f59e0b", bg: "rgba(245,158,11,0.08)" },
+  confianca: { title: "Confiança & Juros", color: "#a855f7", bg: "rgba(168,85,247,0.08)" },
+};
 
-  <div class="panel" id="panel" style="display:none">
-    <div class="section" id="sec-inflacao">
-      <div class="section-header">
-        <div class="section-bar" style="background:#3b82f6"></div>
-        <span class="section-title">Inflação</span>
+function StatusBadge({ variacao }) {
+  if (variacao === null) return <span style={{ fontSize: 10, color: "#94a3b8" }}>Aguardando</span>;
+  const up = variacao >= 0;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 6,
+      background: up ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+      color: up ? "#22c55e" : "#ef4444"
+    }}>
+      {up ? "▲" : "▼"} {Math.abs(variacao).toFixed(2)}%
+    </span>
+  );
+}
+
+function IndicadorCard({ item, color }) {
+  return (
+    <div style={{
+      background: "#1e293b", borderRadius: 12, padding: "14px 16px",
+      border: "1px solid rgba(255,255,255,0.06)", display: "flex",
+      flexDirection: "column", gap: 6
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <span style={{ fontWeight: 800, fontSize: 13, color: "#f1f5f9" }}>{item.label}</span>
+          <span style={{
+            marginLeft: 8, fontSize: 9, color: "#64748b", background: "rgba(255,255,255,0.05)",
+            padding: "1px 6px", borderRadius: 4, fontWeight: 700
+          }}>{item.fonte}</span>
+        </div>
+        <StatusBadge variacao={item.variacao} />
       </div>
-      <div class="cards-grid" id="cards-inflacao"></div>
-    </div>
-    <div class="section" id="sec-atividade">
-      <div class="section-header">
-        <div class="section-bar" style="background:#22c55e"></div>
-        <span class="section-title">Atividade Econômica</span>
+      <div style={{ fontSize: 22, fontWeight: 900, color }}>
+        {item.valor !== null ? item.valor : <span style={{ color: "#334155", fontSize: 14 }}>—</span>}
       </div>
-      <div class="cards-grid" id="cards-atividade"></div>
+      {item.referencia && (
+        <span style={{ fontSize: 10, color: "#475569", fontStyle: "italic" }}>Ref: {item.referencia}</span>
+      )}
+      <p style={{ fontSize: 11, color: "#64748b", margin: 0, lineHeight: 1.4 }}>{item.desc}</p>
     </div>
-    <div class="section" id="sec-trabalho">
-      <div class="section-header">
-        <div class="section-bar" style="background:#f59e0b"></div>
-        <span class="section-title">Mercado de Trabalho</span>
+  );
+}
+
+function Section({ id, data }) {
+  const meta = SECTION_META[id];
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <div style={{ width: 4, height: 20, borderRadius: 4, background: meta.color }} />
+        <h2 style={{ margin: 0, fontSize: 13, fontWeight: 900, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1 }}>
+          {meta.title}
+        </h2>
       </div>
-      <div class="cards-grid" id="cards-trabalho"></div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 12
+      }}>
+        {data.map(item => <IndicadorCard key={item.key} item={item} color={meta.color} />)}
+      </div>
     </div>
-    <div class="section" id="sec-confianca">
-      <div class="section-header">
- 
+  );
+}
+
+export default function PainelEconomico() {
+  const [indicadores, setIndicadores] = useState(INDICADORES);
+  const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(new Date());
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    async function fetchAll(manual = false) {
+      if (manual) setRefreshing(true); else setLoading(true);
+      try {
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `Você é um especialista em economia brasileira. Busque na internet os dados OFICIAIS e MAIS RECENTES (2025 ou 2026) dos indicadores abaixo diretamente das fontes primárias: IBGE (ibge.gov.br), Banco Central do Brasil (bcb.gov.br), FGV IBRE, Caged/MTE e Fipe.
+
+Retorne os dados mais atuais disponíveis para cada indicador:
+
+1. IPCA: variação acumulada em 12 meses (%) - fonte IBGE
+2. INPC: variação acumulada em 12 meses (%) - fonte IBGE
+3. IGP-M: variação acumulada em 12 meses (%) - fonte FGV
+4. IGP-DI: variação acumulada em 12 meses (%) - fonte FGV
+5. IPC-Fipe: variação acumulada em 12 meses (%) - fonte Fipe
+6. FGV IBRE: Índice de Confiança (pontos) - fonte FGV IBRE
+7. PIB: variação anual (%) mais recente - fonte IBGE
+8. Produção Industrial: variação % mês/mês anterior - fonte IBGE PIM
+9. Volume de Serviços: variação % mensal - fonte IBGE PMS
+10. Vendas no Varejo: variação % mensal - fonte IBGE PMC
+11. Taxa de Desocupação: % mais recente da PNAD Contínua - fonte IBGE
+12. Caged: saldo líquido de empregos formais no último mês divulgado (em milhares) - fonte MTE
+13. Rendimento Real Médio: valor em R$ mais recente - fonte IBGE PNAD
+14. Confiança do Consumidor: pontos mais recentes - fonte FGV
+15. Confiança Empresarial: pontos mais recentes - fonte FGV
+16. Selic: taxa % ao ano vigente após última reunião do Copom - fonte BCB
+
+Para cada indicador forneça:
+- valor: string formatada com unidade (ex: "5,06%", "R$ 3.147", "108,4 pts")
+- variacao: número decimal indicando variação vs período anterior (positivo = subiu, negativo = caiu)
+- referencia: string com mês/período de referência (ex: "Jan/2026", "4T2025")`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              ipca: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              inpc: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              igpm: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              igpdi: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              ipcfipe: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              fgvibre: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              pib: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              prodindustrial: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              servicos: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              varejo: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              desemprego: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              caged: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              rendimento: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              confconsum: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              confempres: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" } } },
+              selic: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+            }
+          }
+        });
+
+        const updated = JSON.parse(JSON.stringify(INDICADORES));
+        Object.keys(updated).forEach(section => {
+          updated[section] = updated[section].map(item => {
+            const d = res[item.key];
+            return d ? { ...item, valor: d.valor, variacao: d.variacao, referencia: d.referencia } : item;
+          });
+        });
+        setIndicadores(updated);
+        setLastUpdate(new Date());
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+    fetchAll();
+    // Auto-refresh a cada 30 minutos
+    const interval = setInterval(() => fetchAll(true), 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#cbd5e1", padding: "24px 16px", fontFamily: "Inter, sans-serif" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{
+          background: "#0f172a", borderRadius: 20, padding: "24px 32px",
+          marginBottom: 24, display: "flex", justifyContent: "space-between",
+          alignItems: "center", flexWrap: "wrap", gap: 16
+        }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#f8fafc" }}>
+              Painel Econômico Brasil
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6366f1", fontWeight: 700 }}>
+              INDICADORES MACROECONÔMICOS EM TEMPO REAL
+            </p>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#6366f1" }}>
+              {now.toLocaleTimeString("pt-BR")}
+            </div>
+            <div style={{ fontSize: 11, color: "#64748b" }}>
+              {now.toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" })}
+            </div>
+            {lastUpdate && (
+              <div style={{ fontSize: 10, color: "#475569", marginTop: 2 }}>
+                {refreshing ? "🔄 Atualizando..." : `Atualizado às ${lastUpdate.toLocaleTimeString("pt-BR")}`}
+              </div>
+            )}
+            <button
+              onClick={() => {
+                const manual = true;
+                setRefreshing(true);
+                base44.integrations.Core.InvokeLLM({
+                  prompt: `Busque na internet os dados OFICIAIS e MAIS RECENTES (2025 ou 2026) dos indicadores econômicos brasileiros: IPCA, INPC, IGP-M, IGP-DI, IPC-Fipe, FGV IBRE, PIB, Produção Industrial, Volume de Serviços, Vendas no Varejo, Taxa de Desocupação, Caged, Rendimento Real Médio, Confiança do Consumidor, Confiança Empresarial, Selic. Fontes: IBGE, BCB, FGV, MTE, Fipe. Para cada um: valor (string formatada com unidade), variacao (número decimal vs período anterior), referencia (mês/período).`,
+                  add_context_from_internet: true,
+                  response_json_schema: {
+                    type: "object",
+                    properties: {
+                      ipca: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      inpc: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      igpm: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      igpdi: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      ipcfipe: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      fgvibre: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      pib: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      prodindustrial: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      servicos: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      varejo: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      desemprego: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      caged: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      rendimento: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      confconsum: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      confempres: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                      selic: { type: "object", properties: { valor: { type: "string" }, variacao: { type: "number" }, referencia: { type: "string" } } },
+                    }
+                  }
+                }).then(res => {
+                  const updated = JSON.parse(JSON.stringify(INDICADORES));
+                  Object.keys(updated).forEach(section => {
+                    updated[section] = updated[section].map(item => {
+                      const d = res[item.key];
+                      return d ? { ...item, valor: d.valor, variacao: d.variacao, referencia: d.referencia } : item;
+                    });
+                  });
+                  setIndicadores(updated);
+                  setLastUpdate(new Date());
+                  setRefreshing(false);
+                });
+              }}
+              style={{
+                marginTop: 6, fontSize: 10, color: "#6366f1", background: "transparent",
+                border: "1px solid rgba(99,102,241,0.3)", borderRadius: 6,
+                padding: "2px 10px", cursor: "pointer", fontWeight: 700
+              }}
+            >
+              ↻ Atualizar agora
+            </button>
+          </div>
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div style={{
+            background: "#1e293b", borderRadius: 16, padding: 32,
+            textAlign: "center", color: "#64748b", fontSize: 14, marginBottom: 24
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
+            Buscando indicadores atualizados...
+          </div>
+        )}
+
+        {/* Sections */}
+        <div style={{ background: "#0f172a", borderRadius: 20, padding: "28px 28px 4px" }}>
+          {Object.keys(indicadores).map(id => (
+            <Section key={id} id={id} data={indicadores[id]} />
+          ))}
+
+          <p style={{ textAlign: "center", fontSize: 10, color: "#334155", paddingBottom: 16 }}>
+            Fontes: IBGE · FGV · BCB · MTE · Fipe — Dados para fins informativos.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
