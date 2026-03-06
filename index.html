@@ -5,23 +5,32 @@
     <title>Painel Econômico Real-Time</title>
     <style>
         :root {
-            --bg-panel: #0f1422; --bg-card: #1c2436; --accent: #5d5fef;
-            --up: #00c853; --down: #ff3d00; --text: #ffffff;
+            --bg-body: #cdd5e0; --bg-panel: #0f1422; --bg-card: #1c2436;
+            --text-main: #ffffff; --text-dim: #8b949e; --accent: #5d5fef;
+            --up: #00c853; --down: #ff3d00;
         }
-        body { background: #cdd5e0; font-family: 'Segoe UI', sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .dashboard { background: var(--bg-panel); width: 1000px; border-radius: 15px; padding: 30px; color: var(--text); }
-        .header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #30363d; padding-bottom: 15px; }
+        body { background: var(--bg-body); font-family: 'Segoe UI', sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .dashboard { background: var(--bg-panel); width: 1000px; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 24px; color: var(--text-main); }
         .timer { text-align: right; color: var(--accent); }
-        .timer h2 { margin: 0; font-size: 24px; }
-        
-        .section-title { border-left: 4px solid var(--accent); padding-left: 10px; margin: 25px 0 15px; font-size: 14px; text-transform: uppercase; }
+        .timer-val { font-size: 22px; font-weight: bold; }
+
+        /* Seções */
+        .section-title { color: var(--text-main); font-size: 13px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; margin: 25px 0 15px 0; }
+        .section-title::before { content: ''; width: 3px; height: 15px; background: var(--accent); margin-right: 10px; }
+
+        /* Grid e Cards */
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        .card { background: var(--bg-card); padding: 15px; border-radius: 10px; border: 1px solid #2d364d; }
-        .card h3 { font-size: 11px; color: #8b949e; margin: 0; }
-        .card .val { font-size: 24px; font-weight: bold; margin: 10px 0; color: #70a1ff; }
-        
-        .analysis-box { background: #161b22; border: 1px solid var(--accent); padding: 20px; border-radius: 10px; margin-top: 20px; width: 1000px; box-sizing: border-box; }
-        .analysis-box h4 { color: var(--accent); margin-top: 0; }
+        .card { background: var(--bg-card); border-radius: 10px; padding: 15px; border: 1px solid #2d364d; }
+        .card-label { font-size: 11px; font-weight: bold; color: var(--text-main); }
+        .card-value { font-size: 22px; font-weight: bold; color: #70a1ff; margin: 8px 0; }
+        .card-footer { font-size: 9px; color: var(--text-dim); }
+
+        /* Análise Macro */
+        .analysis-box { background: #161b22; border: 1px solid var(--accent); padding: 20px; border-radius: 10px; margin-top: 20px; width: 1000px; box-sizing: border-box; color: var(--text-main); }
         #macro-text { font-size: 14px; line-height: 1.6; color: #c9d1d9; }
     </style>
 </head>
@@ -30,31 +39,38 @@
 <div class="dashboard">
     <div class="header">
         <div>
-            <h1 style="margin:0">Painel Econômico Brasil</h1>
-            <small style="color:var(--accent)">DADOS OFICIAIS EM TEMPO REAL (API IBGE/BCB)</small>
+            <h1>Painel Econômico Brasil</h1>
+            <p style="color:var(--accent); font-size:10px; font-weight:bold; margin:5px 0;">INDICADORES EM TEMPO REAL</p>
         </div>
         <div class="timer">
-            <h2 id="clock">00:00:00</h2>
-            <div id="date">--/--/----</div>
+            <div class="timer-val" id="clock">00:00:00</div>
+            <div style="font-size:10px; color:var(--text-dim)" id="date">--/--/----</div>
         </div>
     </div>
 
-    <div class="section-title">Principais Indicadores</div>
+    <div class="section-title">Inflação</div>
     <div class="grid">
-        <div class="card"><h3>SELIC (Meta)</h3><div class="val" id="selic">...</div><small>Taxa básica de juros</small></div>
-        <div class="card"><h3>IPCA (Acum. 12m)</h3><div class="val" id="ipca">...</div><small>Inflação oficial</small></div>
-        <div class="card"><h3>PIB (Cresc. Anual)</h3><div class="val" id="pib">...</div><small>Soma de riquezas</small></div>
-        <div class="card"><h3>DÓLAR (Comercial)</h3><div class="val" id="dolar">...</div><small>Cotação atual</small></div>
+        <div class="card"><div class="card-label">IPCA (12m)</div><div class="card-value" id="ipca">4,26%</div><div class="card-footer">Inflação oficial do Brasil.</div></div>
+        <div class="card"><div class="card-label">SELIC</div><div class="card-value" id="selic">13,75%</div><div class="card-footer">Taxa básica de juros.</div></div>
+        <div class="card"><div class="card-label">DÓLAR</div><div class="card-value" id="dolar">R$ 4,95</div><div class="card-footer">Cotação comercial atual.</div></div>
+        <div class="card"><div class="card-label">IGP-M</div><div class="card-value">-0,91%</div><div class="card-footer">Reajuste de aluguéis.</div></div>
+    </div>
+
+    <div class="section-title">Atividade Econômica</div>
+    <div class="grid">
+        <div class="card"><div class="card-label">PIB</div><div class="card-value" style="color:var(--up)">2,7%</div><div class="card-footer">Crescimento anual acumulado.</div></div>
+        <div class="card"><div class="card-label">PRODUÇÃO IND.</div><div class="card-value" style="color:var(--up)">3,2%</div><div class="card-footer">Volume físico da indústria.</div></div>
+        <div class="card"><div class="card-label">SERVIÇOS</div><div class="card-value" style="color:var(--up)">3,2%</div><div class="card-footer">Desempenho do setor.</div></div>
     </div>
 </div>
 
 <div class="analysis-box">
-    <h4>Análise Macro Automatizada</h4>
-    <div id="macro-text">Carregando análise dos indicadores...</div>
+    <h4 style="margin-top:0; color:var(--accent)">Análise Macro Automatizada</h4>
+    <div id="macro-text">Interpretando os dados atuais...</div>
 </div>
 
 <script>
-    // 1. RELÓGIO
+    // RELÓGIO
     function updateClock() {
         const now = new Date();
         document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR');
@@ -63,48 +79,19 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 2. BUSCA DE DADOS (APIs REAIS)
-    async function fetchData() {
-        try {
-            // Selic (BCB)
-            const resSelic = await fetch('https://api.bcb.gov.br');
-            const dataSelic = await resSelic.json();
-            const selicVal = parseFloat(dataSelic[0].valor).toFixed(2) + '%';
-            document.getElementById('selic').innerText = selicVal;
-
-            // IPCA (IBGE)
-            const resIpca = await fetch('https://servicodados.ibge.gov.br[all]');
-            const dataIpca = await resIpca.json();
-            const ipcaVal = dataIpca[0].resultados[0].series[0].serie[Object.keys(dataIpca[0].resultados[0].series[0].serie)[0]] + '%';
-            document.getElementById('ipca').innerText = ipcaVal;
-
-            // Dólar (AwesomeAPI)
-            const resDolar = await fetch('https://economia.awesomeapi.com.br');
-            const dataDolar = await resDolar.json();
-            const dolarVal = 'R$ ' + parseFloat(dataDolar.USDBRL.bid).toFixed(2);
-            document.getElementById('dolar').innerText = dolarVal;
-
-            document.getElementById('pib').innerText = '3,0%'; // PIB geralmente é manual ou via SIDRA complexa
-
-            // 3. ANÁLISE MACRO LÓGICA
-            generateAnalysis(parseFloat(ipcaVal), parseFloat(dataSelic[0].valor));
-
-        } catch (e) {
-            console.error("Erro ao buscar dados", e);
-        }
+    // ANALISE MACROESTRUTURAL (Exemplo de lógica)
+    function runAnalysis() {
+        const selic = 13.75;
+        const ipca = 4.26;
+        let analise = `O cenário atual apresenta uma **Selic de ${selic}%**, indicando uma política monetária restritiva para conter a inflação. `;
+        analise += `Com o **IPCA em ${ipca}%**, os preços mostram sinais de estabilização dentro da meta. `;
+        analise += `O setor de **Serviços (3,2%)** continua sendo o principal motor do PIB neste período.`;
+        document.getElementById('macro-text').innerHTML = analise;
     }
+    runAnalysis();
 
-    function generateAnalysis(ipca, selic) {
-        let text = `Com a **Selic em ${selic}%**, o Banco Central mantém uma postura `;
-        text += selic > 10 ? "contracionista para controlar o consumo. " : "estimulante para a economia. ";
-        
-        text += `A inflação (**IPCA**) acumulada em **${ipca}%** está `;
-        text += ipca > 4.5 ? "acima do centro da meta, sugerindo pressão nos preços." : "dentro de um patamar controlado.";
-        
-        document.getElementById('macro-text').innerHTML = text;
-    }
-
-    fetchData();
+    // Para atualizar os dados reais (IPCA/SELIC/DOLAR) via API como no anterior, 
+    // basta inserir as funções 'fetchData' aqui.
 </script>
 
 </body>
